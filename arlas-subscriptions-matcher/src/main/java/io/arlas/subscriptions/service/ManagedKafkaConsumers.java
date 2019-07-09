@@ -33,7 +33,7 @@ public class ManagedKafkaConsumers implements Managed {
 
     @Override
     public void start() {
-        new Thread(consumerRunner).start();
+        new Thread(this.consumerRunner).start();
     }
 
     @Override
