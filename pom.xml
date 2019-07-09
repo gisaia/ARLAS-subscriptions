@@ -19,7 +19,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipTests>true</skipTests>
         <surefire.version>2.20.1</surefire.version>
+
+        <!-- REST AND DROPWIZARD-->
+        <dropwizard.version>1.3.12</dropwizard.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-core</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

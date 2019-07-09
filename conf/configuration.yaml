@@ -1,0 +1,10 @@
+#################################################
+############ KAFKA                ###############
+#################################################
+kafka:
+  kafka-consumer-poll-timeout: ${KAFKA_CONSUMER_POLL_TIMEOUT:-100}
+  kafka-batch-size: ${KAFKA_BATCH_SIZE:-10}
+  kafka-bootstrap-servers: ${KAFKA_BROKERS:-kafka:9092}
+  kafka-consumer-group-id: ${KAFKA_CONSUMER_GROUP_ID:-subscription_events_consumer_group}
+  kafka-topic-subscription-events: ${KAFKA_TOPIC_SUBSCRIPTION_EVENTS:-subscription_events}
+  kafka-topic-notification-orders: ${KAFKA_TOPIC_NOTIFICATION_ORDERS:-notification_orders}
