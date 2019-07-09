@@ -19,17 +19,15 @@
 
 package io.arlas.subscriptions.model;
 
-public class SubscriptionEvent {
-    public SubscriptionEventMetadata md;
-    public String collection;
-    public String operation;
+public class SubscriptionEventMetadata {
+    public String id;
+    public String geometry;
 
     @Override
     public String toString() {
-        return "SubscriptionEvent {" +
-                "md=" + md +
-                ", collection='" + collection + '\'' +
-                ", operation='" + operation + '\'' +
+        return "{" +
+                "id='" + id + '\'' +
+                ", geometry='" + geometry + '\'' +
                 '}';
     }
 }
