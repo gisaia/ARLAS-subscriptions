@@ -5,7 +5,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>arlas-subscriptions-matcher</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>ARLAS subscriptions matcher</name>
 
@@ -18,13 +17,14 @@
     <properties>
         <kafka.version>2.1.1</kafka.version>
         <cyclops.version>10.3.2</cyclops.version>
+        <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>io.arlas</groupId>
             <artifactId>arlas-subscriptions-common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${pom.parent.version}</version>
         </dependency>
 
         <dependency>
@@ -45,7 +45,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${maven-shade-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
