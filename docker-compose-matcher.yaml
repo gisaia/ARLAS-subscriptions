@@ -1,0 +1,68 @@
+# Stop stack:  docker-compose -f docker-compose-matcher.yaml --project-name matcher down -v
+# Start stack: docker-compose -f docker-compose-matcher.yaml --project-name matcher up -d --build --force-recreate
+version: '3'
+
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: "zookeeper"
+    ports:
+      - 2181:2181
+  kafka:
+    image: wurstmeister/kafka:2.11-1.1.1
+    container_name: "kafka"
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      LOG4J_LOGGER_KAFKA: INFO
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    container_name: "elasticsearch"
+    environment:
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    ulimits:
+      nproc: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    cap_add:
+      - ALL
+    privileged: true
+    volumes:
+      - /var/lib/elasticsearch:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+  arlas-server:
+    image: gisaia/arlas-server:10.6.1
+    container_name: "arlas-server"
+    ports:
+      - 9999:9999
+    depends_on:
+      - elasticsearch
+    environment:
+      ARLAS_ELASTIC_CLUSTER: elasticsearch
+      ARLAS_ELASTIC_NODES: elasticsearch:9300
+    command: ["/opt/app/wait-for-elasticsearch.sh"]
+  subscriptions-matcher:
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE:-Dockerfile-matcher}
+    image: subscriptions-matcher:latest
+    container_name: "subscriptions-matcher"
+    depends_on:
+      - arlas-server
+      - kafka
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - ARLAS_ELASTIC_NODES=elasticsearch:9300
+      - ARLAS_SERVER=arlas-server:9999
+    command: ["/opt/app/wait-for-deps.sh $$KAFKA_BROKERS $$ARLAS_ELASTIC_NODES $$ARLAS_SERVER"]

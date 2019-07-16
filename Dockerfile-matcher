@@ -1,0 +1,13 @@
+FROM openjdk:8-jre-alpine
+
+# install script dependencies
+RUN apk add --update bash netcat-openbsd curl && rm -rf /var/cache/apk/*
+
+# application placed into /opt/app
+WORKDIR /opt/app
+ADD arlas-subscriptions-matcher/target/arlas-subscriptions-matcher*.jar /opt/app/arlas-subscriptions-matcher.jar
+ADD conf/configuration.yaml /opt/app/configuration.yaml
+ADD arlas-subscriptions-matcher/scripts/wait-for-deps.sh /opt/app/wait-for-deps.sh
+
+ENTRYPOINT ["bash", "-c"]
+CMD ["java -jar /opt/app/arlas-subscriptions-matcher.jar server /opt/app/configuration.yaml"]
