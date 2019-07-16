@@ -10,8 +10,6 @@ kafka:
   kafka-topic-notification-orders: ${KAFKA_TOPIC_NOTIFICATION_ORDERS:-notification_orders}
 
 arlas-server-basePath: ${ARLAS_SERVER_BASE_PATH:-http://demo.arlas.io/arlas}
-arlas-server-searchEndpoint: ${ARLAS_SERVER_SEARCH_ENDPOINT:-/explore/ais-danmark/_search}
-#arlas-server-searchEndpoint: ${ARLAS_SERVER_SEARCH_ENDPOINT:-/explore/subscription/_search}
+arlas-server-searchEndpoint: ${ARLAS_SERVER_SEARCH_ENDPOINT:-/explore/subscription/_search}
 
-arlas-subscriptions-subscriptionFilterRoot: gintersect={md.geometry}&sort=vessel.mmsi
-#arlas-subscriptions-subscriptionFilterRoot: gintersect={md.geometry}&f=subscription.trigger.operations:eq:{operation}&f=subscription.trigger.collection:eq:{collection}&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&sort=id
+arlas-subscriptions-subscriptionFilterRoot: gintersect={md.geometry}&f=subscription.trigger.operations:eq:{operation}&f=subscription.trigger.collection:eq:{collection}&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&sort=id
