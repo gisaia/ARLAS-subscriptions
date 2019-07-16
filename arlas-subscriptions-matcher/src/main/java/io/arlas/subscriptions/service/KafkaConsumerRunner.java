@@ -40,10 +40,12 @@ public class KafkaConsumerRunner implements Runnable {
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ArlasSubscriptionsConfiguration configuration;
+    private final SubscriptionsService subscriptionsService;
     private KafkaConsumer consumer;
 
     KafkaConsumerRunner(ArlasSubscriptionsConfiguration configuration) {
         this.configuration = configuration;
+        this.subscriptionsService = new SubscriptionsService(configuration);
     }
 
     @Override
@@ -54,7 +56,18 @@ public class KafkaConsumerRunner implements Runnable {
 
             while (true) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(configuration.kafkaConfiguration.consumerPollTimeout));
-                processRecords(records);
+                for (ConsumerRecord<String, String> record : records) {
+
+                    try {
+                        final SubscriptionEvent event = objectMapper.readValue(record.value(), SubscriptionEvent.class);
+                        LOGGER.debug("Received subscription event:" + event.toString());
+
+                        subscriptionsService.searchMatchingSubscriptions(event);
+
+                    } catch (IOException e) {
+                        LOGGER.warn("Could not parse record " + record.value());
+                    }
+                }
                 consumer.commitSync();
             }
 
@@ -64,24 +77,6 @@ public class KafkaConsumerRunner implements Runnable {
         } finally {
             LOGGER.info("Closing consumer of topic '" + configuration.kafkaConfiguration.subscriptionEventsTopic + "'");
             consumer.close();
-        }
-    }
-
-    private void processRecords(ConsumerRecords<String, String> records) {
-        if (records.count() > 0) {
-            LOGGER.debug("Kafka polling returned " + records.count());
-        }
-        for (ConsumerRecord<String, String> record : records) {
-
-            try {
-                final SubscriptionEvent event = objectMapper.readValue(record.value(), SubscriptionEvent.class);
-                LOGGER.debug(event.toString());
-
-                // call Arlas Server in order to get matching subscriptions for the event
-
-            } catch (IOException e) {
-                LOGGER.warn("Could not parse record " + record.value());
-            }
         }
     }
 

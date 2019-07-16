@@ -25,4 +25,13 @@ import io.dropwizard.Configuration;
 public class ArlasSubscriptionsConfiguration extends Configuration {
     @JsonProperty("kafka")
     public KafkaConfiguration kafkaConfiguration;
+
+    @JsonProperty("arlas-server-basePath")
+    public String arlasBasePath;
+
+    @JsonProperty("arlas-server-searchEndpoint")
+    public String arlasSearchEndpoint;
+
+    @JsonProperty("arlas-subscriptions-subscriptionFilterRoot")
+    public String subscriptionFilterRoot;
 }
