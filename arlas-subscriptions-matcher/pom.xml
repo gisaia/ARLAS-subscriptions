@@ -18,6 +18,7 @@
         <kafka.version>2.1.1</kafka.version>
         <cyclops.version>10.3.2</cyclops.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
+        <arlas.version>10.6.2-SNAPSHOT</arlas.version>
     </properties>
 
     <dependencies>
@@ -30,7 +31,7 @@
         <dependency>
             <groupId>io.arlas</groupId>
             <artifactId>arlas-server-client</artifactId>
-            <version>10.6.2-SNAPSHOT</version>
+            <version>${arlas.version}</version>
         </dependency>
 
         <dependency>
