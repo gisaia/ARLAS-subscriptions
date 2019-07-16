@@ -70,7 +70,7 @@ public class SubscriptionsService {
             Hits hits;
             Link next = null;
             do {
-                hits = getHits(queryParams);
+                hits = getSubscriptionsHits(queryParams);
                 if (hits.getHits() != null) {
                     List<Object> productList = hits.getHits().stream().map(hit -> getMatchingProduct(hit)).collect(Collectors.toList());
                     next = hits.getLinks().get("next");
@@ -95,7 +95,7 @@ public class SubscriptionsService {
                 .collect(Collectors.toList());
     }
 
-    private Hits getHits(List<Pair> queryParams) throws ApiException, IOException {
+    private Hits getSubscriptionsHits(List<Pair> queryParams) throws ApiException, IOException {
         Call searchCall = apiClient.buildCall(arlasSearchEndpoint, GET,  queryParams,
                 emptyListParams, null, emptyMapParams, emptyMapParams, emptyArrayParams, null);
         Response searchResponse = searchCall.execute();
