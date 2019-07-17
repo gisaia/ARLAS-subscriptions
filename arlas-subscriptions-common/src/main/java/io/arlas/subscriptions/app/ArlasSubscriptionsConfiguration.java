@@ -26,12 +26,21 @@ public class ArlasSubscriptionsConfiguration extends Configuration {
     @JsonProperty("kafka")
     public KafkaConfiguration kafkaConfiguration;
 
-    @JsonProperty("arlas-server-basePath")
-    public String arlasBasePath;
+    @JsonProperty("arlas-subscriptions-basePath")
+    public String subscriptionsBasePath;
 
-    @JsonProperty("arlas-server-searchEndpoint")
-    public String arlasSearchEndpoint;
+    @JsonProperty("arlas-subscriptions-searchEndpoint")
+    public String subscriptionsSearchEndpoint;
 
     @JsonProperty("arlas-subscriptions-subscriptionFilterRoot")
     public String subscriptionFilterRoot;
+
+    @JsonProperty("arlas-server-basePath")
+    public String arlasServerBasePath;
+
+    @JsonProperty("arlas-server-searchEndpoint")
+    public String arlasServerSearchEndpoint;
+
+    @JsonProperty("arlas-server-hitFilterRoot")
+    public String arlasServerFilterRoot;
 }

@@ -19,9 +19,6 @@
 
 package io.arlas.subscriptions.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Response;
 import io.arlas.client.ApiClient;
 import io.arlas.client.ApiException;
 import io.arlas.client.Pair;
@@ -34,46 +31,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
-public class SubscriptionsService {
+public class SubscriptionsService extends AbstractArlasService {
     private final Logger LOGGER = LoggerFactory.getLogger(SubscriptionsService.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ApiClient apiClient;
-    private final String arlasSearchEndpoint;
-    private final String subscriptionFilterRoot;
-
-    // utility attributes to avoid building empty objects for each subscription matcher request
-    private final List emptyListParams = new ArrayList<>();
-    private final Map emptyMapParams = new HashMap<>();
-    private final String[] emptyArrayParams = new String[0];
-    private final static  String GET = "GET";
 
     SubscriptionsService(ArlasSubscriptionsConfiguration configuration) {
-        this.apiClient = new ApiClient().setBasePath(configuration.arlasBasePath);
-        this.arlasSearchEndpoint = configuration.arlasSearchEndpoint;
-        this.subscriptionFilterRoot = configuration.subscriptionFilterRoot;
+        this.apiClient = new ApiClient().setBasePath(configuration.subscriptionsBasePath);
+        this.searchEndpoint = configuration.subscriptionsSearchEndpoint;
+        this.filterRoot = configuration.subscriptionFilterRoot;
     }
 
-    void searchMatchingSubscriptions(SubscriptionEvent event) {
-        String searchFilter = subscriptionFilterRoot.replaceAll("\\{md.geometry}", event.md.geometry)
+    List<Hit> searchMatchingSubscriptions(SubscriptionEvent event) {
+        List<Hit> result = new ArrayList();
+        String searchFilter = filterRoot.replaceAll("\\{md.geometry}", event.md.geometry)
                 .replaceAll("\\{collection}", event.collection)
                 .replaceAll("\\{operation}", event.operation);
 
-
         try {
-            List<Pair> queryParams = getQueryParams(searchFilter);
             Hits hits;
             Link next = null;
+            List<Pair> queryParams = getQueryParams(searchFilter);
             do {
-                hits = getSubscriptionsHits(queryParams);
+                hits = getItemHits(queryParams);
                 if (hits.getHits() != null) {
-                    List<Object> productList = hits.getHits().stream().map(hit -> getMatchingProduct(hit)).collect(Collectors.toList());
-                    next = hits.getLinks().get("next");
+                    result.addAll(hits.getHits());
+                    next = hits.getLinks() != null ? hits.getLinks().get("next") : null;
                     if (next != null) {
                         queryParams = getQueryParams(next.getHref().split("\\?")[1]);
                     }
@@ -84,28 +68,7 @@ public class SubscriptionsService {
         } catch (IOException e) {
             LOGGER.warn("Parsing error:", e);
         }
-    }
 
-    private List<Pair> getQueryParams(String encodedSearchFilter) throws UnsupportedEncodingException {
-        String searchFilter = URLDecoder.decode(encodedSearchFilter, StandardCharsets.UTF_8.toString());
-        LOGGER.info("Calling '" + apiClient.getBasePath() + arlasSearchEndpoint + "' with query params: '" + searchFilter + "'");
-        return Arrays.stream(searchFilter.split("&"))
-                .map(s -> s.split("="))
-                .map(p -> new Pair(p[0], p[1]))
-                .collect(Collectors.toList());
-    }
-
-    private Hits getSubscriptionsHits(List<Pair> queryParams) throws ApiException, IOException {
-        Call searchCall = apiClient.buildCall(arlasSearchEndpoint, GET,  queryParams,
-                emptyListParams, null, emptyMapParams, emptyMapParams, emptyArrayParams, null);
-        Response searchResponse = searchCall.execute();
-        String body = searchResponse.body().string();
-        LOGGER.info(body);
-        return objectMapper.readValue(body, Hits.class);
-    }
-
-    private Object getMatchingProduct(Hit hit) {
-        // TODO
-        return hit;
+        return result;
     }
 }
