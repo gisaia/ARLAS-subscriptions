@@ -20,6 +20,7 @@
 package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.arlas.client.model.Hit;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.kafka.SubscriptionEventKafkaConsumer;
 import io.arlas.subscriptions.model.SubscriptionEvent;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class KafkaConsumerRunner implements Runnable {
@@ -41,11 +43,13 @@ public class KafkaConsumerRunner implements Runnable {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ArlasSubscriptionsConfiguration configuration;
     private final SubscriptionsService subscriptionsService;
+    private final ProductService productService;
     private KafkaConsumer consumer;
 
     KafkaConsumerRunner(ArlasSubscriptionsConfiguration configuration) {
         this.configuration = configuration;
         this.subscriptionsService = new SubscriptionsService(configuration);
+        this.productService = new ProductService(configuration);
     }
 
     @Override
@@ -62,7 +66,8 @@ public class KafkaConsumerRunner implements Runnable {
                         final SubscriptionEvent event = objectMapper.readValue(record.value(), SubscriptionEvent.class);
                         LOGGER.debug("Received subscription event:" + event.toString());
 
-                        subscriptionsService.searchMatchingSubscriptions(event);
+                        List<Hit> hits = subscriptionsService.searchMatchingSubscriptions(event);
+                        productService.processMatchingProducts(event, hits);
 
                     } catch (IOException e) {
                         LOGGER.warn("Could not parse record " + record.value());

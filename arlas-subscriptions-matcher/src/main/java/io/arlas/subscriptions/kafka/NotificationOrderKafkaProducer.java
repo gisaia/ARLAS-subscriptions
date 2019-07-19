@@ -44,7 +44,8 @@ public class NotificationOrderKafkaProducer extends KafkaProducer<String, String
         super(properties);
         this.topic = topic;
     }
-    private Try<Void, Exception> send(Object object) {
+
+    public Try<Void, Exception> send(Object object) {
 
         LOGGER.debug("Sending to Kafka topic '" + topic + "'");
         return Try.runWithCatch(() -> {

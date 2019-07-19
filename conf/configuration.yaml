@@ -9,7 +9,10 @@ kafka:
   kafka-topic-subscription-events: ${KAFKA_TOPIC_SUBSCRIPTION_EVENTS:-subscription_events}
   kafka-topic-notification-orders: ${KAFKA_TOPIC_NOTIFICATION_ORDERS:-notification_orders}
 
-arlas-server-basePath: ${ARLAS_SERVER_BASE_PATH:-http://demo.arlas.io/arlas}
-arlas-server-searchEndpoint: ${ARLAS_SERVER_SEARCH_ENDPOINT:-/explore/subscription/_search}
-
+arlas-subscriptions-basePath: ${ARLAS_SUBSCRIPTIONS_BASE_PATH:-http://localhost}
+arlas-subscriptions-searchEndpoint: ${ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT:-/explore/subscription/_search}
 arlas-subscriptions-subscriptionFilterRoot: gintersect={md.geometry}&f=subscription.trigger.operations:eq:{operation}&f=subscription.trigger.collection:eq:{collection}&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&sort=id
+
+arlas-server-basePath: ${ARLAS_SERVER_BASE_PATH:-http://localhost}
+arlas-server-searchEndpoint: ${ARLAS_SERVER_SEARCH_ENDPOINT:-/api/v1/services/search}
+arlas-server-hitFilterRoot: f=uid:eq:{md.id}
