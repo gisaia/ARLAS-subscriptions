@@ -19,6 +19,6 @@
 
 package io.arlas.subscriptions.model;
 
-public class UserMetadatas {
+public class UserMetadata {
     public String correlationId;
 }

@@ -30,7 +30,7 @@ public class UserSubscription {
     public Boolean deleted;
     public String title;
     public Subscription subscription = new Subscription();
-    public UserMetadatas userMetadatas = new UserMetadatas();
+    public UserMetadata userMetadatas = new UserMetadata();
 
     static public class Subscription {
         public Object trigger;

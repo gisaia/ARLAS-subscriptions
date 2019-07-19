@@ -25,7 +25,7 @@ public class NotificationOrder {
     public String collection;
     public String operation;
     public Subscription subscription = new Subscription();
-    public UserMetadatas userMetadatas = new UserMetadatas();
+    public UserMetadata userMetadatas = new UserMetadata();
 
     public class Subscription {
         public String id;
