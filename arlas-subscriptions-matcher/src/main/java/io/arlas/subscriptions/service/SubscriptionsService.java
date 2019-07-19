@@ -50,19 +50,19 @@ public class SubscriptionsService extends AbstractArlasService {
                 .replaceAll("\\{operation}", event.operation);
 
         try {
-            Hits hits;
+            Hits items;
             Link next = null;
             List<Pair> queryParams = getQueryParams(searchFilter);
             do {
-                hits = getItemHits(queryParams);
-                if (hits.getHits() != null) {
-                    result.addAll(hits.getHits());
-                    next = hits.getLinks() != null ? hits.getLinks().get("next") : null;
+                items = getItemHits(queryParams);
+                if (items.getHits() != null) {
+                    result.addAll(items.getHits());
+                    next = items.getLinks() != null ? items.getLinks().get("next") : null;
                     if (next != null) {
                         queryParams = getQueryParams(next.getHref().split("\\?")[1]);
                     }
                 }
-            } while (hits.getHits() != null && next != null);
+            } while (items.getHits() != null && next != null);
         } catch (ApiException e) {
             LOGGER.warn("Api exception:", e);
         } catch (IOException e) {
