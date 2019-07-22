@@ -34,12 +34,13 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
-@Path("/configurations")
-@Api(value = "/configurations")
+
+@Path("/subscriptions")
+@Api(value = "/subscriptions")
 @SwaggerDefinition(
         info = @Info(contact = @Contact(email = "contact@gisaia.com", name = "Gisaia", url = "http://www.gisaia.com/"),
-                title = "ARLAS WUI Config Manager API",
-                description = "Manage ARLAS WUI Confi",
+                title = "ARLAS Subscriptions Manager API",
+                description = "Manage ARLAS Subscriptions",
                 license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html"),
                 version = "API_VERSION"))
 public class SubscriptionsManagerController {
@@ -63,7 +64,7 @@ public class SubscriptionsManagerController {
             consumes = UTF8JSON
     )
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Arlas Config Manager Error.", response = Error.class)})
+            @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
     public Response getAll(
             // --------------------------------------------------------
@@ -75,7 +76,7 @@ public class SubscriptionsManagerController {
                     required = false)
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
-        List<UserSubscription> userSubscriptions = subscriptionManagerService.daoDatabase.getAllUserSubscriptions();
+        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions();
         return ResponseFormatter.getResultResponse(userSubscriptions);
     }
 
@@ -94,10 +95,10 @@ public class SubscriptionsManagerController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
-            @ApiResponse(code = 500, message = "Arlas Config Manager Error.", response = Error.class)})
+            @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
     public Response put(
-            @ApiParam(name = "newConfiguration",
-                    value = "newConfiguration",
+            @ApiParam(name = "userSubscription",
+                    value = "userSubscription",
                     required = true)
             @NotNull @Valid UserSubscription userSubscription,
 
@@ -112,6 +113,6 @@ public class SubscriptionsManagerController {
 
     ) throws ArlasSubscriptionsException {
 
-        return ResponseFormatter.getResultResponse(subscriptionManagerService.daoDatabase.postUserSubscription(userSubscription));
+        return ResponseFormatter.getResultResponse(subscriptionManagerService.postUserSubscription(userSubscription));
     }
 }

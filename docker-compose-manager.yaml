@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  mongodb:
+    image: mongo:3.4
+    container_name: "mongodb"
+    ports:
+      - 27017:27017
+  subscriptions-manager:
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE:-Dockerfile-manager}
+    image: subscriptions-manager:latest
+    container_name: "subscriptions-manager"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+    ports:
+      - 19999:9998
+    command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST:$$MONGO_PORT "]
+
+
+
+
+
+
+

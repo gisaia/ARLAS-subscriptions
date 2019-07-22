@@ -17,12 +17,25 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.dao;
+package io.arlas.subscriptions.db.mongo;
 
-import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
+import com.mongodb.client.MongoClient;
+import io.dropwizard.lifecycle.Managed;
 
-public interface SubscriptionsIndexDAO {
+public class MongoDBManaged implements Managed {
 
-    void initIndex() throws ArlasSubscriptionsException;
+    public MongoClient mongoClient;
 
+    public MongoDBManaged(final MongoClient mongoClient) {
+        this.mongoClient = mongoClient;
+    }
+
+    @Override
+    public void start() throws Exception {
+    }
+
+    @Override
+    public void stop() throws Exception {
+        mongoClient.close();
+    }
 }

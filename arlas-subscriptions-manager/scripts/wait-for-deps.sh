@@ -22,9 +22,8 @@ wait_for_hosts () {
 
 set -e -o pipefail
 
-IFS=',' read -r -a es_hosts <<< $1
-IFS=',' read -r -a mongo_hosts <<< $2
+IFS=',' read -r -a mongo_hosts <<< $1
 
-wait_for_hosts ${es_hosts[@]} ${mongo_hosts[@]}
+wait_for_hosts ${mongo_hosts[@]}
 
 java -jar /opt/app/arlas-subscriptions-manager.jar server /opt/app/configuration.yaml

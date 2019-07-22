@@ -10,4 +10,4 @@ ADD conf/configuration.yaml /opt/app/configuration.yaml
 ADD arlas-subscriptions-manager/scripts/wait-for-deps.sh /opt/app/wait-for-deps.sh
 
 ENTRYPOINT ["bash", "-c"]
-CMD ["java -jar /opt/app/arlas-subscriptions-matcher.jar server /opt/app/configuration.yaml"]
+CMD ["java -jar /opt/app/arlas-subscriptions-manager.jar server /opt/app/configuration.yaml"]

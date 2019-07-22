@@ -19,25 +19,29 @@
 
 package io.arlas.subscriptions.service;
 
-import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
-import io.arlas.subscriptions.dao.EsSubscriptionsIndexDaoImpl;
-import io.arlas.subscriptions.dao.MongoSubscriptionsDbDaoImpl;
-import io.arlas.subscriptions.dao.SubscriptionsDbDAO;
-import io.arlas.subscriptions.dao.SubscriptionsIndexDAO;
+import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
+import io.arlas.subscriptions.dao.MongoUserSubscriptionDAOImpl;
+import io.arlas.subscriptions.dao.UserSubscriptionDAO;
+import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
+import io.arlas.subscriptions.model.UserSubscription;
+
+import java.util.List;
+import java.util.UUID;
 
 public class SubscriptionManagerService {
 
-    public SubscriptionsIndexDAO daoIndex;
-    public SubscriptionsDbDAO daoDatabase;
+    private UserSubscriptionDAO daoDatabase;
 
+    public SubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged) throws  ArlasSubscriptionsException {
+        this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration,mongoDBManaged);
+    }
 
-    public SubscriptionManagerService(ArlasSubscriptionsConfiguration configuration) throws  ArlasSubscriptionsException {
-        this.daoIndex = new EsSubscriptionsIndexDaoImpl(configuration);
-        this.daoDatabase = new MongoSubscriptionsDbDaoImpl(configuration);
+    public List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException {
+        return  this.daoDatabase.getAllUserSubscriptions();
+    }
 
-        daoIndex.initIndex();
-        daoDatabase.initSubscriptionsDatabase();
-
+    public UUID postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+        return  this.daoDatabase.postUserSubscription(userSubscription);
     }
 }

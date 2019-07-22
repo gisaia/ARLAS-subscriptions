@@ -25,11 +25,7 @@ import io.arlas.subscriptions.model.UserSubscription;
 import java.util.List;
 import java.util.UUID;
 
-public interface SubscriptionsDbDAO {
-
-    void initSubscriptionsDatabase() throws ArlasSubscriptionsException;
-
-    UserSubscription getUserSubscription(String id) throws ArlasSubscriptionsException;
+public interface UserSubscriptionDAO {
 
     List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException;
 

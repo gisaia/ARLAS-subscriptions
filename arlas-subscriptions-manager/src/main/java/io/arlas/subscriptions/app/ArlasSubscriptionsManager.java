@@ -21,6 +21,10 @@ package io.arlas.subscriptions.app;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.smoketurner.dropwizard.zipkin.ZipkinBundle;
+import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
+import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
+import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.rest.SubscriptionsManagerController;
 import io.arlas.subscriptions.service.SubscriptionManagerService;
 import io.dropwizard.Application;
@@ -28,26 +32,47 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
-public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionsConfiguration> {
+
+public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionManagerConfiguration> {
 
     public static void main(String... args) throws Exception {
         new ArlasSubscriptionsManager().run(args);
     }
 
     @Override
-    public void initialize(Bootstrap<ArlasSubscriptionsConfiguration> bootstrap) {
+    public void initialize(Bootstrap<ArlasSubscriptionManagerConfiguration> bootstrap) {
         bootstrap.registerMetrics();
         bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
                 bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
+        bootstrap.addBundle(new SwaggerBundle<ArlasSubscriptionManagerConfiguration>() {
+            @Override
+            protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(ArlasSubscriptionManagerConfiguration configuration) {
+                return configuration.swaggerBundleConfiguration;
+            }
+        });
+        bootstrap.addBundle(new ZipkinBundle<ArlasSubscriptionManagerConfiguration>(getName()) {
+            @Override
+            public ZipkinFactory getZipkinFactory(ArlasSubscriptionManagerConfiguration configuration) {
+                return configuration.zipkinConfiguration;
+            }
+        });
     }
     @Override
-    public void run(ArlasSubscriptionsConfiguration configuration, Environment environment) throws Exception {
+    public void run(ArlasSubscriptionManagerConfiguration configuration, Environment environment) throws Exception {
+
+
+        final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.getMongoDBConnection());
+
+        final MongoDBManaged mongoDBManaged = new MongoDBManaged(mongoDBFactoryConnection.getClient());
 
         environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
         environment.getObjectMapper().configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
 
-        SubscriptionManagerService subscriptionManagerService = new SubscriptionManagerService(configuration);
+        environment.lifecycle().manage(mongoDBManaged);
+        SubscriptionManagerService subscriptionManagerService = new SubscriptionManagerService(configuration,mongoDBManaged);
         SubscriptionsManagerController subscriptionsManagerController = new SubscriptionsManagerController(subscriptionManagerService);
         environment.jersey().register(subscriptionsManagerController);
     }
