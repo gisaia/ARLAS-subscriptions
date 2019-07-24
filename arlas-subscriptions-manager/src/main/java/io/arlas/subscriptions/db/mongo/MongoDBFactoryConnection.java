@@ -26,9 +26,15 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import io.arlas.subscriptions.model.mongo.MongoDBConnection;
 import io.arlas.subscriptions.model.mongo.Seed;
+import org.bson.codecs.configuration.CodecProvider;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 public class MongoDBFactoryConnection {
     private MongoDBConnection mongoDBConnection;
@@ -38,8 +44,14 @@ public class MongoDBFactoryConnection {
     }
 
     public MongoClient getClient() {
+// Create a CodecRegistry containing the PojoCodecProvider instance.
+        CodecProvider pojoCodecProvider = PojoCodecProvider.builder().register("io.arlas.subscriptions.model").build();
+        CodecRegistry defaultCodecRegistry = MongoClientSettings.getDefaultCodecRegistry();
+        CodecRegistry pojoCodecRegistry = fromRegistries(defaultCodecRegistry, fromProviders(pojoCodecProvider));
+
         final MongoClient client = MongoClients.create(
                 MongoClientSettings.builder()
+                        .codecRegistry(pojoCodecRegistry)
                         .applyToClusterSettings(builder -> builder.hosts(getServers())).build()
         );
         return client;

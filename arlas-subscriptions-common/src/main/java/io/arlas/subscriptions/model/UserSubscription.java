@@ -19,22 +19,26 @@
 
 package io.arlas.subscriptions.model;
 
-public class UserSubscription {
-    public String id;
-    public String created_by;
-    public Boolean created_by_admin;
-    public Long created_at;
-    public Long modified_at;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Map;
+
+public class UserSubscription {
+    private String id;
+    private Long created_at;
+    private Long modified_at;
+    private Boolean created_by_admin;
+    private Boolean deleted;
+
+    public String created_by;
     public Boolean active;
     public Long expires_at;
-    public Boolean deleted;
     public String title;
     public Subscription subscription = new Subscription();
-    public UserMetadata userMetadatas = new UserMetadata();
+    public UserMetadata userMetadatas;
 
     static public class Subscription {
-        public Object trigger;
+        public Map<String, String> trigger;
         public String callback;
         public Hits hits;
     }
@@ -44,16 +48,27 @@ public class UserSubscription {
         public String projection;
     }
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public String getId() {
+        return id;
+    }
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public Long getCreated_at() {
+        return created_at;
+    }
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public Long getModified_at() {
+        return modified_at;
+    }
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public Boolean getCreated_by_admin() {
+        return created_by_admin;
+    }
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public Boolean getDeleted() { return deleted;}
+
     public void setId(String id) {
         this.id = id;
-    }
-
-    public void setCreated_by(String created_by) {
-        this.created_by = created_by;
-    }
-
-    public void setCreated_by_admin(Boolean created_by_admin) {
-        this.created_by_admin = created_by_admin;
     }
 
     public void setCreated_at(Long created_at) {
@@ -64,22 +79,13 @@ public class UserSubscription {
         this.modified_at = modified_at;
     }
 
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public void setExpires_at(Long expires_at) {
-        this.expires_at = expires_at;
+    public void setCreated_by_admin(Boolean created_by_admin) {
+        this.created_by_admin = created_by_admin;
     }
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
 }
 
 
