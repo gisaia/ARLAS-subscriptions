@@ -22,6 +22,7 @@ package io.arlas.subscriptions.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class UserSubscription {
     private String id;
@@ -35,7 +36,7 @@ public class UserSubscription {
     public Long expires_at;
     public String title;
     public Subscription subscription = new Subscription();
-    public UserMetadata userMetadatas;
+    public Map<String, Objects>  userMetadatas;
 
     static public class Subscription {
         public Map<String, String> trigger;
