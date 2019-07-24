@@ -18,7 +18,7 @@ services:
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
     ports:
-      - 19999:9998
+      - 9998:9998
     command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST:$$MONGO_PORT "]
 
 

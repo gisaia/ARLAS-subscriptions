@@ -12,6 +12,8 @@
         <module>arlas-subscriptions-common</module>
         <module>arlas-subscriptions-matcher</module>
         <module>arlas-subscriptions-manager</module>
+        <module>arlas-subscriptions-manager-tests</module>
+
     </modules>
 
     <properties>
