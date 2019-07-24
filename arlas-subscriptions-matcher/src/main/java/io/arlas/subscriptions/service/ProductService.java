@@ -82,7 +82,7 @@ public class ProductService extends AbstractArlasService {
         notificationOrder.data = hit.getData();
         notificationOrder.collection = event.collection;
         notificationOrder.operation = event.operation;
-        notificationOrder.subscription.id = userSubscription.id;
+        notificationOrder.subscription.id = userSubscription.getId();
         notificationOrder.subscription.callback = userSubscription.subscription.callback;
         notificationOrder.userMetadatas = userSubscription.userMetadatas;
         LOGGER.debug("notificationOrder:" + notificationOrder.toString());
