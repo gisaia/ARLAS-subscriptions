@@ -22,7 +22,7 @@ package io.arlas.subscriptions.rest;
 import com.codahale.metrics.annotation.Timed;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
-import io.arlas.subscriptions.service.SubscriptionManagerService;
+import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.ResponseFormatter;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
@@ -43,12 +43,12 @@ import java.util.List;
                 description = "Manage ARLAS Subscriptions",
                 license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html"),
                 version = "API_VERSION"))
-public class SubscriptionsManagerController {
-    public Logger LOGGER = LoggerFactory.getLogger(SubscriptionsManagerController.class);
+public class UserSubscriptionManagerController {
+    public Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionManagerController.class);
     public static final String UTF8JSON = MediaType.APPLICATION_JSON + ";charset=utf-8";
-    public SubscriptionManagerService subscriptionManagerService;
+    public UserSubscriptionManagerService subscriptionManagerService;
 
-    public SubscriptionsManagerController(SubscriptionManagerService subscriptionManagerService) {
+    public UserSubscriptionManagerController(UserSubscriptionManagerService subscriptionManagerService) {
         this.subscriptionManagerService = subscriptionManagerService;
     }
 

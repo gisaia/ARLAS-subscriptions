@@ -29,11 +29,11 @@ import io.arlas.subscriptions.model.UserSubscription;
 import java.util.List;
 import java.util.UUID;
 
-public class SubscriptionManagerService {
+public class UserSubscriptionManagerService {
 
     private UserSubscriptionDAO daoDatabase;
 
-    public SubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged) throws  ArlasSubscriptionsException {
+    public UserSubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged) throws  ArlasSubscriptionsException {
         this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration,mongoDBManaged);
     }
 

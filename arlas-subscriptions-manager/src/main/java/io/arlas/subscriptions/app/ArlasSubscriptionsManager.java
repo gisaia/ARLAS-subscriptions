@@ -25,8 +25,8 @@ import com.smoketurner.dropwizard.zipkin.ZipkinBundle;
 import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
 import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
-import io.arlas.subscriptions.rest.SubscriptionsManagerController;
-import io.arlas.subscriptions.service.SubscriptionManagerService;
+import io.arlas.subscriptions.rest.UserSubscriptionManagerController;
+import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -72,8 +72,8 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
         environment.getObjectMapper().configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
 
         environment.lifecycle().manage(mongoDBManaged);
-        SubscriptionManagerService subscriptionManagerService = new SubscriptionManagerService(configuration,mongoDBManaged);
-        SubscriptionsManagerController subscriptionsManagerController = new SubscriptionsManagerController(subscriptionManagerService);
+        UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration,mongoDBManaged);
+        UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService);
         environment.jersey().register(subscriptionsManagerController);
     }
 }
