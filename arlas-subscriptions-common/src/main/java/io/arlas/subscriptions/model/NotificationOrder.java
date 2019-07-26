@@ -19,6 +19,18 @@
 
 package io.arlas.subscriptions.model;
 
-public class UserMetadata {
-    public String correlationId;
+import java.util.Map;
+import java.util.Objects;
+
+public class NotificationOrder {
+    public SubscriptionEventMetadata md;
+    public Object data;
+    public String collection;
+    public String operation;
+    public Subscription subscription = new Subscription();
+    public Map<String, Objects> userMetadatas;
+    public class Subscription {
+        public String id;
+        public String callback;
+    }
 }

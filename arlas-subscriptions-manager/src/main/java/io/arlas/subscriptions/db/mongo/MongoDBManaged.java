@@ -17,31 +17,25 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.model;
+package io.arlas.subscriptions.db.mongo;
 
-public class UserSubscription {
-    public String id;
-    public String created_by;
-    public Boolean created_by_admin;
-    public Long created_at;
-    public Long modified_at;
-    public Boolean active;
-    public Long expires_at;
-    public Boolean deleted;
-    public String title;
-    public Subscription subscription = new Subscription();
-    public UserMetadata userMetadatas = new UserMetadata();
+import com.mongodb.client.MongoClient;
+import io.dropwizard.lifecycle.Managed;
 
-    static public class Subscription {
-        public Object trigger;
-        public String callback;
-        public Hits hits;
+public class MongoDBManaged implements Managed {
+
+    public MongoClient mongoClient;
+
+    public MongoDBManaged(final MongoClient mongoClient) {
+        this.mongoClient = mongoClient;
     }
 
-    static public class Hits {
-        public String filter;
-        public String projection;
+    @Override
+    public void start() throws Exception {
+    }
+
+    @Override
+    public void stop() throws Exception {
+        mongoClient.close();
     }
 }
-
-

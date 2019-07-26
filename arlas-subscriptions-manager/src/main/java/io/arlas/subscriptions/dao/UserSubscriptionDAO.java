@@ -17,18 +17,17 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.model;
+package io.arlas.subscriptions.dao;
 
-public class NotificationOrder {
-    public SubscriptionEventMetadata md;
-    public Object data;
-    public String collection;
-    public String operation;
-    public Subscription subscription = new Subscription();
-    public UserMetadata userMetadatas = new UserMetadata();
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
+import io.arlas.subscriptions.model.UserSubscription;
 
-    public class Subscription {
-        public String id;
-        public String callback;
-    }
+import java.util.List;
+import java.util.UUID;
+
+public interface UserSubscriptionDAO {
+
+    List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException;
+
+    UUID postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException;
 }
