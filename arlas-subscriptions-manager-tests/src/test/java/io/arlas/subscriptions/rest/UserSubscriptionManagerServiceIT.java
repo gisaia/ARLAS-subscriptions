@@ -20,18 +20,53 @@
 package io.arlas.subscriptions.rest;
 
 import io.arlas.subscriptions.AbstractTestContext;
+import io.arlas.subscriptions.model.UserSubscription;
 import org.hamcrest.Matcher;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
 public class UserSubscriptionManagerServiceIT extends AbstractTestContext {
+
 
     @Test
     public void testGetAllUserSubscriptions() throws Exception {
         // GET all collections
         getAllUserSubscriptions(emptyArray());
     }
+
+    @Test
+    public void testPostUserSubscription() throws Exception{
+        
+        Map<String, Object> jsonAsMap = new HashMap<>();
+        jsonAsMap.put("created_by","John Doe");
+        jsonAsMap.put("active","true");
+        jsonAsMap.put("expires_at","-1");
+        UserSubscription.Hits hits = new UserSubscription.Hits();
+        hits.filter="filter";
+        hits.projection="projection";
+        UserSubscription.Subscription subscription = new UserSubscription.Subscription();
+        Map<String, String> trigger = new HashMap<>();
+        trigger.put("correlationId","2007");
+        subscription.callback ="callback";
+        subscription.hits =hits;
+        subscription.trigger = trigger;
+        jsonAsMap.put("subscription",subscription);
+        given().contentType("application/json")
+                .when().body(jsonAsMap)
+                .post(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200);
+
+        getAllUserSubscriptions(hasSize(1));
+        getAllUserSubscriptions(hasItem(hasProperty("created_by",hasValue("John Doe"))));
+
+    }
+
+
 
     private void getAllUserSubscriptions(Matcher matcher) throws InterruptedException {
         int cpt = 0;
@@ -47,4 +82,5 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestContext {
             }
         }
     }
+
 }

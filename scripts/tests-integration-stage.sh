@@ -65,7 +65,7 @@ function test_manager() {
             -w /opt/maven \
             -v $PWD:/opt/maven \
             -v $HOME/.m2:/root/.m2 \
-            -e ARLAS_HOST="arlas-subscriptions-manager" \
+            -e ARLAS_SUB_MANAGER_HOST="arlas-subscriptions-manager" \
             -e ARLAS_PORT="9998" \
             -e ARLAS_PREFIX=${ARLAS_SUB_MANAGER_PREFIX} \
             -e ARLAS_APP_PATH=${ARLAS_SUB_MANAGER_APP_PATH} \

@@ -43,11 +43,13 @@ public abstract class AbstractTestContext {
         String arlasSubManagerAppPath = Optional.ofNullable(System.getenv("ARLAS_SUB_MANAGER_APP_PATH")).orElse("/");
         if (arlasSubManagerAppPath.endsWith("/"))
             arlasSubManagerAppPath = arlasSubManagerAppPath.substring(0, arlasSubManagerAppPath.length() - 1);
-        arlasSubManagerPath = arlasSubManagerPath + arlasSubManagerPrefix;
+        arlasSubManagerPath = arlasSubManagerAppPath + arlasSubManagerPrefix;
         if (arlasSubManagerAppPath.endsWith("//"))
             arlasSubManagerPath = arlasSubManagerPath.substring(0, arlasSubManagerPath.length() - 1);
         if (!arlasSubManagerAppPath.endsWith("/"))
             arlasSubManagerPath = arlasSubManagerPath + "/";
+        LOGGER.info(arlasSubManagerPath);
+
 
     }
 }
