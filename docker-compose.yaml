@@ -1,5 +1,3 @@
-# Stop stack:  docker-compose -f docker-compose-matcher.yaml --project-name matcher down -v
-# Start stack: docker-compose -f docker-compose-matcher.yaml --project-name matcher up -d --build --force-recreate
 version: '3'
 
 services:
@@ -66,3 +64,20 @@ services:
       - ARLAS_ELASTIC_NODES=elasticsearch:9300
       - ARLAS_SERVER=arlas-server:9999
     command: ["/opt/app/wait-for-deps.sh $$KAFKA_BROKERS $$ARLAS_ELASTIC_NODES $$ARLAS_SERVER"]
+  mongodb:
+    image: mongo:3.4
+    container_name: "mongodb"
+    ports:
+      - 27017:27017
+  subscriptions-manager:
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE:-Dockerfile-manager}
+    image: subscriptions-manager:latest
+    container_name: "arlas-subscriptions-manager"
+    environment:
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+    ports:
+      - 9998:9998
+    command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST:$$MONGO_PORT "]
