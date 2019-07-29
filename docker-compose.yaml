@@ -1,11 +1,17 @@
 version: '3'
 
 services:
+
+  ########################
+  # third-party backends #
+  ########################
+
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: "zookeeper"
     ports:
       - 2181:2181
+
   kafka:
     image: wurstmeister/kafka:2.11-1.1.1
     container_name: "kafka"
@@ -19,6 +25,7 @@ services:
       LOG4J_LOGGER_KAFKA: INFO
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     container_name: "elasticsearch"
@@ -39,6 +46,17 @@ services:
     ports:
       - 9200:9200
       - 9300:9300
+
+  mongodb:
+    image: mongo:3.4
+    container_name: "mongodb"
+    ports:
+    - 27017:27017
+
+  #########
+  # ARLAS #
+  #########
+
   arlas-server:
     image: gisaia/arlas-server:10.6.1
     container_name: "arlas-server"
@@ -50,6 +68,7 @@ services:
       ARLAS_ELASTIC_CLUSTER: elasticsearch
       ARLAS_ELASTIC_NODES: elasticsearch:9300
     command: ["/opt/app/wait-for-elasticsearch.sh"]
+
   subscriptions-matcher:
     build:
       context: .
@@ -64,11 +83,7 @@ services:
       - ARLAS_ELASTIC_NODES=elasticsearch:9300
       - ARLAS_SERVER=arlas-server:9999
     command: ["/opt/app/wait-for-deps.sh $$KAFKA_BROKERS $$ARLAS_ELASTIC_NODES $$ARLAS_SERVER"]
-  mongodb:
-    image: mongo:3.4
-    container_name: "mongodb"
-    ports:
-      - 27017:27017
+
   subscriptions-manager:
     build:
       context: .
