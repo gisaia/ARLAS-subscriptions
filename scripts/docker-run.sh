@@ -27,9 +27,9 @@ function clean_exit {
 
 function run_manager {
     echo "===> start arlas-subscriptions-manager stack"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} mongodb subscriptions-manager
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} mongodb elasticsearch subscriptions-manager
     echo "===> wait for arlas-subscriptions-manage up and running"
-    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 30 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 subscriptions-manager 9998; do if [ $i -lt 30 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 }
 
 function run_dummy {

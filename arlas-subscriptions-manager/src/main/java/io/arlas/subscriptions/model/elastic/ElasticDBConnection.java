@@ -17,26 +17,21 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.db.mongo;
+package io.arlas.subscriptions.model.elastic;
 
-import com.mongodb.client.MongoClient;
-import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
-import io.dropwizard.lifecycle.Managed;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class MongoDBManaged implements Managed {
+public class ElasticDBConnection {
 
-    public MongoClient mongoClient;
+    @JsonProperty("nodes")
+    public String elasticnodes;
 
-    public MongoDBManaged(final MongoClient mongoClient) {
-        this.mongoClient = mongoClient;
-    }
+    @JsonProperty("sniffing")
+    public Boolean elasticsniffing;
 
-    @Override
-    public void start() throws ArlasSubscriptionsException {
-    }
+    @JsonProperty("cluster")
+    public String elasticcluster;
 
-    @Override
-    public void stop() throws ArlasSubscriptionsException {
-        mongoClient.close();
-    }
+    @JsonProperty("index")
+    public String elasticsubindex;
 }

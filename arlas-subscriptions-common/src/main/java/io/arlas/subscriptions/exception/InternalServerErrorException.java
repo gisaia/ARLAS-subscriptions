@@ -17,26 +17,17 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.db.mongo;
+package io.arlas.subscriptions.exception;
 
-import com.mongodb.client.MongoClient;
-import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
-import io.dropwizard.lifecycle.Managed;
+public class InternalServerErrorException extends ArlasSubscriptionsException {
 
-public class MongoDBManaged implements Managed {
+    private static final long serialVersionUID = 1L;
 
-    public MongoClient mongoClient;
-
-    public MongoDBManaged(final MongoClient mongoClient) {
-        this.mongoClient = mongoClient;
+    public InternalServerErrorException(String message) {
+        super(message);
     }
 
-    @Override
-    public void start() throws ArlasSubscriptionsException {
-    }
-
-    @Override
-    public void stop() throws ArlasSubscriptionsException {
-        mongoClient.close();
+    public InternalServerErrorException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

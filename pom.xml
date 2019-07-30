@@ -23,6 +23,7 @@
         <surefire.version>2.20.1</surefire.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
         <cyclops.version>10.3.2</cyclops.version>
+        <log4j.version>2.9.1</log4j.version>
 
         <!-- BACKENDS -->
         <elastic.version>6.8.1</elastic.version>
@@ -53,6 +54,15 @@
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
             <version>${dropwizard.version}</version>
+        </dependency>
+
+        <!-- ____________________________________________________ -->
+        <!-- LOGS -->
+        <!-- ____________________________________________________ -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
     </dependencies>
 
