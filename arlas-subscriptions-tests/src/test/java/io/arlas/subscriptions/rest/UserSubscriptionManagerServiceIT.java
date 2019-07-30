@@ -44,8 +44,9 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestContext {
         
         Map<String, Object> jsonAsMap = new HashMap<>();
         jsonAsMap.put("created_by","John Doe");
-        jsonAsMap.put("active","true");
-        jsonAsMap.put("expires_at","-1");
+        jsonAsMap.put("active",true);
+        jsonAsMap.put("expires_at",-1);
+        jsonAsMap.put("title","title");
         UserSubscription.Hits hits = new UserSubscription.Hits();
         hits.filter="filter";
         hits.projection="projection";
@@ -55,15 +56,27 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestContext {
         subscription.callback ="callback";
         subscription.hits =hits;
         subscription.trigger = trigger;
+        Map<String, String> userMetadatas = new HashMap<>();
+        userMetadatas.put("correlationId","2007");
+        jsonAsMap.put("userMetadatas",userMetadatas);
         jsonAsMap.put("subscription",subscription);
         given().contentType("application/json")
                 .when().body(jsonAsMap)
                 .post(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200);
-
         getAllUserSubscriptions(hasSize(1));
         getAllUserSubscriptions(hasItem(hasProperty("created_by",hasValue("John Doe"))));
 
+    }
+
+    @Test
+    public void testPostInvalidUserSubscription() throws Exception{
+        Map<String, Object> jsonAsMap = new HashMap<>();
+        jsonAsMap.put("created_by","John Doe");
+        given().contentType("application/json")
+                .when().body(jsonAsMap)
+                .post(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(400);
     }
 
 

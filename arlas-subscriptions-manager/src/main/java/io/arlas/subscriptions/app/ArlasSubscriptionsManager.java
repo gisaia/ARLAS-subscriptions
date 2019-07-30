@@ -25,15 +25,20 @@ import com.smoketurner.dropwizard.zipkin.ZipkinBundle;
 import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
 import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
+import io.arlas.subscriptions.exception.ArlasSubscriptionsExceptionMapper;
+import io.arlas.subscriptions.exception.ConstraintViolationExceptionMapper;
+import io.arlas.subscriptions.exception.IllegalArgumentExceptionMapper;
 import io.arlas.subscriptions.rest.UserSubscriptionManagerController;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
+import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 
 public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionManagerConfiguration> {
@@ -70,7 +75,11 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
 
         environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
         environment.getObjectMapper().configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
-
+        environment.jersey().register(MultiPartFeature.class);
+        environment.jersey().register(new ArlasSubscriptionsExceptionMapper());
+        environment.jersey().register(new IllegalArgumentExceptionMapper());
+        environment.jersey().register(new JsonProcessingExceptionMapper());
+        environment.jersey().register(new ConstraintViolationExceptionMapper());
         environment.lifecycle().manage(mongoDBManaged);
         UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration,mongoDBManaged);
         UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService);
