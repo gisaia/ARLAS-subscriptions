@@ -20,8 +20,10 @@
 package io.arlas.subscriptions.service;
 
 import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
+import io.arlas.subscriptions.dao.ElasticUserSubscriptionDAOImpl;
 import io.arlas.subscriptions.dao.MongoUserSubscriptionDAOImpl;
 import io.arlas.subscriptions.dao.UserSubscriptionDAO;
+import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
@@ -32,9 +34,13 @@ import java.util.UUID;
 public class UserSubscriptionManagerService {
 
     private UserSubscriptionDAO daoDatabase;
+    private UserSubscriptionDAO daoIndexDatabase;
 
-    public UserSubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged) throws  ArlasSubscriptionsException {
+
+    public UserSubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged, ElasticDBManaged elasticDBManaged) throws  ArlasSubscriptionsException {
         this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration,mongoDBManaged);
+        this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration,elasticDBManaged);
+
     }
 
     public List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException {
@@ -42,6 +48,7 @@ public class UserSubscriptionManagerService {
     }
 
     public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+        this.daoIndexDatabase.postUserSubscription(userSubscription);
         return  this.daoDatabase.postUserSubscription(userSubscription);
     }
 }

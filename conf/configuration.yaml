@@ -80,3 +80,14 @@ mongo:
     - host: ${MONGO_HOST:-mongodb}
       port: ${MONGO_PORT:-27017}
   database: ${MONGO_DATABASE:-subscription}
+
+
+########################################################
+############ DATASOURCE                  ###############
+########################################################
+# Configuration of the datasource
+elastic:
+  nodes: ${ARLAS_SUB_ELASTIC_NODES:-localhost:9300}
+  sniffing: ${ARLAS_SUB_ELASTIC_SNIFFING:-false}
+  cluster: ${ARLAS_SUB_ELASTIC_CLUSTER:-elasticsearch}
+  index:  ${ARLAS_SUB_ELASTIC_INDEX:-.subscription}
