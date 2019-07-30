@@ -97,7 +97,7 @@ public class UserSubscriptionManagerController {
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
-    public Response put(
+    public Response post(
             @ApiParam(name = "userSubscription",
                     value = "userSubscription",
                     required = true)
