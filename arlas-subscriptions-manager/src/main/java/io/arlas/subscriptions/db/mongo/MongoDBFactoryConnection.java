@@ -44,7 +44,7 @@ public class MongoDBFactoryConnection {
     }
 
     public MongoClient getClient() {
-// Create a CodecRegistry containing the PojoCodecProvider instance.
+        // Create a CodecRegistry containing the PojoCodecProvider instance.
         CodecProvider pojoCodecProvider = PojoCodecProvider.builder().register("io.arlas.subscriptions.model").build();
         CodecRegistry defaultCodecRegistry = MongoClientSettings.getDefaultCodecRegistry();
         CodecRegistry pojoCodecRegistry = fromRegistries(defaultCodecRegistry, fromProviders(pojoCodecProvider));

@@ -22,6 +22,7 @@ package io.arlas.subscriptions.app;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
+import io.arlas.subscriptions.model.elastic.ElasticDBConnection;
 import io.arlas.subscriptions.model.mongo.MongoDBConnection;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
@@ -30,9 +31,12 @@ public class ArlasSubscriptionManagerConfiguration extends ArlasSubscriptionsCon
     @JsonProperty("mongo")
     public MongoDBConnection mongoDBConnection;
 
-    public MongoDBConnection getMongoDBConnection() {
-        return mongoDBConnection;
-    }
+    public MongoDBConnection getMongoDBConnection() { return mongoDBConnection;}
+
+    @JsonProperty("elastic")
+    public ElasticDBConnection elasticDBConnection;
+
+    public ElasticDBConnection getElasticDBConnection() { return elasticDBConnection;}
 
     @JsonProperty("zipkin")
     public ZipkinFactory zipkinConfiguration;

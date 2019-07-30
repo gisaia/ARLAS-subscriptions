@@ -1,0 +1,64 @@
+{
+  "_source": {
+    "enabled": true
+  },
+  "dynamic": false,
+  "properties": {
+    "id": {
+      "type": "text"
+    },
+    "created_at": {
+      "type": "date"
+    },
+    "modified_at": {
+      "type": "date"
+    },
+    "created_by_admin": {
+      "type": "boolean"
+    },
+    "deleted": {
+      "type": "boolean"
+    },
+    "created_by": {
+      "type": "text"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "expires_at": {
+      "type": "date"
+    },
+    "title": {
+      "type": "boolean"
+    },
+    "subscription": {
+      "properties": {
+        "trigger": {
+          "type": "object"
+        },
+        "callback": {
+          "type": "text"
+        },
+        "hits": {
+          "properties": {
+            "filter": {
+              "type": "text"
+            },
+            "projection": {
+              "type": "text"
+            }
+          }
+        }
+      }
+    },
+    "user_metadatas": {
+      "type": "object"
+    },
+    "geometry": {
+      "type": "geo_shape"
+    },
+    "centroid": {
+      "type": "geo_point"
+    }
+  }
+}

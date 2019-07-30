@@ -17,18 +17,20 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.db.mongo;
+package io.arlas.subscriptions.db.elastic;
 
 import com.mongodb.client.MongoClient;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.dropwizard.lifecycle.Managed;
+import org.elasticsearch.client.Client;
 
-public class MongoDBManaged implements Managed {
+public class ElasticDBManaged implements Managed {
 
-    public MongoClient mongoClient;
 
-    public MongoDBManaged(final MongoClient mongoClient) {
-        this.mongoClient = mongoClient;
+    public Client esClient;
+
+    public ElasticDBManaged(final Client esClient) {
+        this.esClient = esClient;
     }
 
     @Override
@@ -37,6 +39,6 @@ public class MongoDBManaged implements Managed {
 
     @Override
     public void stop() throws ArlasSubscriptionsException {
-        mongoClient.close();
+        esClient.close();
     }
 }

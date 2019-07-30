@@ -32,7 +32,7 @@ services:
     environment:
       - cluster.name=elasticsearch
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       nproc: 65535
       memlock:
@@ -87,10 +87,11 @@ services:
       context: .
       dockerfile: ${DOCKERFILE:-Dockerfile-manager}
     image: subscriptions-manager:latest
-    container_name: "arlas-subscriptions-manager"
+    container_name: "subscriptions-manager"
     environment:
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
+      - ARLAS_SUB_ELASTIC_NODES=elasticsearch:9300
     ports:
       - 9998:9998
-    command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST:$$MONGO_PORT "]
+    command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST:$$MONGO_PORT $$ARLAS_SUB_ELASTIC_NODES "]
