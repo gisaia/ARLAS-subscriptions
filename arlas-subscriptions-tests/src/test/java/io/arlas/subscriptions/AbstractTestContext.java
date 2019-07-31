@@ -49,7 +49,5 @@ public abstract class AbstractTestContext {
         if (!arlasSubManagerAppPath.endsWith("/"))
             arlasSubManagerPath = arlasSubManagerPath + "/";
         LOGGER.info(arlasSubManagerPath);
-
-
     }
 }
