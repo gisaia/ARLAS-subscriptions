@@ -17,17 +17,20 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.dao;
+package io.arlas.subscriptions.exception;
 
-import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
-import io.arlas.subscriptions.model.UserSubscription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.UUID;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 
-public interface UserSubscriptionDAO {
+public class IllegalArgumentExceptionMapper implements ExceptionMapper<IllegalArgumentException> {
+    Logger logger = LoggerFactory.getLogger(ArlasSubscriptionsExceptionMapper.class);
 
-    List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException;
-
-    UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException;
+    @Override
+    public Response toResponse(IllegalArgumentException e) {
+        logger.error("Error occurred", e);
+        return ArlasSubscriptionsException.getResponse(e, Response.Status.BAD_REQUEST, e.getMessage());
+    }
 }

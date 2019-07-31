@@ -41,7 +41,7 @@ public class UserSubscriptionManagerService {
         return  this.daoDatabase.getAllUserSubscriptions();
     }
 
-    public UUID postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
         return  this.daoDatabase.postUserSubscription(userSubscription);
     }
 }

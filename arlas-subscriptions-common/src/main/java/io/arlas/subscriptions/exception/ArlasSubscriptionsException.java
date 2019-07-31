@@ -21,6 +21,7 @@ package io.arlas.subscriptions.exception;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import io.arlas.subscriptions.model.response.Error;
 
 public class ArlasSubscriptionsException extends Exception {
 
@@ -41,5 +42,13 @@ public class ArlasSubscriptionsException extends Exception {
         super(message, cause);
     }
 
+    public Response getResponse() {
+        return Response.status(status).entity(new Error(status.getStatusCode(), this.getClass().getName(), this.getMessage()))
+                .type(MediaType.APPLICATION_JSON).build();
+    }
 
+    public static Response getResponse(Exception e, Response.Status status, String message) {
+        return Response.status(status).entity(new Error(status.getStatusCode(), e.getClass().getName(), message))
+                .type(MediaType.APPLICATION_JSON).build();
+    }
 }

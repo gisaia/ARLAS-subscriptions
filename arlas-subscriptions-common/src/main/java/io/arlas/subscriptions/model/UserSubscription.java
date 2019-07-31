@@ -20,7 +20,9 @@
 package io.arlas.subscriptions.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Objects;
 
@@ -31,21 +33,45 @@ public class UserSubscription {
     private Boolean created_by_admin;
     private Boolean deleted;
 
+    @NotEmpty
+    @JsonProperty(required = true)
     public String created_by;
+    @NotNull
+    @JsonProperty(required = true)
     public Boolean active;
+    @NotNull
+    @JsonProperty(required = true)
     public Long expires_at;
+    @NotEmpty
+    @JsonProperty(required = true)
     public String title;
+    @NotNull
+    @JsonProperty(required = true)
     public Subscription subscription = new Subscription();
-    public Map<String, Objects>  userMetadatas;
+    @NotNull
+    @JsonProperty(required = true)
+    // TODO Manage Map<String, Object>
+    public Map<String, String>  userMetadatas;
 
     static public class Subscription {
+        @NotNull
+        @JsonProperty(required = true)
+        // TODO Manage Map<String, Object>
         public Map<String, String> trigger;
+        @NotEmpty
+        @JsonProperty(required = true)
         public String callback;
+        @NotNull
+        @JsonProperty(required = true)
         public Hits hits;
     }
 
     static public class Hits {
+        @NotEmpty
+        @JsonProperty(required = true)
         public String filter;
+        @NotEmpty
+        @JsonProperty(required = true)
         public String projection;
     }
 

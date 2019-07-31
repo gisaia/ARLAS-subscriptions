@@ -60,7 +60,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public UUID postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
 
         UUID uuid = generateUUID();
         userSubscription.setId(uuid.toString());
@@ -71,7 +71,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
         this.mongoCollection.insertOne(userSubscription);
 
-        return uuid;
+        return userSubscription;
     }
 
     private MongoCollection<UserSubscription> initSubscriptionsCollection(MongoDatabase mongoDatabase) throws ArlasSubscriptionsException {
