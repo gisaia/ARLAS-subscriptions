@@ -16,14 +16,43 @@
         <org.hamcrest.version>1.3</org.hamcrest.version>
         <io.rest-assured.version>3.3.0</io.rest-assured.version>
         <junit.version>4.12</junit.version>
+        <geojson.jackson.version>1.8.1</geojson.jackson.version>
     </properties>
 
     <dependencies>
+        <!-- ____________________________________________________ -->
+        <!-- ARLAS -->
+        <!-- ____________________________________________________ -->
         <dependency>
             <groupId>io.arlas</groupId>
             <artifactId>arlas-subscriptions-manager</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${pom.parent.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.arlas</groupId>
+            <artifactId>arlas-server-client</artifactId>
+            <version>${arlas.version}</version>
+        </dependency>
+
+        <!-- ____________________________________________________ -->
+        <!-- GEO -->
+        <!-- ____________________________________________________ -->
+        <dependency>
+            <groupId>de.grundid.opendatalab</groupId>
+            <artifactId>geojson-jackson</artifactId>
+            <version>${geojson.jackson.version}</version>
+        </dependency>
+
+        <!-- ____________________________________________________ -->
+        <!-- Backends -->
+        <!-- ____________________________________________________ -->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>transport</artifactId>
+            <version>${elastic.version}</version>
+        </dependency>
+
         <!-- ____________________________________________________ -->
         <!-- Tests -->
         <!-- ____________________________________________________ -->

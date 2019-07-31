@@ -32,6 +32,22 @@ function run_manager {
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 30 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 }
 
+function run_dummy {
+    echo "===> start dummy stack"
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-server
+    echo "===> wait for arlas-server up and running"
+    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-server 9999; do if [ $i -lt 30 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+}
+
+function run_all {
+    echo "===> start all stack"
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS}
+    echo "===> wait for arlas-server up and running"
+    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-server 9999; do if [ $i -lt 30 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+    echo "===> wait for arlas-subscriptions-manage up and running"
+    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 30 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+}
+
 trap clean_exit EXIT
 
 export ARLAS_SUBSCRIPTIONS_VERSION=`xmlstarlet sel -t -v /_:project/_:version pom.xml`
@@ -50,4 +66,5 @@ docker run --rm \
 	mvn clean install
 echo "arlas-subscriptions:${ARLAS_SUBSCRIPTIONS_VERSION}"
 if [ "$STAGE" == "MANAGER" ]; then run_manager;fi
-
+if [ "$STAGE" == "DUMMY" ]; then run_dummy;fi
+if [ "$STAGE" == "ALL" ]; then run_all;fi
