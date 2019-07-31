@@ -28,8 +28,7 @@ function clean_exit {
 function run_manager {
     echo "===> start arlas-subscriptions-manager stack"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} mongodb elasticsearch subscriptions-manager
-    echo "===> wait for arlas-subscriptions-manage up and running"
-    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+    wait_manager
 }
 
 function run_dummy {
@@ -44,8 +43,20 @@ function run_all {
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS}
     echo "===> wait for arlas-server up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-server 9999; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
-    echo "===> wait for arlas-subscriptions-manage up and running"
-    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+    wait_manager
+}
+
+function wait_manager {
+    echo "===> wait for arlas-subscriptions-manager to be up and running"
+
+    if ! docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else exit 1; fi; i=$(($i + 1)); done'; then
+
+        >&2 echo "arlas-subscriptions-manager unreachable."
+        >&2 echo "Logs:"
+        >&2 docker logs subscriptions-manager
+        exit 1
+
+    fi
 }
 
 trap clean_exit EXIT
