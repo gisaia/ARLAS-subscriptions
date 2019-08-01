@@ -29,7 +29,7 @@
       "type": "date"
     },
     "title": {
-      "type": "boolean"
+      "type": "text"
     },
     "subscription": {
       "properties": {

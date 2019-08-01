@@ -22,8 +22,11 @@
         <skipTests>true</skipTests>
         <surefire.version>2.20.1</surefire.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
+
+        <!-- LIBRARIES -->
         <cyclops.version>10.3.2</cyclops.version>
         <log4j.version>2.9.1</log4j.version>
+        <geojson.jackson.version>1.8.1</geojson.jackson.version>
 
         <!-- BACKENDS -->
         <elastic.version>6.8.1</elastic.version>

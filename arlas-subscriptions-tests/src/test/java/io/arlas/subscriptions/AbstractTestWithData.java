@@ -32,6 +32,7 @@ public abstract class AbstractTestWithData extends AbstractTestContext {
     public static void beforeClass() {
         try {
             DataSetTool.loadDataSet();
+            DataSetTool.loadSubscriptions();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -48,6 +49,7 @@ public abstract class AbstractTestWithData extends AbstractTestContext {
     @AfterClass
     public static void afterClass() {
         DataSetTool.clearDataSet();
+        DataSetTool.clearSubscriptions();
         DataSetTool.close();
     }
 }
