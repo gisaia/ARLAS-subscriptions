@@ -23,6 +23,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.smoketurner.dropwizard.zipkin.ZipkinBundle;
 import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
+import io.arlas.subscriptions.db.elastic.ElasticDBFactoryConnection;
+import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsExceptionMapper;
@@ -68,10 +70,11 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
     @Override
     public void run(ArlasSubscriptionManagerConfiguration configuration, Environment environment) throws Exception {
 
-
         final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.getMongoDBConnection());
+        final ElasticDBFactoryConnection elasticDBFactoryConnection = new ElasticDBFactoryConnection(configuration.getElasticDBConnection());
 
         final MongoDBManaged mongoDBManaged = new MongoDBManaged(mongoDBFactoryConnection.getClient());
+        final ElasticDBManaged elasticDBManaged = new ElasticDBManaged(elasticDBFactoryConnection.getClient());
 
         environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
         environment.getObjectMapper().configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
@@ -81,7 +84,7 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
         environment.jersey().register(new JsonProcessingExceptionMapper());
         environment.jersey().register(new ConstraintViolationExceptionMapper());
         environment.lifecycle().manage(mongoDBManaged);
-        UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration,mongoDBManaged);
+        UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration,mongoDBManaged,elasticDBManaged);
         UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService);
         environment.jersey().register(subscriptionsManagerController);
     }

@@ -58,17 +58,20 @@ function start_stack() {
 }
 
 function test_manager() {
-        export ARLAS_SUB_MANAGER_PREFIX="/arlastest"
-        export ARLAS_SUB_MANAGER_APP_PATH="/pathtest"
         start_stack
         docker run --rm \
             -w /opt/maven \
             -v $PWD:/opt/maven \
             -v $HOME/.m2:/root/.m2 \
-            -e ARLAS_SUB_MANAGER_HOST="arlas-subscriptions-manager" \
-            -e ARLAS_PORT="9998" \
-            -e ARLAS_PREFIX=${ARLAS_SUB_MANAGER_PREFIX} \
-            -e ARLAS_APP_PATH=${ARLAS_SUB_MANAGER_APP_PATH} \
+            -e ARLAS_SUB_MANAGER_HOST="subscriptions-manager" \
+            -e ARLAS_SUB_MANAGER_PORT="9998" \
+            -e MONGO_HOST="mongodb" \
+            -e MONGO_PORT="27017" \
+            -e MONGO_DATABASE="subscription" \
+            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9300" \
+            -e ARLAS_SUB_ELASTIC_SNIFFING="false" \
+            -e ARLAS_SUB_ELASTIC_INDEX="subscription" \
+            -e ARLAS_SUB_ELASTIC_CLUSTER="elasticsearch" \
             --net arlas-subscriptions_default \
             maven:3.5.0-jdk-8 \
             mvn -Dit.test=UserSubscriptionManagerServiceIT verify -DskipTests=false  -DfailIfNoTests=false
@@ -81,6 +84,7 @@ function test_dummy() {
             -w /opt/maven \
             -v $PWD:/opt/maven \
             -v $HOME/.m2:/root/.m2 \
+            -e ARLAS_SUB_MANAGER_HOST="subscriptions-manager" \
             -e ARLAS_HOST="arlas-server" \
             -e ARLAS_PORT="9999" \
             -e ARLAS_ELASTIC_HOST="elasticsearch" \
