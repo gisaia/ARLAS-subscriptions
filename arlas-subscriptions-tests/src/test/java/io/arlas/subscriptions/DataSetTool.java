@@ -27,7 +27,8 @@ import io.arlas.client.ApiClient;
 import io.arlas.client.ApiException;
 import io.arlas.client.Pair;
 import io.arlas.client.model.CollectionReferenceParameters;
-import org.elasticsearch.action.index.IndexResponse;
+import io.arlas.subscriptions.model.IndexedUserSubscription;
+import io.arlas.subscriptions.model.UserSubscription;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
@@ -47,7 +48,8 @@ import java.util.*;
 public class DataSetTool {
     static Logger LOGGER = LoggerFactory.getLogger(DataSetTool.class);
 
-    public static String COLLECTION_NAME = "geodata";
+    public static String COLLECTION_GEODATA_NAME = "geodata";
+    public static String COLLECTION_SUBSCRIPTIONS_NAME = "subscriptions";
 
     public final static String DATASET_INDEX_NAME = "dataset";
     public final static String DATASET_TYPE_NAME = "mytype";
@@ -70,6 +72,13 @@ public class DataSetTool {
             "Australia",
             "Austria"
     };
+
+    public final static String SUBSCRIPTIONS_INDEX_NAME = "subs";
+    public final static String SUBSCRIPTIONS_TYPE_NAME = "sub_type";
+    public final static String SUBSCRIPTIONS_ID_PATH = "id";
+    public final static String SUBSCRIPTIONS_GEOMETRY_PATH = "geometry";
+    public final static String SUBSCRIPTIONS_CENTROID_PATH = "centroid";
+    public final static String SUBSCRIPTIONS_TIMESTAMP_PATH = "created_at";
 
     public static ApiClient apiClient;
     public static AdminClient adminClient;
@@ -99,7 +108,9 @@ public class DataSetTool {
             client = new PreBuiltTransportClient(settings)
                     .addTransportAddress(new TransportAddress(InetAddress.getByName(elasticHost), elasticPort));
             adminClient = client.admin();
-            LOGGER.info("Load data in " + elasticHost + ":" + elasticPort);
+
+            LOGGER.info("Elasticsearch : " + elasticHost + ":" + elasticPort);
+            LOGGER.info("ARLAS-server : " + arlasHost + ":" + arlasPort);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -107,11 +118,12 @@ public class DataSetTool {
 
     public static void main(String[] args) throws IOException {
         DataSetTool.loadDataSet();
+        DataSetTool.loadSubscriptions();
     }
 
     public static void loadDataSet() throws IOException {
         //Create a single index with all data
-        createIndex(DATASET_INDEX_NAME, "dataset.mapping.json");
+        createIndex(DATASET_INDEX_NAME, DATASET_TYPE_NAME, "dataset.mapping.json");
         LOGGER.info("Index " + DATASET_INDEX_NAME + " created in Elasticsearch");
         fillIndex(DATASET_INDEX_NAME, -170, 170, -80, 80);
         LOGGER.info("Index " + DATASET_INDEX_NAME + " populated in Elasticsearch");
@@ -127,13 +139,13 @@ public class DataSetTool {
         collection.setTimestampPath(DataSetTool.DATASET_TIMESTAMP_PATH);
         Call collectionPut = null;
         try {
-            collectionPut = apiClient.buildCall("/collections/"+COLLECTION_NAME, "PUT", new ArrayList<Pair>(),
+            collectionPut = apiClient.buildCall("/collections/"+ COLLECTION_GEODATA_NAME, "PUT", new ArrayList<Pair>(),
                     new ArrayList<>(), collection, new HashMap<>(), new HashMap<>(), new String[0], null);
             Response collectionPutResponse = collectionPut.execute();
             if(collectionPutResponse.code() == 200) {
-                LOGGER.debug("Collection " + COLLECTION_NAME + " created in ARLAS-server : " + collectionPutResponse.message());
+                LOGGER.debug("Collection " + COLLECTION_GEODATA_NAME + " created in ARLAS-server : " + collectionPutResponse.message());
             } else {
-                LOGGER.debug("Collection " + COLLECTION_NAME + " NOT created to ARLAS-server [" + collectionPutResponse.code() + "] : " +
+                LOGGER.debug("Collection " + COLLECTION_GEODATA_NAME + " NOT created to ARLAS-server [" + collectionPutResponse.code() + "] : " +
                         collectionPutResponse.message());
             }
         } catch (ApiException e) {
@@ -141,13 +153,81 @@ public class DataSetTool {
         }
     }
 
-    private static void createIndex(String indexName, String mappingFileName) throws IOException {
+    public static void loadSubscriptions() throws IOException {
+        //Create subscription index with one existing subscription
+        createIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "arlas.sub.mapping.json");
+        LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " created in Elasticsearch");
+
+        IndexedUserSubscription subscription = new IndexedUserSubscription();
+        subscription.active = true;
+        subscription.centroid =  "0,0";
+        List<LngLatAlt> coords = new ArrayList<>();
+        coords.add(new LngLatAlt(-50, 50));
+        coords.add(new LngLatAlt(50, 50));
+        coords.add(new LngLatAlt(50, -50));
+        coords.add(new LngLatAlt(-50, -50));
+        coords.add(new LngLatAlt(-50, 50));
+        subscription.geometry = new Polygon(coords);
+        subscription.created_by = "gisaia";
+        subscription.expires_at = -1l;
+        subscription.title = "Test Subscription";
+        subscription.setCreated_at(1564578988l);
+        subscription.setCreated_by_admin(false);
+        subscription.setDeleted(false);
+        subscription.setId("1234");
+        subscription.setModified_at(-1l);
+        subscription.subscription = new UserSubscription.Subscription();
+        subscription.subscription.callback = "http://myservice.com/mycallback";
+        subscription.subscription.trigger = new HashMap<>();
+        //TODO put trigger fields as regular Objects instead of String
+        //TODO change mapping type to geo_shape when use geoJSON instead of WKT for trigger.geometry
+        subscription.subscription.trigger.put("geometry", "POLYGON((-50 50,50 50,50 -50,-50 -50,-50 50))" /*new Polygon(coords)*/);
+        subscription.subscription.trigger.put("job", Arrays.asList(jobs).subList(0,5).toString());
+        subscription.subscription.trigger.put("event", Arrays.asList("UPDATE").toString());
+        subscription.subscription.hits = new UserSubscription.Hits();
+        subscription.subscription.hits.filter = "f=params.city:eq:Toulouse";
+        subscription.subscription.hits.projection = "exclude=params.country";
+        subscription.userMetadatas = new HashMap<>();
+        subscription.userMetadatas.put("correlationId","my-correlation-id");
+
+        ObjectMapper mapper = new ObjectMapper();
+        client.prepareIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "SUB_" + subscription.getId())
+                .setSource(mapper.writer().writeValueAsString(subscription), XContentType.JSON)
+                .get();
+        LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " populated in Elasticsearch");
+
+
+        //Create collection in ARLAS-server
+        CollectionReferenceParameters collection = new CollectionReferenceParameters();
+        collection.setIndexName(DataSetTool.SUBSCRIPTIONS_INDEX_NAME);
+        collection.setTypeName(DataSetTool.SUBSCRIPTIONS_TYPE_NAME);
+        collection.setIdPath(DataSetTool.SUBSCRIPTIONS_ID_PATH);
+        collection.setGeometryPath(DataSetTool.SUBSCRIPTIONS_GEOMETRY_PATH);
+        collection.setCentroidPath(DataSetTool.SUBSCRIPTIONS_CENTROID_PATH);
+        collection.setTimestampPath(DataSetTool.SUBSCRIPTIONS_TIMESTAMP_PATH);
+        Call collectionPut = null;
+        try {
+            collectionPut = apiClient.buildCall("/collections/"+ COLLECTION_SUBSCRIPTIONS_NAME, "PUT", new ArrayList<>(),
+                    new ArrayList<>(), collection, new HashMap<>(), new HashMap<>(), new String[0], null);
+            Response collectionPutResponse = collectionPut.execute();
+            if(collectionPutResponse.code() == 200) {
+                LOGGER.debug("Collection " + COLLECTION_SUBSCRIPTIONS_NAME + " created in ARLAS-server : " + collectionPutResponse.message());
+            } else {
+                LOGGER.debug("Collection " + COLLECTION_SUBSCRIPTIONS_NAME + " NOT created to ARLAS-server [" + collectionPutResponse.code() + "] : " +
+                        collectionPutResponse.message());
+            }
+        } catch (ApiException e) {
+            LOGGER.error("Unable to create collection in ARLAS-server",e);
+        }
+    }
+
+    private static void createIndex(String indexName, String typeName, String mappingFileName) throws IOException {
         String mapping = getString(DataSetTool.class.getClassLoader().getResourceAsStream(mappingFileName));
         try {
             adminClient.indices().prepareDelete(indexName).get();
         } catch (Exception e) {
         }
-        adminClient.indices().prepareCreate(indexName).addMapping(DATASET_TYPE_NAME, mapping, XContentType.JSON).get();
+        adminClient.indices().prepareCreate(indexName).addMapping(typeName, mapping, XContentType.JSON).get();
     }
 
     private static void fillIndex(String indexName, int lonMin, int lonMax, int latMin, int latMax) throws JsonProcessingException {
@@ -177,7 +257,7 @@ public class DataSetTool {
                 coords.add(new LngLatAlt(i - 1, j + 1));
                 data.geo_params.geometry = new Polygon(coords);
 
-                IndexResponse response = client.prepareIndex(indexName, DATASET_TYPE_NAME, "ES_ID_TEST" + data.id)
+                client.prepareIndex(indexName, DATASET_TYPE_NAME, "ES_ID_TEST" + data.id)
                         .setSource(mapper.writer().writeValueAsString(data), XContentType.JSON)
                         .get();
             }
@@ -186,6 +266,10 @@ public class DataSetTool {
 
     public static void clearDataSet() {
         adminClient.indices().prepareDelete(DATASET_INDEX_NAME).get();
+    }
+
+    public static void clearSubscriptions() {
+        adminClient.indices().prepareDelete(SUBSCRIPTIONS_INDEX_NAME).get();
     }
 
     public static void close() {

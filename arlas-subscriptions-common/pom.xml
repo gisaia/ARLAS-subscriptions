@@ -23,7 +23,12 @@
             <artifactId>java-uuid-generator</artifactId>
             <version>${jug.version}</version>
         </dependency>
-
+        <!-- GEO JSON -->
+        <dependency>
+            <groupId>de.grundid.opendatalab</groupId>
+            <artifactId>geojson-jackson</artifactId>
+            <version>${geojson.jackson.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
