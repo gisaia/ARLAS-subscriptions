@@ -28,8 +28,7 @@ public class NotificationOrder {
     public String collection;
     public String operation;
     public Subscription subscription = new Subscription();
-    // TODO Manage Map<String, Object>
-    public Map<String, String> userMetadatas;
+    public Map<String, Object> userMetadatas;
     public class Subscription {
         public String id;
         public String callback;
