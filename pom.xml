@@ -30,9 +30,9 @@
         <jts.version>1.16.1</jts.version>
 
         <!-- BACKENDS -->
+        <arlas.version>11.6.0</arlas.version>
         <elastic.version>6.8.1</elastic.version>
         <kafka.version>2.1.1</kafka.version>
-        <arlas.version>11.6.0</arlas.version>
 
         <!-- REST AND DROPWIZARD-->
         <dropwizard.version>1.3.12</dropwizard.version>
