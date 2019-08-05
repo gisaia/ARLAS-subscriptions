@@ -36,9 +36,9 @@ function clean_exit {
 
 function run_manager {
     echo "===> start arlas-subscriptions-manager stack"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} mongodb elasticsearch subscriptions-manager
-    echo "===> wait for arlas-subscriptions-manage up and running"
-    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-manager
+    echo "===> wait for arlas-subscriptions-manager up and running"
+    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 }
 
 function run_dummy {
@@ -53,7 +53,7 @@ function run_all {
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS}
     echo "===> wait for arlas-server up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-server 9999; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
-    echo "===> wait for arlas-subscriptions-manage up and running"
+    echo "===> wait for arlas-subscriptions-manager up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 }
 

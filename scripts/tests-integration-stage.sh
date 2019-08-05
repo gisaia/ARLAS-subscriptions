@@ -63,7 +63,7 @@ function test_manager() {
             -w /opt/maven \
             -v $PWD:/opt/maven \
             -v $HOME/.m2:/root/.m2 \
-            -e ARLAS_SUB_MANAGER_HOST="subscriptions-manager" \
+            -e ARLAS_SUB_MANAGER_HOST="arlas-subscriptions-manager" \
             -e ARLAS_SUB_MANAGER_PORT="9998" \
             -e MONGO_HOST="mongodb" \
             -e MONGO_PORT="27017" \
@@ -84,7 +84,7 @@ function test_dummy() {
             -w /opt/maven \
             -v $PWD:/opt/maven \
             -v $HOME/.m2:/root/.m2 \
-            -e ARLAS_SUB_MANAGER_HOST="subscriptions-manager" \
+            -e ARLAS_SUB_MANAGER_HOST="arlas-subscriptions-manager" \
             -e ARLAS_HOST="arlas-server" \
             -e ARLAS_PORT="9999" \
             -e ARLAS_ELASTIC_HOST="elasticsearch" \
