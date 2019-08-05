@@ -19,16 +19,23 @@
 
 package io.arlas.subscriptions.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.exception.InternalServerErrorException;
+import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
+import org.elasticsearch.rest.RestStatus;
+import org.geojson.GeoJsonObject;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import org.apache.logging.log4j.core.util.IOUtils;
 
@@ -45,6 +52,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
     private static final String ARLAS_SUB_MAPPING_FILE_NAME = "arlas.sub.mapping.json";
     private static final String ARLAS_SUB_INDEX_MAPPING_NAME = "subscription";
+    private static ObjectMapper mapper = new ObjectMapper();
 
     public ElasticUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, ElasticDBManaged elasticDBManaged) throws ArlasSubscriptionsException {
             this.client=elasticDBManaged.esClient;
@@ -60,7 +68,19 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
     @Override
     public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
-        return null;
+        IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription);
+        IndexResponse response = null;
+        try {
+            response = client.prepareIndex(arlasSubscriptionIndex, ARLAS_SUB_INDEX_MAPPING_NAME)
+                    .setSource(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON).get();
+        } catch (JsonProcessingException e) {
+            new InternalServerErrorException("Can not put userSubscription.", e);
+        }
+        if (response.status().getStatus() != RestStatus.OK.getStatus()
+                && response.status().getStatus() != RestStatus.CREATED.getStatus()) {
+            throw new InternalServerErrorException("Unable to index collection : " + response.status().toString());
+        }
+        return userSubscription;
 
     }
 
