@@ -48,7 +48,7 @@ public class UserSubscriptionManagerService {
     }
 
     public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
-        this.daoIndexDatabase.postUserSubscription(userSubscription);
-        return  this.daoDatabase.postUserSubscription(userSubscription);
+        UserSubscription userSubscriptionForIndex =  this.daoDatabase.postUserSubscription(userSubscription);
+        return this.daoIndexDatabase.postUserSubscription(userSubscriptionForIndex);
     }
 }
