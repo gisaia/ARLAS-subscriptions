@@ -19,6 +19,7 @@
 
 package io.arlas.subscriptions.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.client.model.Hit;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
@@ -28,6 +29,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
+import org.locationtech.jts.io.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +71,7 @@ public class KafkaConsumerRunner implements Runnable {
                         List<Hit> hits = subscriptionsService.searchMatchingSubscriptions(event);
                         productService.processMatchingProducts(event, hits);
 
-                    } catch (IOException e) {
+                    } catch (IOException|ParseException e) {
                         LOGGER.warn("Could not parse record " + record.value());
                     }
                 }

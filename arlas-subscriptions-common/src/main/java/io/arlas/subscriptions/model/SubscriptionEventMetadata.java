@@ -19,9 +19,11 @@
 
 package io.arlas.subscriptions.model;
 
+import org.geojson.GeoJsonObject;
+
 public class SubscriptionEventMetadata {
     public String id;
-    public String geometry;
+    public GeoJsonObject geometry;
 
     @Override
     public String toString() {

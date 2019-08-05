@@ -18,7 +18,7 @@
         <dependency>
             <groupId>io.arlas</groupId>
             <artifactId>arlas-subscriptions-common</artifactId>
-            <version>${pom.parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
@@ -37,6 +37,12 @@
             <groupId>com.oath.cyclops</groupId>
             <artifactId>cyclops</artifactId>
             <version>${cyclops.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.locationtech.jts.io</groupId>
+            <artifactId>jts-io-common</artifactId>
+            <version>${jts.version}</version>
         </dependency>
     </dependencies>
 

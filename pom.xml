@@ -27,6 +27,7 @@
         <cyclops.version>10.3.2</cyclops.version>
         <log4j.version>2.9.1</log4j.version>
         <geojson.jackson.version>1.8.1</geojson.jackson.version>
+        <jts.version>1.16.1</jts.version>
 
         <!-- BACKENDS -->
         <elastic.version>6.8.1</elastic.version>
