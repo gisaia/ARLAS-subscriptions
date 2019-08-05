@@ -50,14 +50,12 @@ public class UserSubscription {
     public Subscription subscription = new Subscription();
     @NotNull
     @JsonProperty(required = true)
-    // TODO Manage Map<String, Object>
-    public Map<String, String>  userMetadatas;
+    public Map<String, Object>  userMetadatas;
 
     static public class Subscription {
         @NotNull
         @JsonProperty(required = true)
-        // TODO Manage Map<String, Object>
-        public Map<String, String> trigger;
+        public Map<String, Object> trigger;
         @NotEmpty
         @JsonProperty(required = true)
         public String callback;

@@ -51,7 +51,7 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestContext {
         hits.filter="filter";
         hits.projection="projection";
         UserSubscription.Subscription subscription = new UserSubscription.Subscription();
-        Map<String, String> trigger = new HashMap<>();
+        Map<String, Object> trigger = new HashMap<>();
         trigger.put("correlationId","2007");
         subscription.callback ="callback";
         subscription.hits =hits;
