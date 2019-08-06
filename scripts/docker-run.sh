@@ -41,6 +41,12 @@ function run_manager {
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 }
 
+function run_matcher {
+    echo "===> start arlas-subscriptions-matcher stack"
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-matcher
+    sleep 30
+}
+
 function run_dummy {
     echo "===> start dummy stack"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-server
@@ -75,5 +81,6 @@ docker run --rm \
 	mvn clean install
 echo "arlas-subscriptions:${ARLAS_SUBSCRIPTIONS_VERSION}"
 if [ "$STAGE" == "MANAGER" ]; then run_manager;fi
+if [ "$STAGE" == "MATCHER" ]; then run_matcher;fi
 if [ "$STAGE" == "DUMMY" ]; then run_dummy;fi
 if [ "$STAGE" == "ALL" ]; then run_all;fi

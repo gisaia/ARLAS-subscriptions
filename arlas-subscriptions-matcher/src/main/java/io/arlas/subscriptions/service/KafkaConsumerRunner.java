@@ -19,7 +19,6 @@
 
 package io.arlas.subscriptions.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.client.model.Hit;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
@@ -69,6 +68,8 @@ public class KafkaConsumerRunner implements Runnable {
                         LOGGER.debug("Received subscription event:" + event.toString());
 
                         List<Hit> hits = subscriptionsService.searchMatchingSubscriptions(event);
+                        LOGGER.debug("Subscription matcher result=" + hits.toString());
+
                         productService.processMatchingProducts(event, hits);
 
                     } catch (IOException|ParseException e) {
