@@ -78,6 +78,22 @@ function test_manager() {
 
 }
 
+function test_matcher() {
+        start_stack
+        docker run --rm \
+            -w /opt/maven \
+            -v $PWD:/opt/maven \
+            -v $HOME/.m2:/root/.m2 \
+            -e ARLAS_HOST="arlas-server" \
+            -e ARLAS_ELASTIC_HOST="elasticsearch" \
+            -e ARLAS_SERVER_BASE_PATH="http://arlas-server:9999" \
+            -e ARLAS_SUBSCRIPTIONS_BASE_PATH="http://arlas-server:9999" \
+            --net arlas-subscriptions_default \
+            maven:3.5.0-jdk-8 \
+            mvn -Dit.test=SubscriptionsMatcherIT verify -DskipTests=false  -DfailIfNoTests=false
+
+}
+
 function test_dummy() {
         start_stack
         docker run --rm \
@@ -97,4 +113,5 @@ function test_dummy() {
 
 echo "===> run integration tests"
 if [ "$STAGE" == "MANAGER" ]; then test_manager; fi
+if [ "$STAGE" == "MATCHER" ]; then test_matcher; fi
 if [ "$STAGE" == "DUMMY" ]; then test_dummy; fi

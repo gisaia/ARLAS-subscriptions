@@ -155,7 +155,7 @@ public class DataSetTool {
 
     public static void loadSubscriptions() throws IOException {
         //Create subscription index with one existing subscription
-        createIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "arlas.sub.mapping.json");
+        createIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "arlas.subtest.mapping.json");
         LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " created in Elasticsearch");
 
         IndexedUserSubscription subscription = new IndexedUserSubscription();
@@ -169,7 +169,7 @@ public class DataSetTool {
         coords.add(new LngLatAlt(-50, 50));
         subscription.geometry = new Polygon(coords);
         subscription.created_by = "gisaia";
-        subscription.expires_at = -1l;
+        subscription.expires_at = 2145913200l;
         subscription.title = "Test Subscription";
         subscription.setCreated_at(1564578988l);
         subscription.setCreated_by_admin(false);
@@ -179,11 +179,10 @@ public class DataSetTool {
         subscription.subscription = new UserSubscription.Subscription();
         subscription.subscription.callback = "http://myservice.com/mycallback";
         subscription.subscription.trigger = new HashMap<>();
-        //TODO put trigger fields as regular Objects instead of String
         //TODO change mapping type to geo_shape when use geoJSON instead of WKT for trigger.geometry
         subscription.subscription.trigger.put("geometry", "POLYGON((-50 50,50 50,50 -50,-50 -50,-50 50))" /*new Polygon(coords)*/);
-        subscription.subscription.trigger.put("job", Arrays.asList(jobs).subList(0,5).toString());
-        subscription.subscription.trigger.put("event", Arrays.asList("UPDATE").toString());
+        subscription.subscription.trigger.put("job", Arrays.asList(jobs).subList(0,5));
+        subscription.subscription.trigger.put("event", Arrays.asList("UPDATE"));
         subscription.subscription.hits = new UserSubscription.Hits();
         subscription.subscription.hits.filter = "f=params.city:eq:Toulouse";
         subscription.subscription.hits.projection = "exclude=params.country";

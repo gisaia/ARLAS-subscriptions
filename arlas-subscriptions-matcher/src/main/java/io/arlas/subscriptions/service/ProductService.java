@@ -21,22 +21,19 @@ package io.arlas.subscriptions.service;
 
 import io.arlas.client.ApiClient;
 import io.arlas.client.ApiException;
-import io.arlas.client.Pair;
 import io.arlas.client.model.Hit;
 import io.arlas.client.model.Hits;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
+import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.NotificationOrder;
 import io.arlas.subscriptions.model.SubscriptionEvent;
-import io.arlas.subscriptions.model.UserSubscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ProductService extends AbstractArlasService {
     private final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
@@ -53,10 +50,10 @@ public class ProductService extends AbstractArlasService {
         String searchFilter = filterRoot.replaceAll("\\{md.id}", event.md.id);
 
         for (Hit hit : subscriptions) {
-            LOGGER.debug("processing hit:" + hit.toString());
+            LOGGER.debug("processing hit: " + hit.toString());
             try {
-                UserSubscription userSubscription = objectMapper.convertValue(hit.getData(), UserSubscription.class);
-                LOGGER.debug("userSubscription:" + userSubscription.toString());
+                IndexedUserSubscription userSubscription = objectMapper.convertValue(hit.getData(), IndexedUserSubscription.class);
+                LOGGER.debug("indexedUserSubscription: " + userSubscription.toString());
                 String f = searchFilter
                         + "&" + userSubscription.subscription.hits.filter
                         + "&" + userSubscription.subscription.hits.projection;
@@ -76,16 +73,20 @@ public class ProductService extends AbstractArlasService {
         }
     }
 
-    private void pushNotificationOrder(Hit hit, SubscriptionEvent event, UserSubscription userSubscription) {
+    private void pushNotificationOrder(Hit hit, SubscriptionEvent event, IndexedUserSubscription userSubscription) {
         NotificationOrder notificationOrder = new NotificationOrder();
+        // Event fields (copied from event message)
         notificationOrder.md = event.md;
-        notificationOrder.data = hit.getData();
         notificationOrder.collection = event.collection;
         notificationOrder.operation = event.operation;
+        // Data fields (projected as specified by subscription creator)
+        notificationOrder.data = hit.getData();
+        // Subscription fields
         notificationOrder.subscription.id = userSubscription.getId();
         notificationOrder.subscription.callback = userSubscription.subscription.callback;
+        // User metadata fields (provided by subscription creator)
         notificationOrder.userMetadatas = userSubscription.userMetadatas;
-        LOGGER.debug("notificationOrder:" + notificationOrder.toString());
+        LOGGER.debug("notificationOrder: " + notificationOrder.toString());
         notificationOrderKafkaProducer.send(notificationOrder);
     }
 
