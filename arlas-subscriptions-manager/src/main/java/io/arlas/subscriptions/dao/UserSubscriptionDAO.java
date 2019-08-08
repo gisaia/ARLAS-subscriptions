@@ -21,7 +21,9 @@ package io.arlas.subscriptions.dao;
 
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
+import org.locationtech.jts.io.ParseException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,5 +31,5 @@ public interface UserSubscriptionDAO {
 
     List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException;
 
-    UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException;
+    UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException, IOException, ParseException;
 }

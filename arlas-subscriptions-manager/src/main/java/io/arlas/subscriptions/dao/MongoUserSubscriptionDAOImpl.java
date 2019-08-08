@@ -40,7 +40,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     private  MongoCollection<UserSubscription> mongoCollection;
 
     public MongoUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged) throws ArlasSubscriptionsException {
-            MongoDatabase mongoDatabase = mongoDBManaged.
+        MongoDatabase mongoDatabase = mongoDBManaged.
                     mongoClient.
                     getDatabase(configuration.getMongoDBConnection().database);
             this.mongoCollection = this.initSubscriptionsCollection(mongoDatabase);
