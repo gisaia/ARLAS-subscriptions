@@ -44,7 +44,11 @@ function run_manager {
 function run_matcher {
     echo "===> start arlas-subscriptions-matcher stack"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-matcher
-    sleep 30
+    echo "===> wait for arlas-subscriptions-matcher up and running"
+     while [ `docker logs arlas-subscriptions-matcher --tail 10 | grep -c "org.eclipse.jetty.server.Server: Started"` -lt 1 ]
+     do
+        sleep 2
+     done
 }
 
 function run_dummy {
