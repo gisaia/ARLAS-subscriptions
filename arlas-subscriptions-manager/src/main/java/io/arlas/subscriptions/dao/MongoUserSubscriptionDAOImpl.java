@@ -26,6 +26,8 @@ import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 
 
 import java.util.ArrayList;
@@ -61,17 +63,23 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
     @Override
     public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
-
-        UUID uuid = generateUUID();
-        userSubscription.setId(uuid.toString());
-        userSubscription.setCreated_at(new Date().getTime());
-        userSubscription.setModified_at(new Date().getTime());
-        userSubscription.setCreated_by_admin(false);
-        userSubscription.setDeleted(false);
-
-        this.mongoCollection.insertOne(userSubscription);
-
+        try{
+            UUID uuid = generateUUID();
+            userSubscription.setId(uuid.toString());
+            userSubscription.setCreated_at(new Date().getTime());
+            userSubscription.setModified_at(new Date().getTime());
+            userSubscription.setCreated_by_admin(false);
+            userSubscription.setDeleted(false);
+            this.mongoCollection.insertOne(userSubscription);
+        }catch (Exception e){
+            throw new ArlasSubscriptionsException("Can not insert userSubscription in mongo.", e);
+        }
         return userSubscription;
+    }
+
+    @Override
+    public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException {
+        this.mongoCollection.deleteOne(new Document("_id", ref));
     }
 
     private MongoCollection<UserSubscription> initSubscriptionsCollection(MongoDatabase mongoDatabase) throws ArlasSubscriptionsException {

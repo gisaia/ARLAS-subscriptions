@@ -20,6 +20,7 @@
 package io.arlas.subscriptions.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.primitives.Doubles;
@@ -57,7 +58,7 @@ public class IndexedUserSubscription extends UserSubscription {
 
     }
 
-    public IndexedUserSubscription(UserSubscription userSubscription,String geometryKey, String centroidKey) throws ArlasSubscriptionsException, IOException, ParseException {
+    public IndexedUserSubscription(UserSubscription userSubscription,String geometryKey, String centroidKey) throws ArlasSubscriptionsException, ParseException, JsonProcessingException {
         this.setId(userSubscription.getId());
         this.setCreated_at(userSubscription.getCreated_at());
         this.setModified_at(userSubscription.getModified_at());
@@ -76,7 +77,7 @@ public class IndexedUserSubscription extends UserSubscription {
             try {
                 this.geometry = reader.readValue(mapper.writer().writeValueAsString(geometryValue));
             } catch (Exception e) {
-                throw new ArlasSubscriptionsException("Invalid geosjon format in geometry trigger filed.");
+                throw new ArlasSubscriptionsException("Invalid geosjon format in geometry trigger filed.",e);
             }
         } else {
             List<LngLatAlt> coords = new ArrayList<>();
@@ -94,7 +95,7 @@ public class IndexedUserSubscription extends UserSubscription {
             try {
                 this.centroid = (pointReader.readValue(mapper.writer().writeValueAsString(centroidValue)));
             } catch (Exception e) {
-                throw new ArlasSubscriptionsException("Invalid geojson point format in centroid trigger filed.");
+                throw new ArlasSubscriptionsException("Invalid geojson point format in centroid trigger filed.",e);
             }
         } else {
             // Calculate centroid from geometry properties

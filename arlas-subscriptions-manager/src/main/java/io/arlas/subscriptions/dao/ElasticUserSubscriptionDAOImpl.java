@@ -47,7 +47,6 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     private String arlasSubscriptionType;
     private ArlasSubscriptionManagerConfiguration configuration;
 
-
     private static ObjectMapper mapper = new ObjectMapper();
 
     public ElasticUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, ElasticDBManaged elasticDBManaged) throws ArlasSubscriptionsException {
@@ -71,14 +70,19 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
         try {
             response = client.prepareIndex(arlasSubscriptionIndex, arlasSubscriptionType)
                     .setSource(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON).get();
-        } catch (JsonProcessingException e) {
-            new InternalServerErrorException("Can not put userSubscription.", e);
+        } catch (Exception e) {
+            throw new ArlasSubscriptionsException("Can not put userSubscription.", e);
         }
         if (response.status().getStatus() != RestStatus.OK.getStatus()
                 && response.status().getStatus() != RestStatus.CREATED.getStatus()) {
-            throw new InternalServerErrorException("Unable to index collection : " + response.status().toString());
+            throw new ArlasSubscriptionsException("Unable to index userSubscription : " + response.status().toString());
         }
         return userSubscription;
+
+    }
+
+    @Override
+    public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException {
 
     }
 
@@ -94,7 +98,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
                 throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription");
             }
         } catch (IndexNotFoundException e) {
-            throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription");
+            throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription",e);
         }
     }
 }
