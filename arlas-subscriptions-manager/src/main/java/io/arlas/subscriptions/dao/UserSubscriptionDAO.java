@@ -34,4 +34,6 @@ public interface UserSubscriptionDAO {
     List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException;
 
     UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException, IOException, ParseException;
+
+    public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException;
 }

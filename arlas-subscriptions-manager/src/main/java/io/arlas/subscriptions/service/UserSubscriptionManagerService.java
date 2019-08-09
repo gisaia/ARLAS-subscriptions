@@ -31,7 +31,6 @@ import org.locationtech.jts.io.ParseException;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 public class UserSubscriptionManagerService {
 
@@ -50,8 +49,18 @@ public class UserSubscriptionManagerService {
     }
 
     public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException, IOException, ParseException {
-        UserSubscription userSubscriptionForIndex =  this.daoDatabase.postUserSubscription(userSubscription);
-
-        return this.daoIndexDatabase.postUserSubscription(userSubscriptionForIndex);
+        UserSubscription userSubscriptionForIndex;
+        try{
+            userSubscriptionForIndex =  this.daoDatabase.postUserSubscription(userSubscription);
+        }catch(ArlasSubscriptionsException e){
+            throw new ArlasSubscriptionsException("Insert userSubscription in mongo failed",e);
+        }
+        try{
+            this.daoIndexDatabase.postUserSubscription(userSubscriptionForIndex);
+        }catch(ArlasSubscriptionsException e){
+            this.daoDatabase.deleteUserSubscription(userSubscriptionForIndex.getId());
+            throw new ArlasSubscriptionsException("Index userSubscription in ES failed",e);
+        }
+        return userSubscriptionForIndex ;
     }
 }
