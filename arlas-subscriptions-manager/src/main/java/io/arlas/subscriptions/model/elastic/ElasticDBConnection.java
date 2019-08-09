@@ -34,4 +34,7 @@ public class ElasticDBConnection {
 
     @JsonProperty("index")
     public String elasticsubindex;
+
+    @JsonProperty("type")
+    public String elasticsubtype;
 }

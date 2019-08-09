@@ -69,8 +69,11 @@ function test_manager() {
             -e MONGO_PORT="27017" \
             -e MONGO_DATABASE="subscription" \
             -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9300" \
+            -e ARLAS_ELASTIC_HOST="elasticsearch" \
+            -e ARLAS_HOST="arlas-server" \
             -e ARLAS_SUB_ELASTIC_SNIFFING="false" \
-            -e ARLAS_SUB_ELASTIC_INDEX="subscription" \
+            -e ARLAS_SUB_ELASTIC_INDEX="subs" \
+            -e ARLAS_SUB_ELASTIC_TYPE="sub_type"\
             -e ARLAS_SUB_ELASTIC_CLUSTER="elasticsearch" \
             --net arlas-subscriptions_default \
             maven:3.5.0-jdk-8 \
