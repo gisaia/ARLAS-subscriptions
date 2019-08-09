@@ -26,6 +26,7 @@ import io.arlas.subscriptions.model.response.Error;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.ResponseFormatter;
 import io.swagger.annotations.*;
+import org.locationtech.jts.io.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.List;
 
 @Path("/subscriptions")
@@ -112,7 +114,7 @@ public class UserSubscriptionManagerController {
                     required = false)
             @QueryParam(value = "pretty") Boolean pretty
 
-    ) throws ArlasSubscriptionsException {
+    ) throws ArlasSubscriptionsException, IOException, ParseException {
 
         return ResponseFormatter.getResultResponse(subscriptionManagerService.postUserSubscription(userSubscription));
     }

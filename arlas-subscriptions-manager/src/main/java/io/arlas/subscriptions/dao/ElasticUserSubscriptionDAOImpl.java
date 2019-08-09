@@ -36,6 +36,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.rest.RestStatus;
 import org.geojson.GeoJsonObject;
+import org.locationtech.jts.io.ParseException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import org.apache.logging.log4j.core.util.IOUtils;
 
@@ -49,6 +50,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
     private Client client = null;
     private String arlasSubscriptionIndex = null;
+    private ArlasSubscriptionManagerConfiguration configuration = null;
 
     private static final String ARLAS_SUB_MAPPING_FILE_NAME = "arlas.sub.mapping.json";
     private static final String ARLAS_SUB_INDEX_MAPPING_NAME = "subscription";
@@ -57,6 +59,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     public ElasticUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, ElasticDBManaged elasticDBManaged) throws ArlasSubscriptionsException {
             this.client=elasticDBManaged.esClient;
             this.arlasSubscriptionIndex = configuration.elasticDBConnection.elasticsubindex;
+            this.configuration=configuration;
             this.initSubscriptionIndex();
     }
 
@@ -67,8 +70,8 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     }
 
     @Override
-    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
-        IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription);
+    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException, IOException, ParseException {
+        IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription,this.configuration.triggerGeometryKey,this.configuration.triggerCentroidKey);
         IndexResponse response = null;
         try {
             response = client.prepareIndex(arlasSubscriptionIndex, ARLAS_SUB_INDEX_MAPPING_NAME)

@@ -22,11 +22,18 @@ package io.arlas.subscriptions.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.primitives.Doubles;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import org.geojson.GeoJsonObject;
 import org.geojson.LngLatAlt;
+import org.geojson.Point;
+
 import org.geojson.Polygon;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.locationtech.jts.algorithm.Centroid;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,11 +42,8 @@ import java.util.List;
 public class IndexedUserSubscription extends UserSubscription {
     private static ObjectMapper mapper = new ObjectMapper();
     private static ObjectReader reader = mapper.readerFor(GeoJsonObject.class);
-
-
-    public static final String GEOMETRY_KEY = "geometry";
-    public static final String CENTROID_KEY = "centroid";
-
+    private static ObjectReader pointReader = mapper.readerFor(Point.class);
+    private final GeoJsonReader geoJsonReader = new GeoJsonReader();
 
     @NotEmpty
     @JsonProperty(required = true)
@@ -47,13 +51,13 @@ public class IndexedUserSubscription extends UserSubscription {
 
     @NotEmpty
     @JsonProperty(required = true)
-    public String centroid;
+    public List<Double> centroid;
 
     public IndexedUserSubscription() {
 
     }
 
-    public IndexedUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+    public IndexedUserSubscription(UserSubscription userSubscription,String geometryKey, String centroidKey) throws ArlasSubscriptionsException, IOException, ParseException {
         this.setId(userSubscription.getId());
         this.setCreated_at(userSubscription.getCreated_at());
         this.setModified_at(userSubscription.getModified_at());
@@ -66,7 +70,7 @@ public class IndexedUserSubscription extends UserSubscription {
         this.subscription = userSubscription.subscription;
         this.userMetadatas = userSubscription.userMetadatas;
 
-        Object geometryValue = userSubscription.subscription.trigger.get(GEOMETRY_KEY);
+        Object geometryValue = userSubscription.subscription.trigger.get(geometryKey);
         if (geometryValue != null) {
             //Standard GeoJSON object
             try {
@@ -85,19 +89,19 @@ public class IndexedUserSubscription extends UserSubscription {
             this.geometry = fullWorld;
         }
 
-        Object centroidValue = userSubscription.subscription.trigger.get(CENTROID_KEY);
+        Object centroidValue = userSubscription.subscription.trigger.get(centroidKey);
         if (centroidValue != null) {
             try {
-                this.centroid = (String) userSubscription.subscription.trigger.get(CENTROID_KEY);
+                this.centroid = (pointReader.readValue(mapper.writer().writeValueAsString(centroidValue)));
             } catch (Exception e) {
-                throw new ArlasSubscriptionsException("Invalid centroid format in centroid trigger filed.");
+                throw new ArlasSubscriptionsException("Invalid geojson point format in centroid trigger filed.");
             }
         } else {
-            //TODO calculate from geometry if present
-            this.centroid = "0,0";
+            // Calculate centroid from geometry properties
+            Geometry geom = geoJsonReader.read(mapper.writeValueAsString(this.geometry));
+            Centroid centFromGeom = new Centroid(geom);
+            this.centroid = Doubles.asList(centFromGeom.getCentroid().x ,centFromGeom.getCentroid().y);
         }
-
-
     }
 }
 

@@ -36,6 +36,7 @@ import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.geojson.LngLatAlt;
+import org.geojson.Point;
 import org.geojson.Polygon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,7 +161,10 @@ public class DataSetTool {
 
         IndexedUserSubscription subscription = new IndexedUserSubscription();
         subscription.active = true;
-        subscription.centroid =  "0,0";
+        List<Double> coordCentroid = new ArrayList<>();
+        coordCentroid.add(0.0);
+        coordCentroid.add(0.0);
+        subscription.centroid =  coordCentroid;
         List<LngLatAlt> coords = new ArrayList<>();
         coords.add(new LngLatAlt(-50, 50));
         coords.add(new LngLatAlt(50, 50));

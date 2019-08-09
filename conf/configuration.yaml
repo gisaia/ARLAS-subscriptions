@@ -74,7 +74,6 @@ logging:
       archivedLogFilenamePattern: ${ARLAS_SUB_MANAGER_LOGGING_FILE_ARCHIVE_FILE_PATTERN:-arlas-%d.log}
       archivedFileCount: ${ARLAS_SUB_MANAGER_LOGGING_FILE_ARCHIVE_FILE_COUNT:-5}
 
-
 mongo:
   seeds:
     - host: ${MONGO_HOST:-mongodb}
@@ -91,3 +90,9 @@ elastic:
   sniffing: ${ARLAS_SUB_ELASTIC_SNIFFING:-false}
   cluster: ${ARLAS_SUB_ELASTIC_CLUSTER:-elasticsearch}
   index:  ${ARLAS_SUB_ELASTIC_INDEX:-subscription}
+
+########################################################
+############ Subcription DATA model                     ###############
+########################################################
+trigger-geometry-key: geometry
+trigger-centroid-key: centroid

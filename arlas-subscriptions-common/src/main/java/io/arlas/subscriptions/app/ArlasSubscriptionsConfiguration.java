@@ -45,4 +45,10 @@ public class ArlasSubscriptionsConfiguration extends Configuration {
 
     @JsonProperty("arlas-server-hitFilterRoot")
     public String arlasServerFilterRoot;
+
+    @JsonProperty("trigger-geometry-key")
+    public String triggerGeometryKey;
+
+    @JsonProperty("trigger-centroid-key")
+    public String triggerCentroidKey;
 }
