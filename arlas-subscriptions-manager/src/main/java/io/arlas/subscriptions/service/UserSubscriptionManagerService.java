@@ -27,7 +27,9 @@ import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
+import org.locationtech.jts.io.ParseException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,8 +49,9 @@ public class UserSubscriptionManagerService {
         return  this.daoDatabase.getAllUserSubscriptions();
     }
 
-    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException, IOException, ParseException {
         UserSubscription userSubscriptionForIndex =  this.daoDatabase.postUserSubscription(userSubscription);
+
         return this.daoIndexDatabase.postUserSubscription(userSubscriptionForIndex);
     }
 }

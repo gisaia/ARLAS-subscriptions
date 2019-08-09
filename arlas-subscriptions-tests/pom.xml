@@ -45,7 +45,6 @@
             <artifactId>geojson-jackson</artifactId>
             <version>${geojson.jackson.version}</version>
         </dependency>
-
         <!-- ____________________________________________________ -->
         <!-- Backends -->
         <!-- ____________________________________________________ -->
