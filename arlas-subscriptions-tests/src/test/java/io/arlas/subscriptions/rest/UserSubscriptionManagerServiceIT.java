@@ -20,6 +20,7 @@
 package io.arlas.subscriptions.rest;
 
 import io.arlas.subscriptions.AbstractTestContext;
+import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.model.UserSubscription;
 import org.hamcrest.Matcher;
 import org.junit.Test;

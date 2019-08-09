@@ -84,6 +84,7 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
         environment.jersey().register(new JsonProcessingExceptionMapper());
         environment.jersey().register(new ConstraintViolationExceptionMapper());
         environment.lifecycle().manage(mongoDBManaged);
+        environment.lifecycle().manage(elasticDBManaged);
         UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration,mongoDBManaged,elasticDBManaged);
         UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService);
         environment.jersey().register(subscriptionsManagerController);

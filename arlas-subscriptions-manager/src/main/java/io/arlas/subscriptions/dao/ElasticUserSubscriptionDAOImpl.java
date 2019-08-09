@@ -21,45 +21,40 @@ package io.arlas.subscriptions.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.exception.InternalServerErrorException;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.rest.RestStatus;
-import org.geojson.GeoJsonObject;
 import org.locationtech.jts.io.ParseException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import org.apache.logging.log4j.core.util.IOUtils;
+
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
-import java.util.UUID;
 
 public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
-    private Client client = null;
-    private String arlasSubscriptionIndex = null;
-    private ArlasSubscriptionManagerConfiguration configuration = null;
+    private Client client;
+    private String arlasSubscriptionIndex;
+    private String arlasSubscriptionType;
+    private ArlasSubscriptionManagerConfiguration configuration;
 
-    private static final String ARLAS_SUB_MAPPING_FILE_NAME = "arlas.sub.mapping.json";
-    private static final String ARLAS_SUB_INDEX_MAPPING_NAME = "subscription";
+
     private static ObjectMapper mapper = new ObjectMapper();
 
     public ElasticUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, ElasticDBManaged elasticDBManaged) throws ArlasSubscriptionsException {
             this.client=elasticDBManaged.esClient;
             this.arlasSubscriptionIndex = configuration.elasticDBConnection.elasticsubindex;
             this.configuration=configuration;
+            this.arlasSubscriptionType = configuration.elasticDBConnection.elasticsubtype;
             this.initSubscriptionIndex();
     }
 
@@ -74,7 +69,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
         IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription,this.configuration.triggerGeometryKey,this.configuration.triggerCentroidKey);
         IndexResponse response = null;
         try {
-            response = client.prepareIndex(arlasSubscriptionIndex, ARLAS_SUB_INDEX_MAPPING_NAME)
+            response = client.prepareIndex(arlasSubscriptionIndex, arlasSubscriptionType)
                     .setSource(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON).get();
         } catch (JsonProcessingException e) {
             new InternalServerErrorException("Can not put userSubscription.", e);
@@ -87,36 +82,19 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
     }
 
-    public void initSubscriptionIndex() {
+    public void initSubscriptionIndex() throws ArlasSubscriptionsException {
         try {
-            client.admin().indices().prepareGetIndex().setIndices(arlasSubscriptionIndex).get();
-            this.putUserSubscriptionExtendedMapping(client, arlasSubscriptionIndex, ARLAS_SUB_INDEX_MAPPING_NAME, this.getClass()
-                    .getClassLoader()
-                    . getResourceAsStream(ARLAS_SUB_MAPPING_FILE_NAME));
+            IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists().setIndices(arlasSubscriptionIndex).get();
+            if(indicesExistsResponse.isExists()){
+                TypesExistsResponse typesExistsResponse = client.admin().indices().prepareTypesExists(arlasSubscriptionIndex).setTypes(arlasSubscriptionType).get();
+                if(! typesExistsResponse.isExists()){
+                    throw new ArlasSubscriptionsException("Type " + arlasSubscriptionType  + " does not exist in " + arlasSubscriptionIndex + " index , create it to run ARLAS-Subscription");
+                }
+            }else{
+                throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription");
+            }
         } catch (IndexNotFoundException e) {
-            this.createUserSubscriptionIndex(client, arlasSubscriptionIndex, ARLAS_SUB_INDEX_MAPPING_NAME, ARLAS_SUB_MAPPING_FILE_NAME);
+            throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription");
         }
-    }
-
-    private static CreateIndexResponse createUserSubscriptionIndex(Client client, String arlasIndexName, String arlasMappingName, String arlasMappingFileName)  {
-        CreateIndexResponse createIndexResponse = null;
-        try {
-            String arlasMapping = IOUtils.toString(new InputStreamReader(ElasticUserSubscriptionDAOImpl.class.getClassLoader().getResourceAsStream(arlasMappingFileName)));
-            createIndexResponse = client.admin().indices().prepareCreate(arlasIndexName).addMapping(arlasMappingName, arlasMapping, XContentType.JSON).get();
-        } catch (IOException e) {
-            new InternalServerErrorException("Can not initialize elasticsearch index for subscriptions.", e);
-        }
-        return createIndexResponse;
-    }
-
-    private static AcknowledgedResponse putUserSubscriptionExtendedMapping(Client client, String arlasIndexName, String arlasMappingName, InputStream in) {
-        AcknowledgedResponse putMappingResponse = null;
-        try {
-            String arlasMapping = IOUtils.toString(new InputStreamReader(in));
-            putMappingResponse = client.admin().indices().preparePutMapping(arlasIndexName).setType(arlasMappingName).setSource(arlasMapping, XContentType.JSON).get();
-        } catch (IOException e) {
-            new InternalServerErrorException("Cannot update " + arlasIndexName + " mapping");
-        }
-        return putMappingResponse;
     }
 }

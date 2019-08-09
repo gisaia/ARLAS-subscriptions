@@ -88,6 +88,8 @@ services:
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - ARLAS_SUB_ELASTIC_NODES=elasticsearch:9300
+      - ARLAS_SUB_ELASTIC_INDEX=subs
+      - ARLAS_SUB_ELASTIC_TYPE=sub_type
     ports:
       - 9998:9998
     command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST:$$MONGO_PORT $$ARLAS_SUB_ELASTIC_NODES "]

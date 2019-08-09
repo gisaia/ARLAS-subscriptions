@@ -22,12 +22,14 @@ package io.arlas.subscriptions.dao;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
 import org.locationtech.jts.io.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 public interface UserSubscriptionDAO {
+    public Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionDAO.class);
 
     List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException;
 
