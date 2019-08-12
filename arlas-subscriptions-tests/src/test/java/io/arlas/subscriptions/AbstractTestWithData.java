@@ -19,11 +19,12 @@
 
 package io.arlas.subscriptions;
 
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.locationtech.jts.io.ParseException;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 
 public abstract class AbstractTestWithData extends AbstractTestContext {
 
@@ -31,11 +32,9 @@ public abstract class AbstractTestWithData extends AbstractTestContext {
     @BeforeClass
     public static void beforeClass() {
         try {
-            DataSetTool.loadDataSet();
-            DataSetTool.loadSubscriptions();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+            DataSetTool.loadDataSet(false);
+            DataSetTool.loadSubscriptions(true);
+        } catch (IOException| ParseException | ArlasSubscriptionsException e) {
             e.printStackTrace();
         }
 

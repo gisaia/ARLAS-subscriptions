@@ -21,6 +21,7 @@ package io.arlas.subscriptions.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
+import io.arlas.subscriptions.exception.NotFoundException;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.model.response.Error;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
@@ -33,10 +34,13 @@ import org.slf4j.LoggerFactory;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Path("/subscriptions")
 @Api(value = "/subscriptions")
@@ -83,6 +87,43 @@ public class UserSubscriptionManagerController {
         return ResponseFormatter.getResultResponse(userSubscriptions);
     }
 
+    @Timed
+    @Path("{id}")
+    @GET
+    @Produces(UTF8JSON)
+    @Consumes(UTF8JSON)
+    @ApiOperation(
+            value = "Get a subscription",
+            produces = UTF8JSON,
+            notes = "Get a subscription",
+            consumes = UTF8JSON,
+            response = UserSubscription.class
+    )
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
+            @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+
+    public Response get(@Context HttpHeaders headers,
+            @ApiParam(
+                    name = "id",
+                    value = "id",
+                    allowMultiple = false,
+                    required = true)
+            @PathParam(value = "id") String id,
+            // --------------------------------------------------------
+            // ----------------------- FORM -----------------------
+            // --------------------------------------------------------
+            @ApiParam(name = "pretty", value = "Pretty print",
+                    allowMultiple = false,
+                    defaultValue = "false",
+                    required = false)
+            @QueryParam(value = "pretty") Boolean pretty
+    ) throws ArlasSubscriptionsException {
+        String user = getUser(headers);
+        Optional<UserSubscription> userSubscription = subscriptionManagerService.getUserSubscription(user, id);
+
+        return ResponseFormatter.getResultResponse(userSubscription.orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user)));
+    }
 
     @Path("/")
     @POST
@@ -117,5 +158,10 @@ public class UserSubscriptionManagerController {
     ) throws ArlasSubscriptionsException, IOException, ParseException {
 
         return ResponseFormatter.getResultResponse(subscriptionManagerService.postUserSubscription(userSubscription));
+    }
+
+    private String getUser(HttpHeaders headers) {
+        // TODO in issue #11
+        return "gisaia";
     }
 }
