@@ -27,14 +27,11 @@ import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
 import static io.arlas.subscriptions.utils.UUIDHelper.generateUUID;
 
 public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
@@ -59,6 +56,11 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
             }
         }
         return userSubscriptionFind;
+    }
+
+    @Override
+    public Optional<UserSubscription> getUserSubscription(String user, String id) {
+        return Optional.ofNullable(this.mongoCollection.find(and(eq("created_by", user), eq("_id", id))).first());
     }
 
     @Override

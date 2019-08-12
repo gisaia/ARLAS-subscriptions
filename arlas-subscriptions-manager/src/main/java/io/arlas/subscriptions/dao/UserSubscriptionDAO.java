@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public interface UserSubscriptionDAO {
     public Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionDAO.class);
@@ -36,4 +37,6 @@ public interface UserSubscriptionDAO {
     UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException, IOException, ParseException;
 
     public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException;
+
+    Optional<UserSubscription> getUserSubscription(String user, String id);
 }
