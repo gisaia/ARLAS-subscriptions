@@ -28,17 +28,21 @@ import io.arlas.subscriptions.model.UserSubscription;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.rest.RestStatus;
-import org.locationtech.jts.io.ParseException;
+import org.elasticsearch.script.Script;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
+    public Logger LOGGER = LoggerFactory.getLogger(ElasticUserSubscriptionDAOImpl.class);
 
     private Client client;
     private String arlasSubscriptionIndex;
@@ -62,11 +66,11 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     }
 
     @Override
-    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException, IOException, ParseException {
-        IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription,this.configuration.triggerGeometryKey,this.configuration.triggerCentroidKey);
+    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
         IndexResponse response = null;
         try {
-            response = client.prepareIndex(arlasSubscriptionIndex, arlasSubscriptionType)
+            IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription,this.configuration.triggerGeometryKey,this.configuration.triggerCentroidKey);
+            response = client.prepareIndex(arlasSubscriptionIndex, arlasSubscriptionType, userSubscription.getId())
                     .setSource(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON).get();
         } catch (Exception e) {
             throw new ArlasSubscriptionsException("Can not put userSubscription.", e);
@@ -76,17 +80,32 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
             throw new ArlasSubscriptionsException("Unable to index userSubscription : " + response.status().toString());
         }
         return userSubscription;
-
     }
 
     @Override
     public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException {
-
     }
 
     @Override
     public Optional<UserSubscription> getUserSubscription(String user, String id) {
         return Optional.empty();
+    }
+
+    @Override
+    public void setUserSubscriptionDeletedFlag(UserSubscription userSubscription, boolean isDeleted) throws ArlasSubscriptionsException {
+        UpdateRequest updateRequest = new UpdateRequest(arlasSubscriptionIndex, arlasSubscriptionType, userSubscription.getId())
+                .script(new Script("ctx._source.deleted = \"" + isDeleted + "\""));
+        UpdateResponse response = null;
+        try {
+            response = client.update(updateRequest).get();
+        } catch (Exception e) {
+            throw new ArlasSubscriptionsException("Can not update userSubscription.", e);
+        }
+
+        if (response.status().getStatus() != RestStatus.OK.getStatus()
+                && response.status().getStatus() != RestStatus.ACCEPTED.getStatus()) {
+            throw new ArlasSubscriptionsException("Unable to update userSubscription : " + response.status().toString());
+        }
     }
 
     public void initSubscriptionIndex() throws ArlasSubscriptionsException {

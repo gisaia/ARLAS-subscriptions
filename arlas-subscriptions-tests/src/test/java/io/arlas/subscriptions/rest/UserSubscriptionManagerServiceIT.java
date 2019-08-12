@@ -20,6 +20,7 @@
 package io.arlas.subscriptions.rest;
 
 import io.arlas.subscriptions.AbstractTestWithData;
+import io.arlas.subscriptions.DataSetTool;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.restassured.http.ContentType;
 import org.hamcrest.Matcher;
@@ -30,6 +31,7 @@ import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.*;
 
 public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
@@ -58,7 +60,7 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
 
     @Test
     public void testPostUserSubscription() throws Exception{
-        
+
         Map<String, Object> jsonAsMap = new HashMap<>();
         jsonAsMap.put("created_by","John Doe");
         jsonAsMap.put("active",true);
@@ -96,7 +98,17 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
                 .then().statusCode(400);
     }
 
+    @Test
+    public void testDeleteExistingUserSubscription() throws Exception {
+        when().delete(arlasSubManagerPath + "subscriptions/1234")
+                .then()
+                .statusCode(202)
+                .contentType(ContentType.JSON)
+                .body("id", equalTo("1234"));
 
+        assertTrue(DataSetTool.getUserSubscriptionFromMongo("1234").get().getDeleted());
+        assertTrue(DataSetTool.getUserSubscriptionFromES("1234").getDeleted());
+    }
 
     private void getAllUserSubscriptions(Matcher matcher) throws InterruptedException {
         int cpt = 0;

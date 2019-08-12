@@ -35,6 +35,10 @@ public class ResponseFormatter {
         return Response.ok(object).type(MediaType.APPLICATION_JSON).build();
     }
 
+    public static Response getAcceptedResponse(Object object) {
+        return Response.accepted(object).type(MediaType.APPLICATION_JSON).build();
+    }
+
     public static Response getFileResponse(Object object, String fileName) {
         return Response.ok(object).type(MediaType.APPLICATION_JSON)
                 .header("Content-Disposition", "attachment; filename=" + fileName).build();
