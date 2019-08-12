@@ -68,9 +68,8 @@ function test_manager() {
             -e MONGO_HOST="mongodb" \
             -e MONGO_PORT="27017" \
             -e MONGO_DATABASE="subscription" \
-            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9300" \
             -e ARLAS_ELASTIC_HOST="elasticsearch" \
-            -e ARLAS_HOST="arlas-server" \
+            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9300" \
             -e ARLAS_SUB_ELASTIC_SNIFFING="false" \
             -e ARLAS_SUB_ELASTIC_INDEX="subs" \
             -e ARLAS_SUB_ELASTIC_TYPE="sub_type"\

@@ -20,8 +20,9 @@
 package io.arlas.subscriptions.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.arlas.subscriptions.AbstractTestWithData;
+import io.arlas.subscriptions.AbstractTestContext;
 import io.arlas.subscriptions.DataSetTool;
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.NotificationOrder;
 import io.arlas.subscriptions.model.SubscriptionEvent;
 import io.arlas.subscriptions.model.SubscriptionEventMetadata;
@@ -31,6 +32,7 @@ import org.geojson.Polygon;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.locationtech.jts.io.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +41,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-public class SubscriptionsMatcherIT extends AbstractTestWithData {
+public class SubscriptionsMatcherIT extends AbstractTestContext {
     static Logger LOGGER = LoggerFactory.getLogger(SubscriptionsMatcherIT.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final KafkaTool kafkaTool = new KafkaTool();
@@ -53,9 +55,9 @@ public class SubscriptionsMatcherIT extends AbstractTestWithData {
         kafkaTool.init();
         new Thread(kafkaTool).start();
         try {
-            DataSetTool.loadDataSet();
-            DataSetTool.loadSubscriptions();
-        } catch (IOException e) {
+            DataSetTool.loadDataSet(true);
+            DataSetTool.loadSubscriptions(false);
+        } catch (IOException|ParseException|ArlasSubscriptionsException e) {
             LOGGER.error("Could not load data in ES", e);
         }
     }
@@ -63,6 +65,9 @@ public class SubscriptionsMatcherIT extends AbstractTestWithData {
     @AfterClass
     public static void afterClass() {
         kafkaTool.stop();
+        DataSetTool.clearDataSet();
+        DataSetTool.clearSubscriptions();
+        DataSetTool.close();
     }
 
     @Test
