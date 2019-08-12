@@ -19,25 +19,41 @@
 
 package io.arlas.subscriptions.rest;
 
-import io.arlas.subscriptions.AbstractTestContext;
 import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.model.UserSubscription;
+import io.restassured.http.ContentType;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.restassured.RestAssured.*;
+import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.*;
 
-public class UserSubscriptionManagerServiceIT extends AbstractTestContext {
+public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
 
 
     @Test
     public void testGetAllUserSubscriptions() throws Exception {
         // GET all collections
         getAllUserSubscriptions(emptyArray());
+    }
+
+    @Test
+    public void testGetUserSubscriptionNotFound() throws Exception {
+        when().get(arlasSubManagerPath + "subscriptions/foo")
+                .then().statusCode(404);
+    }
+
+    @Test
+    public void testGetUserSubscriptionFound() throws Exception {
+        when().get(arlasSubManagerPath + "subscriptions/1234")
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("id", equalTo("1234"));
     }
 
     @Test

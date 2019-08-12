@@ -31,6 +31,7 @@ import org.locationtech.jts.io.ParseException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public class UserSubscriptionManagerService {
 
@@ -62,5 +63,9 @@ public class UserSubscriptionManagerService {
             throw new ArlasSubscriptionsException("Index userSubscription in ES failed",e);
         }
         return userSubscriptionForIndex ;
+    }
+
+    public Optional<UserSubscription> getUserSubscription(String user, String id) {
+        return this.daoDatabase.getUserSubscription(user, id);
     }
 }

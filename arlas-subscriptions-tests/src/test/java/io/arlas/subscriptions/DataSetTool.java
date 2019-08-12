@@ -21,14 +21,20 @@ package io.arlas.subscriptions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
 import io.arlas.client.ApiClient;
 import io.arlas.client.ApiException;
 import io.arlas.client.Pair;
 import io.arlas.client.model.CollectionReferenceParameters;
+import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
+import io.arlas.subscriptions.model.mongo.MongoDBConnection;
+import io.arlas.subscriptions.model.mongo.Seed;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
@@ -36,8 +42,10 @@ import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.geojson.LngLatAlt;
-import org.geojson.Point;
 import org.geojson.Polygon;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.locationtech.jts.io.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,12 +125,12 @@ public class DataSetTool {
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        DataSetTool.loadDataSet();
-        DataSetTool.loadSubscriptions();
+    public static void main(String[] args) throws IOException, ParseException, ArlasSubscriptionsException {
+        DataSetTool.loadDataSet(true);
+        DataSetTool.loadSubscriptions(false);
     }
 
-    public static void loadDataSet() throws IOException {
+    public static void loadDataSet(boolean createArlas) throws IOException {
         //Create a single index with all data
         createIndex(DATASET_INDEX_NAME, DATASET_TYPE_NAME, "dataset.mapping.json");
         LOGGER.info("Index " + DATASET_INDEX_NAME + " created in Elasticsearch");
@@ -130,48 +138,39 @@ public class DataSetTool {
         LOGGER.info("Index " + DATASET_INDEX_NAME + " populated in Elasticsearch");
 
 
-        //Create collection in ARLAS-server
-        CollectionReferenceParameters collection = new CollectionReferenceParameters();
-        collection.setIndexName(DataSetTool.DATASET_INDEX_NAME);
-        collection.setTypeName(DataSetTool.DATASET_TYPE_NAME);
-        collection.setIdPath(DataSetTool.DATASET_ID_PATH);
-        collection.setGeometryPath(DataSetTool.DATASET_GEOMETRY_PATH);
-        collection.setCentroidPath(DataSetTool.DATASET_CENTROID_PATH);
-        collection.setTimestampPath(DataSetTool.DATASET_TIMESTAMP_PATH);
-        Call collectionPut = null;
-        try {
-            collectionPut = apiClient.buildCall("/collections/"+ COLLECTION_GEODATA_NAME, "PUT", new ArrayList<Pair>(),
-                    new ArrayList<>(), collection, new HashMap<>(), new HashMap<>(), new String[0], null);
-            Response collectionPutResponse = collectionPut.execute();
-            if(collectionPutResponse.code() == 200) {
-                LOGGER.debug("Collection " + COLLECTION_GEODATA_NAME + " created in ARLAS-server : " + collectionPutResponse.message());
-            } else {
-                LOGGER.debug("Collection " + COLLECTION_GEODATA_NAME + " NOT created to ARLAS-server [" + collectionPutResponse.code() + "] : " +
-                        collectionPutResponse.message());
+        if (createArlas) {
+            //Create collection in ARLAS-server
+            CollectionReferenceParameters collection = new CollectionReferenceParameters();
+            collection.setIndexName(DataSetTool.DATASET_INDEX_NAME);
+            collection.setTypeName(DataSetTool.DATASET_TYPE_NAME);
+            collection.setIdPath(DataSetTool.DATASET_ID_PATH);
+            collection.setGeometryPath(DataSetTool.DATASET_GEOMETRY_PATH);
+            collection.setCentroidPath(DataSetTool.DATASET_CENTROID_PATH);
+            collection.setTimestampPath(DataSetTool.DATASET_TIMESTAMP_PATH);
+            Call collectionPut = null;
+            try {
+                collectionPut = apiClient.buildCall("/collections/" + COLLECTION_GEODATA_NAME, "PUT", new ArrayList<Pair>(),
+                        new ArrayList<>(), collection, new HashMap<>(), new HashMap<>(), new String[0], null);
+                Response collectionPutResponse = collectionPut.execute();
+                if (collectionPutResponse.code() == 200) {
+                    LOGGER.debug("Collection " + COLLECTION_GEODATA_NAME + " created in ARLAS-server : " + collectionPutResponse.message());
+                } else {
+                    LOGGER.debug("Collection " + COLLECTION_GEODATA_NAME + " NOT created to ARLAS-server [" + collectionPutResponse.code() + "] : " +
+                            collectionPutResponse.message());
+                }
+            } catch (ApiException e) {
+                LOGGER.error("Unable to create collection in ARLAS-server", e);
             }
-        } catch (ApiException e) {
-            LOGGER.error("Unable to create collection in ARLAS-server",e);
         }
     }
 
-    public static void loadSubscriptions() throws IOException {
+    public static void loadSubscriptions(boolean loadMongo) throws IOException, ParseException, ArlasSubscriptionsException {
         //Create subscription index with one existing subscription
         createIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "arlas.subtest.mapping.json");
         LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " created in Elasticsearch");
 
-        IndexedUserSubscription subscription = new IndexedUserSubscription();
+        UserSubscription subscription = new UserSubscription();
         subscription.active = true;
-        List<Double> coordCentroid = new ArrayList<>();
-        coordCentroid.add(0.0);
-        coordCentroid.add(0.0);
-        subscription.centroid =  coordCentroid;
-        List<LngLatAlt> coords = new ArrayList<>();
-        coords.add(new LngLatAlt(-50, 50));
-        coords.add(new LngLatAlt(50, 50));
-        coords.add(new LngLatAlt(50, -50));
-        coords.add(new LngLatAlt(-50, -50));
-        coords.add(new LngLatAlt(-50, 50));
-        subscription.geometry = new Polygon(coords);
         subscription.created_by = "gisaia";
         subscription.expires_at = 2145913200l;
         subscription.title = "Test Subscription";
@@ -183,8 +182,25 @@ public class DataSetTool {
         subscription.subscription = new UserSubscription.Subscription();
         subscription.subscription.callback = "http://myservice.com/mycallback";
         subscription.subscription.trigger = new HashMap<>();
-        //TODO change mapping type to geo_shape when use geoJSON instead of WKT for trigger.geometry
-        subscription.subscription.trigger.put("geometry", "POLYGON((-50 50,50 50,50 -50,-50 -50,-50 50))" /*new Polygon(coords)*/);
+        JSONObject coverage = new JSONObject();
+        JSONArray jsonArrayExt = new JSONArray();
+        List<LngLatAlt> coords = new ArrayList<>();
+        coords.add(new LngLatAlt(-50, 50));
+        coords.add(new LngLatAlt(50, 50));
+        coords.add(new LngLatAlt(50, -50));
+        coords.add(new LngLatAlt(-50, -50));
+        coords.add(new LngLatAlt(-50, 50));
+        new Polygon(coords).getExteriorRing().forEach(lngLatAlt -> {
+            JSONArray jsonArrayLngLat = new JSONArray();
+            jsonArrayLngLat.add(0, lngLatAlt.getLongitude());
+            jsonArrayLngLat.add(1, lngLatAlt.getLatitude());
+            jsonArrayExt.add(jsonArrayLngLat);
+        });
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.add(jsonArrayExt);
+        coverage.put("type", "Polygon");
+        coverage.put("coordinates", jsonArray);
+        subscription.subscription.trigger.put("geometry", coverage);
         subscription.subscription.trigger.put("job", Arrays.asList(jobs).subList(0,5));
         subscription.subscription.trigger.put("event", Arrays.asList("UPDATE"));
         subscription.subscription.hits = new UserSubscription.Hits();
@@ -193,34 +209,53 @@ public class DataSetTool {
         subscription.userMetadatas = new HashMap<>();
         subscription.userMetadatas.put("correlationId","my-correlation-id");
 
+        IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(subscription, "geometry", "centroid");
+
         ObjectMapper mapper = new ObjectMapper();
-        client.prepareIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "SUB_" + subscription.getId())
-                .setSource(mapper.writer().writeValueAsString(subscription), XContentType.JSON)
+        client.prepareIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "SUB_" + indexedUserSubscription.getId())
+                .setSource(mapper.writer().writeValueAsString(indexedUserSubscription), XContentType.JSON)
                 .get();
         LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " populated in Elasticsearch");
 
-
-        //Create collection in ARLAS-server
-        CollectionReferenceParameters collection = new CollectionReferenceParameters();
-        collection.setIndexName(DataSetTool.SUBSCRIPTIONS_INDEX_NAME);
-        collection.setTypeName(DataSetTool.SUBSCRIPTIONS_TYPE_NAME);
-        collection.setIdPath(DataSetTool.SUBSCRIPTIONS_ID_PATH);
-        collection.setGeometryPath(DataSetTool.SUBSCRIPTIONS_GEOMETRY_PATH);
-        collection.setCentroidPath(DataSetTool.SUBSCRIPTIONS_CENTROID_PATH);
-        collection.setTimestampPath(DataSetTool.SUBSCRIPTIONS_TIMESTAMP_PATH);
-        Call collectionPut = null;
-        try {
-            collectionPut = apiClient.buildCall("/collections/"+ COLLECTION_SUBSCRIPTIONS_NAME, "PUT", new ArrayList<>(),
-                    new ArrayList<>(), collection, new HashMap<>(), new HashMap<>(), new String[0], null);
-            Response collectionPutResponse = collectionPut.execute();
-            if(collectionPutResponse.code() == 200) {
-                LOGGER.debug("Collection " + COLLECTION_SUBSCRIPTIONS_NAME + " created in ARLAS-server : " + collectionPutResponse.message());
-            } else {
-                LOGGER.debug("Collection " + COLLECTION_SUBSCRIPTIONS_NAME + " NOT created to ARLAS-server [" + collectionPutResponse.code() + "] : " +
-                        collectionPutResponse.message());
+        //Create subscription in Mongo
+        if (loadMongo) {
+            String mongoDBname = Optional.ofNullable(System.getenv("MONGO_DATABASE")).orElse("subscription");
+            String mongoHost = Optional.ofNullable(System.getenv("MONGO_HOST")).orElse("mongodb");
+            int mongoPort = Integer.valueOf(Optional.ofNullable(System.getenv("MONGO_PORT")).orElse("27017"));
+            LOGGER.info("Mongo: " + mongoHost + ":" + mongoPort);
+            Seed seed = new Seed();
+            seed.host = mongoHost;
+            seed.port = mongoPort;
+            MongoDBConnection configuration = new MongoDBConnection();
+            configuration.database = mongoDBname;
+            configuration.seeds = Arrays.asList(seed);
+            MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration);
+            MongoDatabase mongoDatabase = mongoDBFactoryConnection.getClient().getDatabase(mongoDBname);
+            MongoCollection<UserSubscription> mongoCollection = mongoDatabase.getCollection("arlas-subscription", UserSubscription.class);;
+            mongoCollection.insertOne(subscription);
+        } else {
+            //Create collection in ARLAS-server
+            CollectionReferenceParameters collection = new CollectionReferenceParameters();
+            collection.setIndexName(DataSetTool.SUBSCRIPTIONS_INDEX_NAME);
+            collection.setTypeName(DataSetTool.SUBSCRIPTIONS_TYPE_NAME);
+            collection.setIdPath(DataSetTool.SUBSCRIPTIONS_ID_PATH);
+            collection.setGeometryPath(DataSetTool.SUBSCRIPTIONS_GEOMETRY_PATH);
+            collection.setCentroidPath(DataSetTool.SUBSCRIPTIONS_CENTROID_PATH);
+            collection.setTimestampPath(DataSetTool.SUBSCRIPTIONS_TIMESTAMP_PATH);
+            Call collectionPut = null;
+            try {
+                collectionPut = apiClient.buildCall("/collections/" + COLLECTION_SUBSCRIPTIONS_NAME, "PUT", new ArrayList<>(),
+                        new ArrayList<>(), collection, new HashMap<>(), new HashMap<>(), new String[0], null);
+                Response collectionPutResponse = collectionPut.execute();
+                if (collectionPutResponse.code() == 200) {
+                    LOGGER.debug("Collection " + COLLECTION_SUBSCRIPTIONS_NAME + " created in ARLAS-server : " + collectionPutResponse.message());
+                } else {
+                    LOGGER.debug("Collection " + COLLECTION_SUBSCRIPTIONS_NAME + " NOT created to ARLAS-server [" + collectionPutResponse.code() + "] : " +
+                            collectionPutResponse.message());
+                }
+            } catch (ApiException e) {
+                LOGGER.error("Unable to create collection in ARLAS-server", e);
             }
-        } catch (ApiException e) {
-            LOGGER.error("Unable to create collection in ARLAS-server",e);
         }
     }
 

@@ -19,12 +19,10 @@
 
 package io.arlas.subscriptions.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
-import io.arlas.subscriptions.exception.InternalServerErrorException;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
@@ -36,9 +34,9 @@ import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.rest.RestStatus;
 import org.locationtech.jts.io.ParseException;
 
-
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
@@ -84,6 +82,11 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     @Override
     public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException {
 
+    }
+
+    @Override
+    public Optional<UserSubscription> getUserSubscription(String user, String id) {
+        return Optional.empty();
     }
 
     public void initSubscriptionIndex() throws ArlasSubscriptionsException {
