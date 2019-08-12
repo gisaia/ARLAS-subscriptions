@@ -35,6 +35,7 @@ import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.model.mongo.MongoDBConnection;
 import io.arlas.subscriptions.model.mongo.Seed;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
@@ -53,6 +54,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.*;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class DataSetTool {
     static Logger LOGGER = LoggerFactory.getLogger(DataSetTool.class);
@@ -92,6 +95,9 @@ public class DataSetTool {
     public static ApiClient apiClient;
     public static AdminClient adminClient;
     public static Client client;
+    public static MongoCollection<UserSubscription> mongoCollection;
+    private static ObjectMapper mapper = new ObjectMapper();
+
 
     public static ApiClient getApiClient() {
         return apiClient;
@@ -211,8 +217,7 @@ public class DataSetTool {
 
         IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(subscription, "geometry", "centroid");
 
-        ObjectMapper mapper = new ObjectMapper();
-        client.prepareIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "SUB_" + indexedUserSubscription.getId())
+        client.prepareIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, indexedUserSubscription.getId())
                 .setSource(mapper.writer().writeValueAsString(indexedUserSubscription), XContentType.JSON)
                 .get();
         LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " populated in Elasticsearch");
@@ -231,7 +236,7 @@ public class DataSetTool {
             configuration.seeds = Arrays.asList(seed);
             MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration);
             MongoDatabase mongoDatabase = mongoDBFactoryConnection.getClient().getDatabase(mongoDBname);
-            MongoCollection<UserSubscription> mongoCollection = mongoDatabase.getCollection("arlas-subscription", UserSubscription.class);;
+            mongoCollection = mongoDatabase.getCollection("arlas-subscription", UserSubscription.class);;
             mongoCollection.insertOne(subscription);
         } else {
             //Create collection in ARLAS-server
@@ -270,7 +275,6 @@ public class DataSetTool {
 
     private static void fillIndex(String indexName, int lonMin, int lonMax, int latMin, int latMax) throws JsonProcessingException {
         Data data;
-        ObjectMapper mapper = new ObjectMapper();
 
         for (int i = lonMin; i <= lonMax; i += 10) {
             for (int j = latMin; j <= latMax; j += 10) {
@@ -300,6 +304,18 @@ public class DataSetTool {
                         .get();
             }
         }
+    }
+
+    public static Optional<UserSubscription> getUserSubscriptionFromMongo(String id) {
+        return Optional.ofNullable(mongoCollection.find(eq("_id", id)).first());
+    }
+
+    public static UserSubscription getUserSubscriptionFromES(String id) throws IOException {
+        GetResponse response = client.prepareGet(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, id).get();
+        UserSubscription us = mapper.readValue(response.getSourceAsString(), UserSubscription.class);
+        Map map = response.getSourceAsMap();
+        us.setDeleted(Boolean.valueOf((String)map.get("deleted")));
+        return us;
     }
 
     public static void clearDataSet() {

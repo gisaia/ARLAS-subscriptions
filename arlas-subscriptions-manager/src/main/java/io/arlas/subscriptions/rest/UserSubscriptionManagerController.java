@@ -22,6 +22,7 @@ package io.arlas.subscriptions.rest;
 import com.codahale.metrics.annotation.Timed;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.exception.NotFoundException;
+import io.arlas.subscriptions.exception.UnauthorizedException;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.model.response.Error;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
@@ -40,7 +41,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @Path("/subscriptions")
 @Api(value = "/subscriptions")
@@ -71,6 +71,7 @@ public class UserSubscriptionManagerController {
             consumes = UTF8JSON
     )
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class, responseContainer = "List"),
+            @ApiResponse(code = 403, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
     public Response getAll(
@@ -99,7 +100,8 @@ public class UserSubscriptionManagerController {
             consumes = UTF8JSON,
             response = UserSubscription.class
     )
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class, responseContainer = "List"),
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class),
+            @ApiResponse(code = 403, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
@@ -120,9 +122,49 @@ public class UserSubscriptionManagerController {
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        Optional<UserSubscription> userSubscription = subscriptionManagerService.getUserSubscription(user, id);
+        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id).orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 
-        return ResponseFormatter.getResultResponse(userSubscription.orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user)));
+        return ResponseFormatter.getResultResponse(userSubscription);
+    }
+
+    @Timed
+    @Path("{id}")
+    @DELETE
+    @Produces(UTF8JSON)
+    @Consumes(UTF8JSON)
+    @ApiOperation(
+            value = "Delete a subscription",
+            produces = UTF8JSON,
+            notes = "Delete a subscription",
+            consumes = UTF8JSON,
+            response = UserSubscription.class
+    )
+    @ApiResponses(value = {@ApiResponse(code = 202, message = "Successful operation", response = UserSubscription.class),
+            @ApiResponse(code = 403, message = "Unauthorized.", response = Error.class),
+            @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
+            @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+
+    public Response delete(@Context HttpHeaders headers,
+                        @ApiParam(
+                                name = "id",
+                                value = "id",
+                                allowMultiple = false,
+                                required = true)
+                        @PathParam(value = "id") String id,
+                        // --------------------------------------------------------
+                        // ----------------------- FORM -----------------------
+                        // --------------------------------------------------------
+                        @ApiParam(name = "pretty", value = "Pretty print",
+                                allowMultiple = false,
+                                defaultValue = "false",
+                                required = false)
+                        @QueryParam(value = "pretty") Boolean pretty
+    ) throws ArlasSubscriptionsException {
+        String user = getUser(headers);
+        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id).orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
+        subscriptionManagerService.deleteUserSubscription(userSubscription);
+
+        return ResponseFormatter.getAcceptedResponse(userSubscription);
     }
 
     @Path("/")
@@ -138,6 +180,7 @@ public class UserSubscriptionManagerController {
     )
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
+            @ApiResponse(code = 403, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
     public Response post(
@@ -160,7 +203,7 @@ public class UserSubscriptionManagerController {
         return ResponseFormatter.getResultResponse(subscriptionManagerService.postUserSubscription(userSubscription));
     }
 
-    private String getUser(HttpHeaders headers) {
+    private String getUser(HttpHeaders headers) throws UnauthorizedException {
         // TODO in issue #11
         return "gisaia";
     }

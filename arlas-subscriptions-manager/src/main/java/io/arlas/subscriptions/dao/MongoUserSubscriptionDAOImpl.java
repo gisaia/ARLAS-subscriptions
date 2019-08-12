@@ -19,6 +19,7 @@
 
 package io.arlas.subscriptions.dao;
 
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -32,11 +33,12 @@ import java.util.*;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.set;
 import static io.arlas.subscriptions.utils.UUIDHelper.generateUUID;
 
 public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
-    private  MongoCollection<UserSubscription> mongoCollection;
+    private MongoCollection<UserSubscription> mongoCollection;
 
     public MongoUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged) throws ArlasSubscriptionsException {
         MongoDatabase mongoDatabase = mongoDBManaged.
@@ -46,10 +48,10 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public  List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException {
+    public List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException {
 
         List<UserSubscription> userSubscriptionFind = new ArrayList<>();
-        try(MongoCursor<UserSubscription> userSubscriptions = this.mongoCollection.find().iterator()) {
+        try (MongoCursor<UserSubscription> userSubscriptions = this.mongoCollection.find().iterator()) {
             while (userSubscriptions.hasNext()) {
                 final UserSubscription userSubscription = userSubscriptions.next();
                 userSubscriptionFind.add(userSubscription);
@@ -64,8 +66,19 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
+    public void setUserSubscriptionDeletedFlag(UserSubscription userSubscription, boolean isDeleted) throws ArlasSubscriptionsException {
+        try {
+            if (!this.mongoCollection.updateOne(eq("_id", userSubscription.getId()), set("deleted", isDeleted)).wasAcknowledged()) {
+                throw new ArlasSubscriptionsException("userSubscription update in DB not acknowledged");
+            }
+        } catch (MongoException e) {
+            throw new ArlasSubscriptionsException("userSubscription update in DB failed",e);
+        }
+    }
+
+    @Override
     public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
-        try{
+        try {
             UUID uuid = generateUUID();
             userSubscription.setId(uuid.toString());
             userSubscription.setCreated_at(new Date().getTime());
@@ -73,7 +86,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
             userSubscription.setCreated_by_admin(false);
             userSubscription.setDeleted(false);
             this.mongoCollection.insertOne(userSubscription);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ArlasSubscriptionsException("Can not insert userSubscription in mongo.", e);
         }
         return userSubscription;
@@ -87,7 +100,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     private MongoCollection<UserSubscription> initSubscriptionsCollection(MongoDatabase mongoDatabase) throws ArlasSubscriptionsException {
         boolean collectionExists = mongoDatabase.listCollectionNames()
                 .into(new ArrayList<>()).contains("arlas-subscription");
-        if(!collectionExists){
+        if (!collectionExists) {
             mongoDatabase.createCollection("arlas-subscription");
         }
         return mongoDatabase.getCollection("arlas-subscription",UserSubscription.class) ;

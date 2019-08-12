@@ -27,9 +27,7 @@ import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
-import org.locationtech.jts.io.ParseException;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,16 +47,12 @@ public class UserSubscriptionManagerService {
         return  this.daoDatabase.getAllUserSubscriptions();
     }
 
-    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException, IOException, ParseException {
-        UserSubscription userSubscriptionForIndex;
-        try{
-            userSubscriptionForIndex =  this.daoDatabase.postUserSubscription(userSubscription);
-        }catch(ArlasSubscriptionsException e){
-            throw new ArlasSubscriptionsException("Insert userSubscription in mongo failed",e);
-        }
-        try{
+    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+        UserSubscription userSubscriptionForIndex = this.daoDatabase.postUserSubscription(userSubscription);
+
+        try {
             this.daoIndexDatabase.postUserSubscription(userSubscriptionForIndex);
-        }catch(ArlasSubscriptionsException e){
+        } catch (ArlasSubscriptionsException e) {
             this.daoDatabase.deleteUserSubscription(userSubscriptionForIndex.getId());
             throw new ArlasSubscriptionsException("Index userSubscription in ES failed",e);
         }
@@ -67,5 +61,16 @@ public class UserSubscriptionManagerService {
 
     public Optional<UserSubscription> getUserSubscription(String user, String id) {
         return this.daoDatabase.getUserSubscription(user, id);
+    }
+
+    public void deleteUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+        this.daoDatabase.setUserSubscriptionDeletedFlag(userSubscription, true);
+
+        try {
+            this.daoIndexDatabase.setUserSubscriptionDeletedFlag(userSubscription, true);
+        } catch (ArlasSubscriptionsException e) {
+            this.daoDatabase.setUserSubscriptionDeletedFlag(userSubscription, false);
+            throw new ArlasSubscriptionsException("userSubscription update in ES failed",e);
+        }
     }
 }
