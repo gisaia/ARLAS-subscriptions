@@ -178,6 +178,7 @@ public class DataSetTool {
         UserSubscription subscription = new UserSubscription();
         subscription.active = true;
         subscription.created_by = "gisaia";
+        subscription.starts_at = 1564578988l;
         subscription.expires_at = 2145913200l;
         subscription.title = "Test Subscription";
         subscription.setCreated_at(1564578988l);

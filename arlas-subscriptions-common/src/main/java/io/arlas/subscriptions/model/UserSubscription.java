@@ -42,6 +42,9 @@ public class UserSubscription {
     public Boolean active;
     @NotNull
     @JsonProperty(required = true)
+    public Long starts_at;
+    @NotNull
+    @JsonProperty(required = true)
     public Long expires_at;
     @NotEmpty
     @JsonProperty(required = true)
