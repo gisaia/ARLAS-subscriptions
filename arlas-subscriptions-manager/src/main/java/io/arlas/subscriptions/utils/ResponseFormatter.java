@@ -23,6 +23,7 @@ import io.arlas.subscriptions.model.response.Success;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 
 public class ResponseFormatter {
 
@@ -37,6 +38,10 @@ public class ResponseFormatter {
 
     public static Response getAcceptedResponse(Object object) {
         return Response.accepted(object).type(MediaType.APPLICATION_JSON).build();
+    }
+
+    public static Response getCreatedResponse(URI location, Object object) {
+        return Response.created(location).type(MediaType.APPLICATION_JSON).entity(object).build();
     }
 
     public static Response getFileResponse(Object object, String fileName) {

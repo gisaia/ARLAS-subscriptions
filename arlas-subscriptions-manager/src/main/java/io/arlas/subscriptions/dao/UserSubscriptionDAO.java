@@ -39,4 +39,6 @@ public interface UserSubscriptionDAO {
     Optional<UserSubscription> getUserSubscription(String user, String id);
 
     void setUserSubscriptionDeletedFlag(UserSubscription userSubscription, boolean isDeleted) throws ArlasSubscriptionsException;
+
+    void putUserSubscription(UserSubscription updUserSubscription) throws ArlasSubscriptionsException;
 }

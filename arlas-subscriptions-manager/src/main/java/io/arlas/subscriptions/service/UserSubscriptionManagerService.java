@@ -28,6 +28,7 @@ import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,5 +73,22 @@ public class UserSubscriptionManagerService {
             this.daoDatabase.setUserSubscriptionDeletedFlag(userSubscription, false);
             throw new ArlasSubscriptionsException("userSubscription update in ES failed",e);
         }
+    }
+
+    public UserSubscription putUserSubscription(String user, UserSubscription oldUserSubscription, UserSubscription updUserSubscription) throws ArlasSubscriptionsException {
+        updUserSubscription.setId(oldUserSubscription.getId());
+        updUserSubscription.setCreated_at(oldUserSubscription.getCreated_at());
+        updUserSubscription.setModified_at(new Date().getTime());
+        updUserSubscription.setCreated_by_admin(oldUserSubscription.getCreated_by_admin());
+        updUserSubscription.setDeleted(oldUserSubscription.getDeleted());
+
+        this.daoDatabase.putUserSubscription(updUserSubscription);
+        try {
+            this.daoIndexDatabase.putUserSubscription(updUserSubscription);
+        } catch (ArlasSubscriptionsException e) {
+            this.daoDatabase.putUserSubscription(oldUserSubscription);
+            throw new ArlasSubscriptionsException("userSubscription update in ES failed",e);
+        }
+        return updUserSubscription;
     }
 }

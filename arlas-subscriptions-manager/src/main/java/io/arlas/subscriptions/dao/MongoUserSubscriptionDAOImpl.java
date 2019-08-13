@@ -93,6 +93,17 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
+    public void putUserSubscription(UserSubscription updUserSubscription) throws ArlasSubscriptionsException {
+        try {
+            if (!this.mongoCollection.replaceOne(eq("_id", updUserSubscription.getId()), updUserSubscription).wasAcknowledged()) {
+                throw new ArlasSubscriptionsException("userSubscription update in DB not acknowledged");
+            }
+        } catch (MongoException e) {
+            throw new ArlasSubscriptionsException("userSubscription update in DB failed",e);
+        }
+    }
+
+    @Override
     public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException {
         this.mongoCollection.deleteOne(new Document("_id", ref));
     }
