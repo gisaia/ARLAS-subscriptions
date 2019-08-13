@@ -108,7 +108,8 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
         Map<String, Object> jsonAsMap = new HashMap<>();
         jsonAsMap.put("created_by","gisaia");
         jsonAsMap.put("active",true);
-        jsonAsMap.put("expires_at",-1);
+        jsonAsMap.put("starts_at",1564578988l);
+        jsonAsMap.put("expires_at",2145913200l);
         jsonAsMap.put("title","title");
         UserSubscription.Hits hits = new UserSubscription.Hits();
         hits.filter="filter";

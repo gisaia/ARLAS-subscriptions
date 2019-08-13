@@ -28,7 +28,6 @@ import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import org.geojson.GeoJsonObject;
 import org.geojson.LngLatAlt;
 import org.geojson.Point;
-
 import org.geojson.Polygon;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.locationtech.jts.algorithm.Centroid;
@@ -36,7 +35,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +64,7 @@ public class IndexedUserSubscription extends UserSubscription {
         this.setDeleted(userSubscription.getDeleted());
         this.created_by = userSubscription.created_by;
         this.active = userSubscription.active;
+        this.starts_at = userSubscription.starts_at;
         this.expires_at = userSubscription.expires_at;
         this.title = userSubscription.title;
         this.subscription = userSubscription.subscription;
