@@ -314,7 +314,8 @@ public class DataSetTool {
         GetResponse response = client.prepareGet(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, id).get();
         UserSubscription us = mapper.readValue(response.getSourceAsString(), UserSubscription.class);
         Map map = response.getSourceAsMap();
-        us.setDeleted(Boolean.valueOf((String)map.get("deleted")));
+        Object deleted = map.get("deleted");
+        us.setDeleted(deleted instanceof String ? Boolean.valueOf((String)map.get("deleted")) : (Boolean)deleted);
         return us;
     }
 

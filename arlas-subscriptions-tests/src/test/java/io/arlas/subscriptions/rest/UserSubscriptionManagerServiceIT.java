@@ -33,9 +33,9 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
-
 
     @Test
     public void testGetAllUserSubscriptions() throws Exception {
@@ -60,25 +60,7 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
 
     @Test
     public void testPostUserSubscription() throws Exception{
-
-        Map<String, Object> jsonAsMap = new HashMap<>();
-        jsonAsMap.put("created_by","John Doe");
-        jsonAsMap.put("active",true);
-        jsonAsMap.put("expires_at",-1);
-        jsonAsMap.put("title","title");
-        UserSubscription.Hits hits = new UserSubscription.Hits();
-        hits.filter="filter";
-        hits.projection="projection";
-        UserSubscription.Subscription subscription = new UserSubscription.Subscription();
-        Map<String, Object> trigger = new HashMap<>();
-        trigger.put("correlationId","2007");
-        subscription.callback ="callback";
-        subscription.hits =hits;
-        subscription.trigger = trigger;
-        Map<String, String> userMetadatas = new HashMap<>();
-        userMetadatas.put("correlationId","2007");
-        jsonAsMap.put("userMetadatas",userMetadatas);
-        jsonAsMap.put("subscription",subscription);
+        Map<String, Object> jsonAsMap = generateTestSubscription();
         given().contentType("application/json")
                 .when().body(jsonAsMap)
                 .post(arlasSubManagerPath + "subscriptions/")
@@ -99,6 +81,18 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
     }
 
     @Test
+    public void testPutUserSubscription() throws Exception{
+        Map<String, Object> jsonAsMap = generateTestSubscription();
+        given().contentType("application/json")
+                .when().body(jsonAsMap)
+                .put(arlasSubManagerPath + "subscriptions/1234")
+                .then().statusCode(201)
+                .body("title", equalTo("title"));
+        assertThat(DataSetTool.getUserSubscriptionFromMongo("1234").get().title, is("title"));
+        assertThat(DataSetTool.getUserSubscriptionFromES("1234").title, is("title"));
+    }
+
+    @Test
     public void testDeleteExistingUserSubscription() throws Exception {
         when().delete(arlasSubManagerPath + "subscriptions/1234")
                 .then()
@@ -108,6 +102,28 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
 
         assertTrue(DataSetTool.getUserSubscriptionFromMongo("1234").get().getDeleted());
         assertTrue(DataSetTool.getUserSubscriptionFromES("1234").getDeleted());
+    }
+
+    private Map<String, Object> generateTestSubscription() {
+        Map<String, Object> jsonAsMap = new HashMap<>();
+        jsonAsMap.put("created_by","gisaia");
+        jsonAsMap.put("active",true);
+        jsonAsMap.put("expires_at",-1);
+        jsonAsMap.put("title","title");
+        UserSubscription.Hits hits = new UserSubscription.Hits();
+        hits.filter="filter";
+        hits.projection="projection";
+        UserSubscription.Subscription subscription = new UserSubscription.Subscription();
+        Map<String, Object> trigger = new HashMap<>();
+        trigger.put("correlationId","2007");
+        subscription.callback ="callback";
+        subscription.hits =hits;
+        subscription.trigger = trigger;
+        Map<String, String> userMetadatas = new HashMap<>();
+        userMetadatas.put("correlationId","2007");
+        jsonAsMap.put("userMetadatas",userMetadatas);
+        jsonAsMap.put("subscription",subscription);
+        return jsonAsMap;
     }
 
     private void getAllUserSubscriptions(Matcher matcher) throws InterruptedException {

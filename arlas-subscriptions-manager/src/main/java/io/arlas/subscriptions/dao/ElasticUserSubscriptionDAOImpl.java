@@ -83,6 +83,11 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     }
 
     @Override
+    public void putUserSubscription(UserSubscription updUserSubscription) throws ArlasSubscriptionsException {
+        postUserSubscription(updUserSubscription);
+    }
+
+    @Override
     public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException {
     }
 
