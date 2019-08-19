@@ -87,7 +87,7 @@ public class UserSubscriptionManagerController {
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions(user);
+        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions(user, false);
         return ResponseFormatter.getResultResponse(userSubscriptions);
     }
 
@@ -126,7 +126,7 @@ public class UserSubscriptionManagerController {
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id)
+        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 
         return ResponseFormatter.getResultResponse(userSubscription);
@@ -167,7 +167,7 @@ public class UserSubscriptionManagerController {
                         @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id)
+        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
         subscriptionManagerService.deleteUserSubscription(userSubscription);
 
@@ -255,7 +255,7 @@ public class UserSubscriptionManagerController {
 
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        UserSubscription oldUserSubscription = subscriptionManagerService.getUserSubscription(user, id)
+        UserSubscription oldUserSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 
         // we must ensure that:
