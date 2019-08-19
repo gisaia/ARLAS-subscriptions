@@ -21,6 +21,7 @@ package io.arlas.subscriptions.rest;
 
 import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.DataSetTool;
+import io.arlas.subscriptions.model.UserSubscription;
 import io.restassured.http.ContentType;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -87,7 +88,17 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
     }
 
     @Test
-    public void test06PutUserSubscription() throws Exception {
+    public void test06PostInvalidUserSubscription() {
+        Map<String,Object> jsonAsMap = generateTestSubscription();
+        ((UserSubscription.Subscription )jsonAsMap.get("subscription")).trigger.put("job","Aviator");
+        given().contentType("application/json")
+                .when().body(jsonAsMap)
+                .post(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(500);
+    }
+
+    @Test
+    public void test07PutUserSubscription() throws Exception {
         given().contentType("application/json")
                 .when().body(generateTestSubscription())
                 .put(arlasSubManagerPath + "subscriptions/1234")
@@ -99,7 +110,7 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
     }
 
     @Test
-    public void test07DeleteExistingUserSubscription() throws Exception {
+    public void test08DeleteExistingUserSubscription() throws Exception {
         when()
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
