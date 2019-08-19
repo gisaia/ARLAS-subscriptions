@@ -28,11 +28,15 @@ public abstract class AbstractTestContext {
     static Logger LOGGER = LoggerFactory.getLogger(AbstractTestContext.class);
 
     protected static String arlasSubManagerPath;
+    protected static String identityHeader;
+    protected static String identityAdmin;
 
     public AbstractTestContext() {
     }
 
     static {
+        identityHeader = Optional.ofNullable(System.getenv("ARLAS_SUB_IDENTITY_HEADER")).orElse("");
+        identityAdmin = Optional.ofNullable(System.getenv("ARLAS_SUB_IDENTITY_ADMIN")).orElse("admin");
         String arlasSubManagerHost = Optional.ofNullable(System.getenv("ARLAS_SUB_MANAGER_HOST")).orElse("localhost");
         int arlasSubManagerPort = Integer.valueOf(Optional.ofNullable(System.getenv("ARLAS_SUB_MANAGER_PORT")).orElse("9998"));
         RestAssured.baseURI = "http://" + arlasSubManagerHost;

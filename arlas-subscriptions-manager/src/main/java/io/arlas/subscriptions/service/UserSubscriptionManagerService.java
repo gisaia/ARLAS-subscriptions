@@ -48,15 +48,15 @@ public class UserSubscriptionManagerService {
         this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration,elasticDBManaged,jsonSchemaValidator);
     }
 
-    public List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException {
-        return  this.daoDatabase.getAllUserSubscriptions();
+    public List<UserSubscription> getAllUserSubscriptions(String user) throws ArlasSubscriptionsException {
+        return  this.daoDatabase.getAllUserSubscriptions(user);
     }
 
-    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
-        UserSubscription userSubscriptionForIndex = this.daoDatabase.postUserSubscription(userSubscription);
+    public UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException {
+        UserSubscription userSubscriptionForIndex = this.daoDatabase.postUserSubscription(userSubscription, createdByAdmin);
 
         try {
-            this.daoIndexDatabase.postUserSubscription(userSubscriptionForIndex);
+            this.daoIndexDatabase.postUserSubscription(userSubscriptionForIndex, createdByAdmin);
         } catch (ArlasSubscriptionsException e) {
             this.daoDatabase.deleteUserSubscription(userSubscriptionForIndex.getId());
             throw new ArlasSubscriptionsException("Index userSubscription in ES failed",e);

@@ -89,7 +89,8 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
         environment.lifecycle().manage(mongoDBManaged);
         environment.lifecycle().manage(elasticDBManaged);
         UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration,mongoDBManaged,elasticDBManaged);
-        UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService);
+        UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService,
+                configuration.identityHeader, configuration.identityAdmin);
         environment.jersey().register(subscriptionsManagerController);
     }
 }

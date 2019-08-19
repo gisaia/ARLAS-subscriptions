@@ -89,6 +89,7 @@ docker run --rm \
 	maven:3.5.0-jdk-8 \
 	mvn clean install
 echo "arlas-subscriptions:${ARLAS_SUBSCRIPTIONS_VERSION}"
+if [ "$STAGE" == "MANAGER_AUTH" ]; then run_manager;fi
 if [ "$STAGE" == "MANAGER" ]; then run_manager;fi
 if [ "$STAGE" == "MATCHER" ]; then run_matcher;fi
 if [ "$STAGE" == "DUMMY" ]; then run_dummy;fi

@@ -30,9 +30,9 @@ import java.util.Optional;
 public interface UserSubscriptionDAO {
     Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionDAO.class);
 
-    List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException;
+    List<UserSubscription> getAllUserSubscriptions(String user) throws ArlasSubscriptionsException;
 
-    UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException;
+    UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException;
 
     void deleteUserSubscription(String ref) throws ArlasSubscriptionsException;
 

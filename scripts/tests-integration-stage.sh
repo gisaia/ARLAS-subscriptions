@@ -78,7 +78,30 @@ function test_manager() {
             --net arlas-subscriptions_default \
             maven:3.5.0-jdk-8 \
             mvn -Dit.test=UserSubscriptionManagerServiceIT verify -DskipTests=false  -DfailIfNoTests=false
+}
 
+function test_manager_auth() {
+        export ARLAS_SUB_IDENTITY_HEADER="x-identity"
+        start_stack
+        docker run --rm \
+            -w /opt/maven \
+            -v $PWD:/opt/maven \
+            -v $HOME/.m2:/root/.m2 \
+            -e ARLAS_SUB_MANAGER_HOST="arlas-subscriptions-manager" \
+            -e ARLAS_SUB_MANAGER_PORT="9998" \
+            -e MONGO_HOST="mongodb" \
+            -e MONGO_PORT="27017" \
+            -e MONGO_DATABASE="subscription" \
+            -e ARLAS_ELASTIC_HOST="elasticsearch" \
+            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9300" \
+            -e ARLAS_SUB_ELASTIC_SNIFFING="false" \
+            -e ARLAS_SUB_ELASTIC_INDEX="subs" \
+            -e ARLAS_SUB_ELASTIC_TYPE="sub_type"\
+            -e ARLAS_SUB_ELASTIC_CLUSTER="elasticsearch" \
+            -e ARLAS_SUB_IDENTITY_HEADER="x-identity" \
+            --net arlas-subscriptions_default \
+            maven:3.5.0-jdk-8 \
+            mvn -Dit.test=UserSubscriptionAuthManagerServiceIT verify -DskipTests=false  -DfailIfNoTests=false
 }
 
 function test_matcher() {
@@ -94,7 +117,6 @@ function test_matcher() {
             --net arlas-subscriptions_default \
             maven:3.5.0-jdk-8 \
             mvn -Dit.test=SubscriptionsMatcherIT verify -DskipTests=false  -DfailIfNoTests=false
-
 }
 
 function test_dummy() {
@@ -111,10 +133,10 @@ function test_dummy() {
             --net arlas-subscriptions_default \
             maven:3.5.0-jdk-8 \
             mvn -Dit.test=DummyIT verify -DskipTests=false  -DfailIfNoTests=false
-
 }
 
 echo "===> run integration tests"
+if [ "$STAGE" == "MANAGER_AUTH" ]; then test_manager_auth; fi
 if [ "$STAGE" == "MANAGER" ]; then test_manager; fi
 if [ "$STAGE" == "MATCHER" ]; then test_matcher; fi
 if [ "$STAGE" == "DUMMY" ]; then test_dummy; fi
