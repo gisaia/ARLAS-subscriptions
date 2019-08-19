@@ -65,7 +65,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
 
     @Override
-    public List<UserSubscription> getAllUserSubscriptions(String user) throws ArlasSubscriptionsException {
+    public List<UserSubscription> getAllUserSubscriptions(String user, boolean getDeleted) throws ArlasSubscriptionsException {
         return null;
     }
 
@@ -99,7 +99,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     }
 
     @Override
-    public Optional<UserSubscription> getUserSubscription(String user, String id) {
+    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean getDeleted) {
         return Optional.empty();
     }
 

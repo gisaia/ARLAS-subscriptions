@@ -52,12 +52,22 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public List<UserSubscription> getAllUserSubscriptions(String user) throws ArlasSubscriptionsException {
+    public List<UserSubscription> getAllUserSubscriptions(String user, boolean getDeleted) throws ArlasSubscriptionsException {
 
         List<UserSubscription> userSubscriptionFind = new ArrayList<>();
-        try (MongoCursor<UserSubscription> userSubscriptions = (user == null ?
-                this.mongoCollection.find().iterator() :
-                this.mongoCollection.find(eq("created_by", user)).iterator())) {
+        try (MongoCursor<UserSubscription> userSubscriptions =
+                     // user == null && getDeleted == true
+                     (user == null && getDeleted ? this.mongoCollection.find() :
+                             // user == null && getDeleted == false
+                             (user == null ? this.mongoCollection.find(eq("deleted", Boolean.FALSE)) :
+                                     // user != null && getDeleted == true
+                                     (getDeleted ? this.mongoCollection.find(eq("created_by", user)) :
+                                             // user != null && getDeleted == false
+                                             this.mongoCollection.find(and(eq("deleted", Boolean.FALSE), eq("created_by", user)))
+                                     )
+                             )
+                     ).iterator()
+        ) {
             while (userSubscriptions.hasNext()) {
                 final UserSubscription userSubscription = userSubscriptions.next();
                 userSubscriptionFind.add(userSubscription);
@@ -67,12 +77,20 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public Optional<UserSubscription> getUserSubscription(String user, String id) {
-        if (user == null) {
-            return Optional.ofNullable(this.mongoCollection.find(eq("_id", id)).first());
-        } else {
-            return Optional.ofNullable(this.mongoCollection.find(and(eq("created_by", user), eq("_id", id))).first());
-        }
+    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean getDeleted) {
+
+        return Optional.ofNullable(
+                (user == null && getDeleted ? this.mongoCollection.find(eq("_id", id)) :
+                        // user == null && getDeleted == false
+                        (user == null ? this.mongoCollection.find(and(eq("deleted", Boolean.FALSE), eq("_id", id))) :
+                                // user != null && getDeleted == true
+                                (getDeleted ? this.mongoCollection.find(and(eq("created_by", user), eq("_id", id))) :
+                                        // user != null && getDeleted == false
+                                        this.mongoCollection.find(and(eq("deleted", Boolean.FALSE), eq("created_by", user), eq("_id", id)))
+                                )
+                        )
+                ).first()
+        );
     }
 
     @Override

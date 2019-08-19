@@ -100,6 +100,12 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
 
     @Test
     public void test07DeleteExistingUserSubscription() throws Exception {
+        when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(2));
+
         when().delete(arlasSubManagerPath + "subscriptions/1234")
                 .then()
                 .statusCode(202)
@@ -108,5 +114,11 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
 
         assertTrue(DataSetTool.getUserSubscriptionFromMongo("1234").get().getDeleted());
         assertTrue(DataSetTool.getUserSubscriptionFromES("1234").getDeleted());
+
+        when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(1));
     }
 }
