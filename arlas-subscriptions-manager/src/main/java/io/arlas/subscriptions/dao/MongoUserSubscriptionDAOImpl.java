@@ -27,7 +27,9 @@ import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
+import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import org.bson.Document;
+import org.everit.json.schema.ValidationException;
 
 import java.util.*;
 
@@ -39,12 +41,14 @@ import static io.arlas.subscriptions.utils.UUIDHelper.generateUUID;
 public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
     private MongoCollection<UserSubscription> mongoCollection;
+    private JsonSchemaValidator jsonSchemaValidator;
 
-    public MongoUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged) throws ArlasSubscriptionsException {
+    public MongoUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged,JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
         MongoDatabase mongoDatabase = mongoDBManaged.
                     mongoClient.
                     getDatabase(configuration.getMongoDBConnection().database);
             this.mongoCollection = this.initSubscriptionsCollection(mongoDatabase);
+            this.jsonSchemaValidator = jsonSchemaValidator;
     }
 
     @Override
@@ -79,6 +83,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     @Override
     public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
         try {
+            this.jsonSchemaValidator.validJsonObjet(userSubscription.subscription.trigger);
             UUID uuid = generateUUID();
             userSubscription.setId(uuid.toString());
             userSubscription.setCreated_at(new Date().getTime());
@@ -86,7 +91,9 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
             userSubscription.setCreated_by_admin(false);
             userSubscription.setDeleted(false);
             this.mongoCollection.insertOne(userSubscription);
-        } catch (Exception e) {
+        } catch (ValidationException e) {
+            throw new ArlasSubscriptionsException("Error in validation of trigger json schema :" + e.getErrorMessage(),e);
+        } catch (MongoException e) {
             throw new ArlasSubscriptionsException("Can not insert userSubscription in mongo.", e);
         }
         return userSubscription;
@@ -95,11 +102,16 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     @Override
     public void putUserSubscription(UserSubscription updUserSubscription) throws ArlasSubscriptionsException {
         try {
+            this.jsonSchemaValidator.validJsonObjet(updUserSubscription.subscription.trigger);
             if (!this.mongoCollection.replaceOne(eq("_id", updUserSubscription.getId()), updUserSubscription).wasAcknowledged()) {
                 throw new ArlasSubscriptionsException("userSubscription update in DB not acknowledged");
             }
+        } catch (ValidationException e) {
+            throw new ArlasSubscriptionsException("Error in validation of trigger json schema :" + e.getErrorMessage(),e);
         } catch (MongoException e) {
             throw new ArlasSubscriptionsException("userSubscription update in DB failed",e);
+        } catch (Exception e) {
+            throw new ArlasSubscriptionsException("Can not update userSubscription in mongo.", e);
         }
     }
 

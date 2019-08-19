@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
-
+export ARLAS_SUB_TRIG_SCHEM_PATH="/opt/app/trigger.schema.json"
+export ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL="./arlas-subscriptions-tests/src/test/resources/trigger.schema.json"
 function clean_docker {
     ./scripts/docker-clean.sh
     echo "===> clean maven repository"
