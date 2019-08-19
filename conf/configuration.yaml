@@ -9,6 +9,10 @@ kafka:
   kafka-topic-subscription-events: ${KAFKA_TOPIC_SUBSCRIPTION_EVENTS:-subscription_events}
   kafka-topic-notification-orders: ${KAFKA_TOPIC_NOTIFICATION_ORDERS:-notification_orders}
 
+#################################################
+############ ARLAS ENDPOINTS      ###############
+#################################################
+
 arlas-subscriptions-basePath: ${ARLAS_SUBSCRIPTIONS_BASE_PATH:-http://localhost:9999}
 arlas-subscriptions-searchEndpoint: ${ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT:-/arlas/explore/subscriptions/_search}
 arlas-subscriptions-subscriptionFilterRoot: gintersect={md.geometry}&f=subscription.trigger.event:eq:{operation}&f=subscription.trigger.job:eq:{collection}&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id
@@ -93,7 +97,10 @@ elastic:
   type: ${ARLAS_SUB_ELASTIC_TYPE:-sub_type}
 
 ########################################################
-############ Subcription DATA model                     ###############
+############ Subcription DATA model      ###############
 ########################################################
 trigger-geometry-key: ${ARLAS_SUB_GEOM_KEY:-geometry}
 trigger-centroid-key: ${ARLAS_SUB_CENT_KEY:-centroid}
+
+identity-header: ${ARLAS_SUB_IDENTITY_HEADER:-}
+identity-admin: ${ARLAS_SUB_IDENTITY_ADMIN:-admin}

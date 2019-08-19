@@ -52,10 +52,12 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException {
+    public List<UserSubscription> getAllUserSubscriptions(String user) throws ArlasSubscriptionsException {
 
         List<UserSubscription> userSubscriptionFind = new ArrayList<>();
-        try (MongoCursor<UserSubscription> userSubscriptions = this.mongoCollection.find().iterator()) {
+        try (MongoCursor<UserSubscription> userSubscriptions = (user == null ?
+                this.mongoCollection.find().iterator() :
+                this.mongoCollection.find(eq("created_by", user)).iterator())) {
             while (userSubscriptions.hasNext()) {
                 final UserSubscription userSubscription = userSubscriptions.next();
                 userSubscriptionFind.add(userSubscription);
@@ -66,7 +68,11 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
     @Override
     public Optional<UserSubscription> getUserSubscription(String user, String id) {
-        return Optional.ofNullable(this.mongoCollection.find(and(eq("created_by", user), eq("_id", id))).first());
+        if (user == null) {
+            return Optional.ofNullable(this.mongoCollection.find(eq("_id", id)).first());
+        } else {
+            return Optional.ofNullable(this.mongoCollection.find(and(eq("created_by", user), eq("_id", id))).first());
+        }
     }
 
     @Override
@@ -81,14 +87,14 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+    public UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException {
         try {
             this.jsonSchemaValidator.validJsonObjet(userSubscription.subscription.trigger);
             UUID uuid = generateUUID();
             userSubscription.setId(uuid.toString());
             userSubscription.setCreated_at(new Date().getTime());
             userSubscription.setModified_at(new Date().getTime());
-            userSubscription.setCreated_by_admin(false);
+            userSubscription.setCreated_by_admin(createdByAdmin);
             userSubscription.setDeleted(false);
             this.mongoCollection.insertOne(userSubscription);
         } catch (ValidationException e) {

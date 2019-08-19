@@ -21,39 +21,41 @@ package io.arlas.subscriptions.rest;
 
 import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.DataSetTool;
-import io.arlas.subscriptions.model.UserSubscription;
 import io.restassured.http.ContentType;
-import org.geojson.LngLatAlt;
-import org.geojson.Polygon;
-import org.hamcrest.Matcher;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static junit.framework.TestCase.assertTrue;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
 
     @Test
-    public void testGetAllUserSubscriptions() throws Exception {
-        // GET all collections
-        getAllUserSubscriptions(emptyArray());
+    public void test01GetAllUserSubscriptions() {
+        when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(1));
     }
 
     @Test
-    public void testGetUserSubscriptionNotFound() throws Exception {
+    public void test02GetUserSubscriptionNotFound()  {
         when().get(arlasSubManagerPath + "subscriptions/foo")
                 .then().statusCode(404);
     }
 
     @Test
-    public void testGetUserSubscriptionFound() throws Exception {
+    public void test03GetUserSubscriptionFound() {
         when().get(arlasSubManagerPath + "subscriptions/1234")
                 .then()
                 .statusCode(200)
@@ -62,19 +64,20 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
     }
 
     @Test
-    public void testPostUserSubscription() throws Exception{
-        Map<String, Object> jsonAsMap = generateTestSubscription();
-        given().contentType("application/json")
-                .when().body(jsonAsMap)
+    public void test04PostUserSubscription() throws Exception {
+        String id = given().contentType("application/json")
+                .body(generateTestSubscription())
                 .post(arlasSubManagerPath + "subscriptions/")
-                .then().statusCode(200);
-        getAllUserSubscriptions(hasSize(1));
-        getAllUserSubscriptions(hasItem(hasProperty("created_by",hasValue("John Doe"))));
+                .then().statusCode(200)
+                .body("title", equalTo("title"))
+                .extract().jsonPath().get("id");
 
+        assertThat(DataSetTool.getUserSubscriptionFromMongo(id).get().title, is("title"));
+        assertThat(DataSetTool.getUserSubscriptionFromES(id).title, is("title"));
     }
 
     @Test
-    public void testPostInvalidUserSubscription() throws Exception{
+    public void test05PostInvalidUserSubscription() {
         Map<String, Object> jsonAsMap = new HashMap<>();
         jsonAsMap.put("created_by","John Doe");
         given().contentType("application/json")
@@ -84,19 +87,19 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
     }
 
     @Test
-    public void testPutUserSubscription() throws Exception{
-        Map<String, Object> jsonAsMap = generateTestSubscription();
+    public void test06PutUserSubscription() throws Exception {
         given().contentType("application/json")
-                .when().body(jsonAsMap)
+                .when().body(generateTestSubscription())
                 .put(arlasSubManagerPath + "subscriptions/1234")
                 .then().statusCode(201)
                 .body("title", equalTo("title"));
+
         assertThat(DataSetTool.getUserSubscriptionFromMongo("1234").get().title, is("title"));
         assertThat(DataSetTool.getUserSubscriptionFromES("1234").title, is("title"));
     }
 
     @Test
-    public void testDeleteExistingUserSubscription() throws Exception {
+    public void test07DeleteExistingUserSubscription() throws Exception {
         when().delete(arlasSubManagerPath + "subscriptions/1234")
                 .then()
                 .statusCode(202)
@@ -106,64 +109,4 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
         assertTrue(DataSetTool.getUserSubscriptionFromMongo("1234").get().getDeleted());
         assertTrue(DataSetTool.getUserSubscriptionFromES("1234").getDeleted());
     }
-
-    private Map<String, Object> generateTestSubscription() {
-        Map<String, Object> jsonAsMap = new HashMap<>();
-        jsonAsMap.put("created_by","gisaia");
-        jsonAsMap.put("active",true);
-        jsonAsMap.put("starts_at",1564578988l);
-        jsonAsMap.put("expires_at",2145913200l);
-        jsonAsMap.put("title","title");
-        UserSubscription.Hits hits = new UserSubscription.Hits();
-        hits.filter="filter";
-        hits.projection="projection";
-        UserSubscription.Subscription subscription = new UserSubscription.Subscription();
-        Map<String, Object> trigger = new HashMap<>();
-        JSONObject coverage = new JSONObject();
-        JSONArray jsonArrayExt = new JSONArray();
-        List<LngLatAlt> coords = new ArrayList<>();
-        coords.add(new LngLatAlt(-50, 50));
-        coords.add(new LngLatAlt(50, 50));
-        coords.add(new LngLatAlt(50, -50));
-        coords.add(new LngLatAlt(-50, -50));
-        coords.add(new LngLatAlt(-50, 50));
-        new Polygon(coords).getExteriorRing().forEach(lngLatAlt -> {
-            JSONArray jsonArrayLngLat = new JSONArray();
-            jsonArrayLngLat.add(0, lngLatAlt.getLongitude());
-            jsonArrayLngLat.add(1, lngLatAlt.getLatitude());
-            jsonArrayExt.add(jsonArrayLngLat);
-        });
-        JSONArray jsonArray = new JSONArray();
-        jsonArray.add(jsonArrayExt);
-        coverage.put("type", "Polygon");
-        coverage.put("coordinates", jsonArray);
-        trigger.put("geometry", coverage);
-        trigger.put("job", Arrays.asList("Actor"));
-        trigger.put("event", Arrays.asList("UPDATE"));
-        trigger.put("correlationId","2007");
-        subscription.callback ="callback";
-        subscription.hits =hits;
-        subscription.trigger = trigger;
-        Map<String, String> userMetadatas = new HashMap<>();
-        userMetadatas.put("correlationId","2007");
-        jsonAsMap.put("userMetadatas",userMetadatas);
-        jsonAsMap.put("subscription",subscription);
-        return jsonAsMap;
-    }
-
-    private void getAllUserSubscriptions(Matcher matcher) throws InterruptedException {
-        int cpt = 0;
-        while (cpt > 0 && cpt < 5) {
-            try {
-                when().get(arlasSubManagerPath + "subscriptions/")
-                        .then().statusCode(200)
-                        .body(matcher);
-                cpt = -1;
-            } catch (Exception e) {
-                cpt++;
-                Thread.sleep(1000);
-            }
-        }
-    }
-
 }

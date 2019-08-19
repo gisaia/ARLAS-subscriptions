@@ -91,9 +91,9 @@ services:
       - ARLAS_SUB_ELASTIC_INDEX=subs
       - ARLAS_SUB_ELASTIC_TYPE=sub_type
       - ARLAS_SUB_TRIG_SCHEM_PATH=${ARLAS_SUB_TRIG_SCHEM_PATH}
+      - ARLAS_SUB_IDENTITY_HEADER=${ARLAS_SUB_IDENTITY_HEADER:-}
     volumes:
       - ${ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL}:${ARLAS_SUB_TRIG_SCHEM_PATH}
-
     ports:
       - 9998:9998
     command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST:$$MONGO_PORT $$ARLAS_SUB_ELASTIC_NODES "]

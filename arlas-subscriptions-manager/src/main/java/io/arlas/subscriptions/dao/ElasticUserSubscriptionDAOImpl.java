@@ -65,12 +65,12 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
 
     @Override
-    public List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException {
+    public List<UserSubscription> getAllUserSubscriptions(String user) throws ArlasSubscriptionsException {
         return null;
     }
 
     @Override
-    public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
+    public UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException {
         IndexResponse response = null;
         try {
             this.jsonSchemaValidator.validJsonObjet(userSubscription.subscription.trigger);
@@ -91,7 +91,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
     @Override
     public void putUserSubscription(UserSubscription updUserSubscription) throws ArlasSubscriptionsException {
-        postUserSubscription(updUserSubscription);
+        postUserSubscription(updUserSubscription, updUserSubscription.getCreated_by_admin());
     }
 
     @Override

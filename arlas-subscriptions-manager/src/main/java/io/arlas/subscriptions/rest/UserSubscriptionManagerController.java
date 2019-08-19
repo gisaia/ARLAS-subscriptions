@@ -21,6 +21,7 @@ package io.arlas.subscriptions.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
+import io.arlas.subscriptions.exception.ForbiddenException;
 import io.arlas.subscriptions.exception.NotFoundException;
 import io.arlas.subscriptions.exception.UnauthorizedException;
 import io.arlas.subscriptions.model.UserSubscription;
@@ -28,6 +29,7 @@ import io.arlas.subscriptions.model.response.Error;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.ResponseFormatter;
 import io.swagger.annotations.*;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,10 +50,14 @@ import java.util.List;
 public class UserSubscriptionManagerController {
     public Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionManagerController.class);
     public static final String UTF8JSON = MediaType.APPLICATION_JSON + ";charset=utf-8";
-    public UserSubscriptionManagerService subscriptionManagerService;
+    private final UserSubscriptionManagerService subscriptionManagerService;
+    private final String identityHeader;
+    private final String identityAdmin;
 
-    public UserSubscriptionManagerController(UserSubscriptionManagerService subscriptionManagerService) {
+    public UserSubscriptionManagerController(UserSubscriptionManagerService subscriptionManagerService, String identityHeader, String identityAdmin) {
         this.subscriptionManagerService = subscriptionManagerService;
+        this.identityHeader = identityHeader;
+        this.identityAdmin = identityAdmin;
     }
 
     @Timed
@@ -67,9 +73,10 @@ public class UserSubscriptionManagerController {
     )
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
+            @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
-    public Response getAll(
+    public Response getAll(@Context HttpHeaders headers,
             // --------------------------------------------------------
             // ----------------------- FORM -----------------------
             // --------------------------------------------------------
@@ -79,7 +86,8 @@ public class UserSubscriptionManagerController {
                     required = false)
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
-        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions();
+        String user = getUser(headers);
+        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions(user);
         return ResponseFormatter.getResultResponse(userSubscriptions);
     }
 
@@ -97,6 +105,7 @@ public class UserSubscriptionManagerController {
     )
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
+            @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
@@ -137,6 +146,7 @@ public class UserSubscriptionManagerController {
     )
     @ApiResponses(value = {@ApiResponse(code = 202, message = "Successful operation", response = UserSubscription.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
+            @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
@@ -178,9 +188,10 @@ public class UserSubscriptionManagerController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
+            @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
-    public Response post(
+    public Response post(@Context HttpHeaders headers,
             @ApiParam(name = "userSubscription",
                     value = "userSubscription",
                     required = true)
@@ -196,8 +207,11 @@ public class UserSubscriptionManagerController {
             @QueryParam(value = "pretty") Boolean pretty
 
     ) throws ArlasSubscriptionsException {
-
-        return ResponseFormatter.getResultResponse(subscriptionManagerService.postUserSubscription(userSubscription));
+        String user = getUser(headers);
+        if (user != null && !user.equals(userSubscription.created_by)) {
+            throw new ForbiddenException("New subscription does not belong to authenticated user " + user);
+        }
+        return ResponseFormatter.getResultResponse(subscriptionManagerService.postUserSubscription(userSubscription, false));
     }
 
     @Path("{id}")
@@ -214,6 +228,7 @@ public class UserSubscriptionManagerController {
     @ApiResponses(value = {@ApiResponse(code = 201, message = "Successful operation", response = UserSubscription.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
+            @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
     public Response put(@Context UriInfo uriInfo,
@@ -243,12 +258,29 @@ public class UserSubscriptionManagerController {
         UserSubscription oldUserSubscription = subscriptionManagerService.getUserSubscription(user, id)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 
+        // we must ensure that:
+        // - either identity control if OFF and both existing and updated subscription have the same creator
+        // - or identity control is ON and the updated subscription has not changed the creator (if found, the existing sub has the good creator)
+        if ( (user == null && !oldUserSubscription.created_by.equals(updUserSubscription.created_by)) ||
+                (user != null && !user.equals(updUserSubscription.created_by)) ) {
+            throw new ForbiddenException("Existing or updated subscription does not belong to authenticated user " + user);
+        }
         return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
                 subscriptionManagerService.putUserSubscription(user, oldUserSubscription, updUserSubscription));
     }
 
-    private String getUser(HttpHeaders headers) throws UnauthorizedException {
-        // TODO in issue #11
-        return "gisaia";
+    private String getUser(HttpHeaders headers) throws UnauthorizedException, ForbiddenException {
+        if (StringUtils.isEmpty(identityHeader)) {
+            return null; // header configuration not defined -> no identity control
+        } else {
+            String userId = headers.getHeaderString(identityHeader);
+            if (StringUtils.isEmpty(userId)) {
+                throw new UnauthorizedException();
+            }
+            if (userId.equals(identityAdmin)) {
+                throw new ForbiddenException();
+            }
+            return userId;
+        }
     }
 }

@@ -51,4 +51,10 @@ public class ArlasSubscriptionsConfiguration extends Configuration {
 
     @JsonProperty("trigger-centroid-key")
     public String triggerCentroidKey;
+
+    @JsonProperty("identity-header")
+    public String identityHeader;
+
+    @JsonProperty("identity-admin")
+    public String identityAdmin;
 }
