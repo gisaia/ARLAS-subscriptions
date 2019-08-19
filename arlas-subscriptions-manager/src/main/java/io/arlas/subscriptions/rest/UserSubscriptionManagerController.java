@@ -179,19 +179,20 @@ public class UserSubscriptionManagerController {
     @Produces(UTF8JSON)
     @Consumes(UTF8JSON)
     @ApiOperation(
-            value = "Add a configuration reference",
+            value = "Add a userSubscription",
             produces = UTF8JSON,
-            notes = "Add a configuration reference in the manager",
+            notes = "Add a userSubscription in the manager",
             consumes = UTF8JSON,
             response = UserSubscription.class
     )
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class),
+    @ApiResponses(value = {@ApiResponse(code = 201, message = "Successful operation", response = UserSubscription.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
-    public Response post(@Context HttpHeaders headers,
+    public Response post(@Context UriInfo uriInfo,
+            @Context HttpHeaders headers,
             @ApiParam(name = "userSubscription",
                     value = "userSubscription",
                     required = true)
@@ -211,7 +212,7 @@ public class UserSubscriptionManagerController {
         if (user != null && !user.equals(userSubscription.created_by)) {
             throw new ForbiddenException("New subscription does not belong to authenticated user " + user);
         }
-        return ResponseFormatter.getResultResponse(subscriptionManagerService.postUserSubscription(userSubscription, false));
+        return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),subscriptionManagerService.postUserSubscription(userSubscription, false));
     }
 
     @Path("{id}")

@@ -69,7 +69,7 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
         String id = given().contentType("application/json")
                 .body(generateTestSubscription())
                 .post(arlasSubManagerPath + "subscriptions/")
-                .then().statusCode(200)
+                .then().statusCode(201)
                 .body("title", equalTo("title"))
                 .extract().jsonPath().get("id");
 
