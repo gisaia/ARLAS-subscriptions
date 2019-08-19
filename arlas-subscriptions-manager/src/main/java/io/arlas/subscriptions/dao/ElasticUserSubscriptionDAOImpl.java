@@ -25,6 +25,7 @@ import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
+import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -35,6 +36,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
+import org.everit.json.schema.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,15 +50,17 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     private String arlasSubscriptionIndex;
     private String arlasSubscriptionType;
     private ArlasSubscriptionManagerConfiguration configuration;
+    private JsonSchemaValidator jsonSchemaValidator;
 
     private static ObjectMapper mapper = new ObjectMapper();
 
-    public ElasticUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, ElasticDBManaged elasticDBManaged) throws ArlasSubscriptionsException {
+    public ElasticUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, ElasticDBManaged elasticDBManaged, JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
             this.client=elasticDBManaged.esClient;
             this.arlasSubscriptionIndex = configuration.elasticDBConnection.elasticsubindex;
             this.configuration=configuration;
             this.arlasSubscriptionType = configuration.elasticDBConnection.elasticsubtype;
             this.initSubscriptionIndex();
+            this.jsonSchemaValidator=jsonSchemaValidator;
     }
 
 
@@ -69,10 +73,13 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     public UserSubscription postUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
         IndexResponse response = null;
         try {
+            this.jsonSchemaValidator.validJsonObjet(userSubscription.subscription.trigger);
             IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription,this.configuration.triggerGeometryKey,this.configuration.triggerCentroidKey);
             response = client.prepareIndex(arlasSubscriptionIndex, arlasSubscriptionType, userSubscription.getId())
                     .setSource(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON).get();
-        } catch (Exception e) {
+        }  catch (ValidationException e) {
+            throw new ArlasSubscriptionsException("Error in validation of trigger json schema :" + e.getErrorMessage(),e);
+        }catch (Exception e) {
             throw new ArlasSubscriptionsException("Can not put userSubscription.", e);
         }
         if (response.status().getStatus() != RestStatus.OK.getStatus()

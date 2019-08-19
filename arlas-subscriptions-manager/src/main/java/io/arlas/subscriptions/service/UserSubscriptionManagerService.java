@@ -27,7 +27,9 @@ import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
+import io.arlas.subscriptions.utils.JsonSchemaValidator;
 
+import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -36,12 +38,14 @@ public class UserSubscriptionManagerService {
 
     private UserSubscriptionDAO daoDatabase;
     private UserSubscriptionDAO daoIndexDatabase;
+    private final String ARLAS_SUB_TRIG_SCHEM_PATH = System.getenv("ARLAS_SUB_TRIG_SCHEM_PATH");
 
 
-    public UserSubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged, ElasticDBManaged elasticDBManaged) throws  ArlasSubscriptionsException {
-        this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration,mongoDBManaged);
-        this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration,elasticDBManaged);
+    public UserSubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged, ElasticDBManaged elasticDBManaged) throws ArlasSubscriptionsException, FileNotFoundException {
 
+        JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator(ARLAS_SUB_TRIG_SCHEM_PATH);
+        this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration,mongoDBManaged,jsonSchemaValidator);
+        this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration,elasticDBManaged,jsonSchemaValidator);
     }
 
     public List<UserSubscription> getAllUserSubscriptions() throws ArlasSubscriptionsException {

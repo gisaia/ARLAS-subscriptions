@@ -32,6 +32,7 @@ import io.arlas.subscriptions.exception.ConstraintViolationExceptionMapper;
 import io.arlas.subscriptions.exception.IllegalArgumentExceptionMapper;
 import io.arlas.subscriptions.rest.UserSubscriptionManagerController;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
+import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -69,6 +70,8 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
     }
     @Override
     public void run(ArlasSubscriptionManagerConfiguration configuration, Environment environment) throws Exception {
+
+        configuration.check();
 
         final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.getMongoDBConnection());
         final ElasticDBFactoryConnection elasticDBFactoryConnection = new ElasticDBFactoryConnection(configuration.getElasticDBConnection());

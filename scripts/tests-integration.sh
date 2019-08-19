@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-
 function clean_exit {
     ARG=$?
 	echo "===> Exit status = ${ARG}"

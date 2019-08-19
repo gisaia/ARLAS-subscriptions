@@ -23,11 +23,14 @@ import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.DataSetTool;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.restassured.http.ContentType;
+import org.geojson.LngLatAlt;
+import org.geojson.Polygon;
 import org.hamcrest.Matcher;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
@@ -116,6 +119,27 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
         hits.projection="projection";
         UserSubscription.Subscription subscription = new UserSubscription.Subscription();
         Map<String, Object> trigger = new HashMap<>();
+        JSONObject coverage = new JSONObject();
+        JSONArray jsonArrayExt = new JSONArray();
+        List<LngLatAlt> coords = new ArrayList<>();
+        coords.add(new LngLatAlt(-50, 50));
+        coords.add(new LngLatAlt(50, 50));
+        coords.add(new LngLatAlt(50, -50));
+        coords.add(new LngLatAlt(-50, -50));
+        coords.add(new LngLatAlt(-50, 50));
+        new Polygon(coords).getExteriorRing().forEach(lngLatAlt -> {
+            JSONArray jsonArrayLngLat = new JSONArray();
+            jsonArrayLngLat.add(0, lngLatAlt.getLongitude());
+            jsonArrayLngLat.add(1, lngLatAlt.getLatitude());
+            jsonArrayExt.add(jsonArrayLngLat);
+        });
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.add(jsonArrayExt);
+        coverage.put("type", "Polygon");
+        coverage.put("coordinates", jsonArray);
+        trigger.put("geometry", coverage);
+        trigger.put("job", Arrays.asList("Actor"));
+        trigger.put("event", Arrays.asList("UPDATE"));
         trigger.put("correlationId","2007");
         subscription.callback ="callback";
         subscription.hits =hits;

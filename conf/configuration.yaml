@@ -95,5 +95,5 @@ elastic:
 ########################################################
 ############ Subcription DATA model                     ###############
 ########################################################
-trigger-geometry-key: geometry
-trigger-centroid-key: centroid
+trigger-geometry-key: ${ARLAS_SUB_GEOM_KEY:-geometry}
+trigger-centroid-key: ${ARLAS_SUB_CENT_KEY:-centroid}

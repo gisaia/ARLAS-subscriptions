@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "arlas-subscriptions-trigger",
+  "description": "arlas subscriptions trigger criteria",
+  "type": "object",
+  "required": [
+    "geometry",
+    "job",
+    "event"
+  ],
+  "properties": {
+    "geometry": {
+      "type": "object",
+      "description": "Area of interest of this subscription as a GeoJSON geometry"
+    },
+    "job": {
+      "type": "array",
+      "description": "Product collections to trigger this subscription",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Actor",
+          "Announcers",
+          "Archeologists",
+          "Architect",
+          "Brain Scientist",
+          "Chemist",
+          "Coach",
+          "Coder",
+          "Cost Estimator",
+          "Dancer",
+          "Drafter"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "event": {
+      "type": "array",
+      "description": "Product operation to trigger this subscription",
+      "items": {
+        "type": "string",
+        "enum": [
+          "CREATE",
+          "UPDATE",
+          "DELETE"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    }
+  }
+}
+
