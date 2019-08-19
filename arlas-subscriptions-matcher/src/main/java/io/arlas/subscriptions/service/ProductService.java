@@ -28,22 +28,28 @@ import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.NotificationOrder;
 import io.arlas.subscriptions.model.SubscriptionEvent;
+import io.arlas.subscriptions.model.UserSubscription;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ProductService extends AbstractArlasService {
     private final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
     private final NotificationOrderKafkaProducer notificationOrderKafkaProducer;
+    private final String identityHeader;
 
     ProductService(ArlasSubscriptionsConfiguration configuration) {
         this.apiClient = new ApiClient().setBasePath(configuration.arlasServerBasePath);
         this.searchEndpoint = configuration.arlasServerSearchEndpoint;
         this.filterRoot = configuration.arlasServerFilterRoot;
         this.notificationOrderKafkaProducer = NotificationOrderKafkaProducer.build(configuration);
+        this.identityHeader = configuration.identityHeader;
     }
 
     void processMatchingProducts(SubscriptionEvent event, List<Hit> subscriptions) {
@@ -57,7 +63,7 @@ public class ProductService extends AbstractArlasService {
                 String f = searchFilter
                         + "&" + userSubscription.subscription.hits.filter
                         + "&" + userSubscription.subscription.hits.projection;
-                Hits productHits = getItemHits(getQueryParams(f));
+                Hits productHits = getItemHits(getQueryParams(f), getHeaderParams(userSubscription));
                 if (productHits.getHits() != null) {
                     productHits.getHits()
                             .stream()
@@ -71,6 +77,14 @@ public class ProductService extends AbstractArlasService {
                 LOGGER.warn("Parsing error:", e);
             }
         }
+    }
+
+    private Map<String, String> getHeaderParams(UserSubscription userSubscription) {
+        Map headerParams = new HashMap<>();
+        if (!StringUtils.isEmpty(identityHeader)) {
+            headerParams.put(identityHeader, userSubscription.created_by);
+        }
+        return headerParams;
     }
 
     private void pushNotificationOrder(Hit hit, SubscriptionEvent event, IndexedUserSubscription userSubscription) {

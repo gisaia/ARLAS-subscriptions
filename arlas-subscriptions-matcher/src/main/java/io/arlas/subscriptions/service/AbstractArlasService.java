@@ -59,8 +59,12 @@ public class AbstractArlasService {
     }
 
     Hits getItemHits(List<Pair> queryParams) throws ApiException, IOException {
+        return getItemHits(queryParams, emptyMapParams);
+    }
+
+    Hits getItemHits(List<Pair> queryParams, Map<String, String> headerParams) throws ApiException, IOException {
         Call searchCall = apiClient.buildCall(searchEndpoint, GET, queryParams,
-                emptyListParams, null, emptyMapParams, emptyMapParams, emptyArrayParams, null);
+                emptyListParams, null, headerParams, emptyMapParams, emptyArrayParams, null);
         Response searchResponse = searchCall.execute();
         String body = searchResponse.body().string();
         LOGGER.debug("body="+body);
