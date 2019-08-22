@@ -45,6 +45,6 @@ docker run --rm \
     -e ARLAS_ELASTIC_PORT="9300" \
     --net arlas-subscriptions_default \
     maven:3.5.0-jdk-8 \
-    mvn exec:java -Dexec.mainClass="io.arlas.subscriptions.DataSetTool" -Dexec.classpathScope=test -pl arlas-subscriptions-tests
+    mvn exec:java -Dexec.mainClass="io.arlas.subscriptions.DataSetTool" -Dexec.classpathScope=test -pl subscriptions-tests
 
 echo "===> Enjoy arlas-server API on http://localhost:9999/arlas/swagger"

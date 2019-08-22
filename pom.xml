@@ -3,16 +3,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.arlas</groupId>
-    <artifactId>arlas-subscriptions-parent</artifactId>
+    <artifactId>subscriptions-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>ARLAS subscriptions parent</name>
 
     <modules>
-        <module>arlas-subscriptions-common</module>
-        <module>arlas-subscriptions-matcher</module>
-        <module>arlas-subscriptions-manager</module>
-        <module>arlas-subscriptions-tests</module>
+        <module>subscriptions-commons</module>
+        <module>subscriptions-matcher</module>
+        <module>subscriptions-manager</module>
+        <module>subscriptions-tests</module>
 
     </modules>
 
