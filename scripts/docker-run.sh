@@ -40,7 +40,7 @@ function run_manager {
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} elasticsearch
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
     curl -X PUT "localhost:9200/subs" -H 'Content-Type: application/json' -d'{}'
-    curl -X PUT "localhost:9200/subs/_mapping/sub_type" -H 'Content-Type: application/json' -d @"./arlas-subscriptions-tests/src/test/resources/arlas.subtest.mapping.json"
+    curl -X PUT "localhost:9200/subs/_mapping/sub_type" -H 'Content-Type: application/json' -d @"./subscriptions-tests/src/test/resources/arlas.subtest.mapping.json"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-manager
     echo "===> wait for arlas-subscriptions-manager up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'

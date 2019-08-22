@@ -18,7 +18,7 @@ export ARLAS_SUB_TRIG_SCHEM_PATH="/opt/app/trigger.schema.json"
 
 ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL : a local path to the trigger json schema mounted to ARLAS_SUB_TRIG_SCHEM_PATH in a docker container
 
-export ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL="./arlas-subscriptions-tests/src/test/resources/trigger.schema.json"
+export ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL="./subscriptions-tests/src/test/resources/trigger.schema.json"
 
 To run the manager locally wihtout docker set  ARLAS_SUB_TRIG_SCHEM_PATH to a local path to the trigger json schema
 

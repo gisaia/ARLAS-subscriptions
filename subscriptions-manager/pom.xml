@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.arlas</groupId>
-        <artifactId>arlas-subscriptions-parent</artifactId>
+        <artifactId>subscriptions-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>arlas-subscriptions-manager</artifactId>
+    <artifactId>subscriptions-manager</artifactId>
     <packaging>jar</packaging>
     <name>ARLAS subscriptions manager</name>
 
@@ -24,7 +24,7 @@
     <dependencies>
         <dependency>
             <groupId>io.arlas</groupId>
-            <artifactId>arlas-subscriptions-common</artifactId>
+            <artifactId>subscriptions-commons</artifactId>
             <version>${pom.parent.version}</version>
         </dependency>
         <!-- ____________________________________________________ -->

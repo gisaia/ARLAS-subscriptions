@@ -5,9 +5,9 @@ RUN apk add --update bash netcat-openbsd curl && rm -rf /var/cache/apk/*
 
 # application placed into /opt/app
 WORKDIR /opt/app
-ADD arlas-subscriptions-manager/target/arlas-subscriptions-manager*.jar /opt/app/arlas-subscriptions-manager.jar
+ADD subscriptions-manager/target/subscriptions-manager*.jar /opt/app/subscriptions-manager.jar
 ADD conf/configuration.yaml /opt/app/configuration.yaml
-ADD arlas-subscriptions-manager/scripts/wait-for-deps.sh /opt/app/wait-for-deps.sh
+ADD subscriptions-manager/scripts/wait-for-deps.sh /opt/app/wait-for-deps.sh
 
 ENTRYPOINT ["bash", "-c"]
-CMD ["java -jar /opt/app/arlas-subscriptions-manager.jar server /opt/app/configuration.yaml"]
+CMD ["java -jar /opt/app/subscriptions-manager.jar server /opt/app/configuration.yaml"]

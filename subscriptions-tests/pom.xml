@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>arlas-subscriptions-tests</artifactId>
+    <artifactId>subscriptions-tests</artifactId>
     <packaging>jar</packaging>
     <name>ARLAS subscriptions tests</name>
 
     <parent>
         <groupId>io.arlas</groupId>
-        <artifactId>arlas-subscriptions-parent</artifactId>
+        <artifactId>subscriptions-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
@@ -27,7 +27,7 @@
         <!-- ____________________________________________________ -->
         <dependency>
             <groupId>io.arlas</groupId>
-            <artifactId>arlas-subscriptions-manager</artifactId>
+            <artifactId>subscriptions-manager</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
