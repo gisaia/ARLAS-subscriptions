@@ -20,7 +20,6 @@
 package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.client.ApiClient;
 import io.arlas.client.ApiException;
 import io.arlas.client.Pair;
@@ -29,12 +28,10 @@ import io.arlas.client.model.Hits;
 import io.arlas.client.model.Link;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.model.SubscriptionEvent;
-import org.locationtech.jts.geom.Geometry;
+import io.arlas.subscriptions.utils.JSONValueInjector;
 import org.locationtech.jts.io.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.locationtech.jts.io.WKTWriter;
-import org.locationtech.jts.io.geojson.GeoJsonReader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,10 +39,6 @@ import java.util.List;
 
 public class SubscriptionsService extends AbstractArlasService {
     private final Logger LOGGER = LoggerFactory.getLogger(SubscriptionsService.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final WKTWriter wktWriter = new WKTWriter();
-    private final GeoJsonReader geoJsonReader = new GeoJsonReader();
-
 
     SubscriptionsService(ArlasSubscriptionsConfiguration configuration) {
         this.apiClient = new ApiClient().setBasePath(configuration.subscriptionsBasePath);
@@ -54,11 +47,10 @@ public class SubscriptionsService extends AbstractArlasService {
     }
 
     List<Hit> searchMatchingSubscriptions(SubscriptionEvent event) throws JsonProcessingException, ParseException {
-        Geometry geometry = geoJsonReader.read(objectMapper.writeValueAsString(event.md.geometry));
+
         List<Hit> result = new ArrayList();
-        String searchFilter = filterRoot.replaceAll("\\{md.geometry}", wktWriter.write(geometry))
-                .replaceAll("\\{collection}", event.collection)
-                .replaceAll("\\{operation}", event.operation);
+
+        String searchFilter = JSONValueInjector.inject(filterRoot, event);
 
         try {
             Hits items;

@@ -19,6 +19,7 @@
 
 package io.arlas.subscriptions.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.arlas.client.ApiClient;
 import io.arlas.client.ApiException;
 import io.arlas.client.model.Hit;
@@ -29,7 +30,9 @@ import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.NotificationOrder;
 import io.arlas.subscriptions.model.SubscriptionEvent;
 import io.arlas.subscriptions.model.UserSubscription;
+import io.arlas.subscriptions.utils.JSONValueInjector;
 import org.apache.commons.lang3.StringUtils;
+import org.locationtech.jts.io.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +55,9 @@ public class ProductService extends AbstractArlasService {
         this.identityHeader = configuration.identityHeader;
     }
 
-    void processMatchingProducts(SubscriptionEvent event, List<Hit> subscriptions) {
-        String searchFilter = filterRoot.replaceAll("\\{md.id}", event.md.id);
+    void processMatchingProducts(SubscriptionEvent event, List<Hit> subscriptions) throws JsonProcessingException, ParseException {
+
+        String searchFilter = JSONValueInjector.inject(filterRoot, event);
 
         for (Hit hit : subscriptions) {
             LOGGER.debug("processing hit: " + hit.toString());
@@ -90,16 +94,17 @@ public class ProductService extends AbstractArlasService {
     private void pushNotificationOrder(Hit hit, SubscriptionEvent event, IndexedUserSubscription userSubscription) {
         NotificationOrder notificationOrder = new NotificationOrder();
         // Event fields (copied from event message)
-        notificationOrder.md = event.md;
-        notificationOrder.collection = event.collection;
-        notificationOrder.operation = event.operation;
+        for (Object key : event.keySet()) {
+            notificationOrder.put(key,event.get(key));
+        }
         // Data fields (projected as specified by subscription creator)
-        notificationOrder.data = hit.getData();
+        notificationOrder.put("data", hit.getData());
         // Subscription fields
-        notificationOrder.subscription.id = userSubscription.getId();
-        notificationOrder.subscription.callback = userSubscription.subscription.callback;
+        Map<String, Object> subSummary = new HashMap<>();
+        subSummary.put("id", userSubscription.getId());
+        subSummary.put("callback", userSubscription.subscription.callback);
         // User metadata fields (provided by subscription creator)
-        notificationOrder.userMetadatas = userSubscription.userMetadatas;
+        notificationOrder.put("user_metadata", userSubscription.userMetadatas);
         LOGGER.debug("notificationOrder: " + notificationOrder.toString());
         notificationOrderKafkaProducer.send(notificationOrder);
     }

@@ -73,7 +73,7 @@ public class KafkaConsumerRunner implements Runnable {
                         productService.processMatchingProducts(event, hits);
 
                     } catch (IOException|ParseException e) {
-                        LOGGER.warn("Could not parse record " + record.value());
+                        LOGGER.warn("Could not parse record " + record.value(), e);
                     }
                 }
                 consumer.commitSync();

@@ -19,18 +19,10 @@
 
 package io.arlas.subscriptions.model;
 
+import org.json.simple.JSONObject;
+
 import java.util.Map;
 import java.util.Objects;
 
-public class NotificationOrder {
-    public SubscriptionEventMetadata md;
-    public Object data;
-    public String collection;
-    public String operation;
-    public Subscription subscription = new Subscription();
-    public Map<String, Object> userMetadatas;
-    public class Subscription {
-        public String id;
-        public String callback;
-    }
+public class NotificationOrder extends JSONObject {
 }

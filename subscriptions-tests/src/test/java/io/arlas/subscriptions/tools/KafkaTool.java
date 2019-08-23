@@ -106,12 +106,8 @@ public class KafkaTool implements Runnable {
         }
     }
 
-    public void produce(SubscriptionEvent event) {
-        try {
-            producer.send(new ProducerRecord<>(subscriptionEventsTopic, objectMapper.writeValueAsString(event)));
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Could not format json:", e);
-        }
+    public void produce(String event) {
+        producer.send(new ProducerRecord<>(subscriptionEventsTopic, event));
     }
 
     public NotificationOrder consume(int timeout, TimeUnit seconds) throws InterruptedException {
