@@ -19,26 +19,31 @@
 
 package io.arlas.subscriptions.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.subscriptions.AbstractTestContext;
 import io.arlas.subscriptions.DataSetTool;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.NotificationOrder;
 import io.arlas.subscriptions.model.SubscriptionEvent;
-import io.arlas.subscriptions.model.SubscriptionEventMetadata;
 import io.arlas.subscriptions.tools.KafkaTool;
 import org.geojson.LngLatAlt;
 import org.geojson.Polygon;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.is;
@@ -47,7 +52,6 @@ import static org.junit.Assert.assertThat;
 
 public class SubscriptionsMatcherIT extends AbstractTestContext {
     static Logger LOGGER = LoggerFactory.getLogger(SubscriptionsMatcherIT.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private static final KafkaTool kafkaTool = new KafkaTool();
 
     @BeforeClass
@@ -72,20 +76,9 @@ public class SubscriptionsMatcherIT extends AbstractTestContext {
 
     @Test
     public void testMatchingSubscriptionEventWithExistingProductIndex() throws Exception {
-        List<LngLatAlt> coords = new ArrayList<>();
-        coords.add(new LngLatAlt(-11, -29));
-        coords.add(new LngLatAlt(-9, -29));
-        coords.add(new LngLatAlt(-9, -31));
-        coords.add(new LngLatAlt(-11, -31));
-        coords.add(new LngLatAlt(-11, -29));
-        SubscriptionEventMetadata md = new SubscriptionEventMetadata();
-        md.geometry = new Polygon(coords);
-        md.id = "ID__10__30DI";
-        SubscriptionEvent event = new SubscriptionEvent();
-        event.md = md;
-        event.collection = "Brain Scientist";
-        event.operation = "UPDATE";
 
+        String  event =
+                "{\"object\": {\"id\": \"ID__10__30DI\",\"geometry\": {\"type\" : \"Polygon\",\"coordinates\" : [[[-11,-29],[-9,-29],[-9,-31],[-11,-31],[-11,-29]]]},\"job\": \"Brain Scientist\"},\"event\": \"UPDATE\"}";
         kafkaTool.produce(event);
         Thread.sleep(10000);
 
@@ -102,8 +95,8 @@ public class SubscriptionsMatcherIT extends AbstractTestContext {
     }
 
     public void checkNotificationOrder(NotificationOrder notifOrder) {
-        assertThat(notifOrder.md.id, is("ID__10__30DI"));
-        assertThat(notifOrder.operation, is("UPDATE"));
-        assertNotNull(notifOrder.collection, is("Brain Scientist"));
+        assertNotNull(notifOrder.get("object"));
+        assertThat(((Map<String,Object>)notifOrder.get("object")).get("id"), is("ID__10__30DI"));
+        assertThat(((Map<String,Object>)notifOrder.get("object")).get("job"), is("Brain Scientist"));
     }
 }

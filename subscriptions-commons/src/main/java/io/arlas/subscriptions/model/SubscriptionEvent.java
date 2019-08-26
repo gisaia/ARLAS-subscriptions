@@ -19,17 +19,7 @@
 
 package io.arlas.subscriptions.model;
 
-public class SubscriptionEvent {
-    public SubscriptionEventMetadata md;
-    public String collection;
-    public String operation;
+import org.json.simple.JSONObject;
 
-    @Override
-    public String toString() {
-        return "SubscriptionEvent {" +
-                "md=" + md +
-                ", collection='" + collection + '\'' +
-                ", operation='" + operation + '\'' +
-                '}';
-    }
+public class SubscriptionEvent extends JSONObject {
 }

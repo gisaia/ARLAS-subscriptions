@@ -17,19 +17,27 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.model;
+package io.arlas.subscriptions.utils;
 
-import org.geojson.GeoJsonObject;
+import org.apache.commons.lang3.StringUtils;
 
-public class SubscriptionEventMetadata {
-    public String id;
-    public GeoJsonObject geometry;
+import java.util.HashMap;
 
-    @Override
-    public String toString() {
-        return "{" +
-                "id='" + id + '\'' +
-                ", geometry='" + geometry + '\'' +
-                '}';
+public class JSONHelper {
+
+    public static Object readJSONValue(String jsonPath, Object jsonObject) {
+        try {
+            String key = jsonPath.contains(".")?jsonPath.substring(0,jsonPath.indexOf(".")):jsonPath;
+            if (!StringUtils.isEmpty(key)
+                    && jsonObject instanceof HashMap
+                    && ((HashMap)jsonObject).containsKey(key)) {
+                return readJSONValue(jsonPath.substring(jsonPath.indexOf(".")+1),((HashMap)jsonObject).get(key));
+            } else {
+                return jsonObject;
+            }
+        } catch (IndexOutOfBoundsException e) {
+            return jsonObject;
+        }
+
     }
 }
