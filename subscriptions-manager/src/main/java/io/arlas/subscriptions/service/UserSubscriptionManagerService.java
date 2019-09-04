@@ -48,8 +48,8 @@ public class UserSubscriptionManagerService {
         this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration,elasticDBManaged,jsonSchemaValidator);
     }
 
-    public List<UserSubscription> getAllUserSubscriptions(String user, boolean getDeleted) throws ArlasSubscriptionsException {
-        return  this.daoDatabase.getAllUserSubscriptions(user, getDeleted);
+    public List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted) throws ArlasSubscriptionsException {
+        return  this.daoDatabase.getAllUserSubscriptions(user, before, active, expired, getDeleted);
     }
 
     public UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException {

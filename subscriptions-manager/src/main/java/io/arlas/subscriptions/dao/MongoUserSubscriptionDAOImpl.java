@@ -29,12 +29,12 @@ import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.everit.json.schema.ValidationException;
 
 import java.util.*;
 
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.set;
 import static io.arlas.subscriptions.utils.UUIDHelper.generateUUID;
 
@@ -44,30 +44,23 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     private JsonSchemaValidator jsonSchemaValidator;
 
     public MongoUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged,JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
-        MongoDatabase mongoDatabase = mongoDBManaged.
-                    mongoClient.
-                    getDatabase(configuration.getMongoDBConnection().database);
-            this.mongoCollection = this.initSubscriptionsCollection(mongoDatabase);
-            this.jsonSchemaValidator = jsonSchemaValidator;
+        MongoDatabase mongoDatabase = mongoDBManaged.mongoClient.getDatabase(configuration.getMongoDBConnection().database);
+        this.mongoCollection = this.initSubscriptionsCollection(mongoDatabase);
+        this.jsonSchemaValidator = jsonSchemaValidator;
     }
 
     @Override
-    public List<UserSubscription> getAllUserSubscriptions(String user, boolean getDeleted) throws ArlasSubscriptionsException {
+    public List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted) throws ArlasSubscriptionsException {
+
+        List<Bson> filters = new ArrayList<>();
+        if (user != null) filters.add(eq("created_by", user));
+        if (!getDeleted) filters.add(eq("deleted", Boolean.FALSE));
+        if (active != null) filters.add(eq("active", active));
+        if (expired != null) filters.add(expired ? lte("expires_at", System.currentTimeMillis()/1000) : gt("expires_at", System.currentTimeMillis()/1000));
+        if (before != null) filters.add(lte("created_at", before));
 
         List<UserSubscription> userSubscriptionFind = new ArrayList<>();
-        try (MongoCursor<UserSubscription> userSubscriptions =
-                     // user == null && getDeleted == true
-                     (user == null && getDeleted ? this.mongoCollection.find() :
-                             // user == null && getDeleted == false
-                             (user == null ? this.mongoCollection.find(eq("deleted", Boolean.FALSE)) :
-                                     // user != null && getDeleted == true
-                                     (getDeleted ? this.mongoCollection.find(eq("created_by", user)) :
-                                             // user != null && getDeleted == false
-                                             this.mongoCollection.find(and(eq("deleted", Boolean.FALSE), eq("created_by", user)))
-                                     )
-                             )
-                     ).iterator()
-        ) {
+        try (MongoCursor<UserSubscription> userSubscriptions = this.mongoCollection.find(and(filters)).iterator()) {
             while (userSubscriptions.hasNext()) {
                 final UserSubscription userSubscription = userSubscriptions.next();
                 userSubscriptionFind.add(userSubscription);
@@ -78,19 +71,12 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
     @Override
     public Optional<UserSubscription> getUserSubscription(String user, String id, boolean getDeleted) {
+        List<Bson> filters = new ArrayList<>();
+        filters.add(eq("_id", id));
+        if (user != null) filters.add(eq("created_by", user));
+        if (!getDeleted) filters.add(eq("deleted", Boolean.FALSE));
 
-        return Optional.ofNullable(
-                (user == null && getDeleted ? this.mongoCollection.find(eq("_id", id)) :
-                        // user == null && getDeleted == false
-                        (user == null ? this.mongoCollection.find(and(eq("deleted", Boolean.FALSE), eq("_id", id))) :
-                                // user != null && getDeleted == true
-                                (getDeleted ? this.mongoCollection.find(and(eq("created_by", user), eq("_id", id))) :
-                                        // user != null && getDeleted == false
-                                        this.mongoCollection.find(and(eq("deleted", Boolean.FALSE), eq("created_by", user), eq("_id", id)))
-                                )
-                        )
-                ).first()
-        );
+        return Optional.ofNullable(this.mongoCollection.find(and(filters)).first());
     }
 
     @Override

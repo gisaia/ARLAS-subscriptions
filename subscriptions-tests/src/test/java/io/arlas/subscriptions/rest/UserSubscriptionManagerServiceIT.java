@@ -132,4 +132,54 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
                 .contentType(ContentType.JSON)
                 .body("size()", is(1));
     }
+
+    @Test
+    public void test09GetAllUserSubscriptionsWithParamBefore() {
+        given().param("before", "1564578980")
+                .when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(0));
+    }
+
+    @Test
+    public void test10GetAllUserSubscriptionsWithParamExpiredTrue() {
+        given().param("expired", "true")
+                .when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(0));
+    }
+
+    @Test
+    public void test11GetAllUserSubscriptionsWithParamExpiredFalse() {
+        given().param("expired", "false")
+                .when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(1));
+    }
+
+    @Test
+    public void test12GetAllUserSubscriptionsWithParamActiveTrue() {
+        given().param("active", "true")
+                .when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(1));
+    }
+
+    @Test
+    public void test13GetAllUserSubscriptionsWithParamActiveFalse() {
+        given().param("active", "false")
+                .when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(0));
+    }
 }

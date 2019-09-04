@@ -40,13 +40,16 @@ import javax.ws.rs.core.*;
 import java.util.List;
 
 @Path("/subscriptions")
-@Api(value = "/subscriptions")
+@Api(value = "/subscriptions", tags = {"end-user"})
 @SwaggerDefinition(
-        info = @Info(contact = @Contact(email = "contact@gisaia.com", name = "Gisaia", url = "http://www.gisaia.com/"),
+        info = @Info(contact = @Contact(email = "contact@gisaia.com", name = "ARLAS", url = "https://arlas.io/"),
                 title = "ARLAS Subscriptions Manager API",
-                description = "Manage ARLAS Subscriptions",
+                description = "Manage ARLAS subscriptions on ARLAS collections' events.",
                 license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html"),
-                version = "API_VERSION"))
+                version = "API_VERSION"),
+        tags = {@Tag(name="end-user", description = "Standard endpoints to manage one's subscriptions as an end-user."),
+                @Tag(name="admin", description = "Optional endpoints to manage all subscriptions as an administrator of the service.")}
+        )
 public class UserSubscriptionManagerController {
     public Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionManagerController.class);
     public static final String UTF8JSON = MediaType.APPLICATION_JSON + ";charset=utf-8";
@@ -66,9 +69,11 @@ public class UserSubscriptionManagerController {
     @Produces(UTF8JSON)
     @Consumes(UTF8JSON)
     @ApiOperation(
-            value = "Get all subscriptions",
+            value = "List all available subscriptions",
             produces = UTF8JSON,
-            notes = "Get all subscriptions",
+            notes = "Return the list of all registered subscriptions that are available " +
+                    "for current user from the latest created to the earliest.\n" +
+                    "Only current user's subscriptions that are not deleted are listed.",
             consumes = UTF8JSON
     )
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class, responseContainer = "List"),
@@ -80,6 +85,18 @@ public class UserSubscriptionManagerController {
             // --------------------------------------------------------
             // ----------------------- FORM -----------------------
             // --------------------------------------------------------
+            @ApiParam(name = "before", value = "Retrieve subscriptions created before given timestamp.",
+                    allowMultiple = false,
+                    required = false)
+            @QueryParam(value = "before") Long before,
+            @ApiParam(name = "active", value = "Filter subscriptions whether they are active or not (returns all if missing, 'active' if 'true', 'inactive' if 'false').",
+                    allowMultiple = false,
+                    required = false)
+            @QueryParam(value = "active") Boolean active,
+            @ApiParam(name = "expired", value = "Filter subscriptions whether they are expired or not (returns all if missing, 'expired' if 'true', 'not expired' if 'false').",
+                    allowMultiple = false,
+                    required = false)
+            @QueryParam(value = "expired") Boolean expired,
             @ApiParam(name = "pretty", value = "Pretty print",
                     allowMultiple = false,
                     defaultValue = "false",
@@ -87,7 +104,7 @@ public class UserSubscriptionManagerController {
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions(user, false);
+        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions(user, before, active, expired, false);
         return ResponseFormatter.getResultResponse(userSubscriptions);
     }
 
@@ -97,9 +114,10 @@ public class UserSubscriptionManagerController {
     @Produces(UTF8JSON)
     @Consumes(UTF8JSON)
     @ApiOperation(
-            value = "Get a subscription",
+            value = "Find subscription by ID",
             produces = UTF8JSON,
-            notes = "Get a subscription",
+            notes = "Return a single subscription. " +
+                    "Only creator can access their subscriptions.",
             consumes = UTF8JSON,
             response = UserSubscription.class
     )
@@ -112,7 +130,7 @@ public class UserSubscriptionManagerController {
     public Response get(@Context HttpHeaders headers,
             @ApiParam(
                     name = "id",
-                    value = "id",
+                    value = "ID of subscription to return",
                     allowMultiple = false,
                     required = true)
             @PathParam(value = "id") String id,
@@ -140,11 +158,12 @@ public class UserSubscriptionManagerController {
     @ApiOperation(
             value = "Delete a subscription",
             produces = UTF8JSON,
-            notes = "Delete a subscription",
+            notes = "Mark a subscription as deleted. " +
+                    "Only creator can delete their own subscriptions.",
             consumes = UTF8JSON,
             response = UserSubscription.class
     )
-    @ApiResponses(value = {@ApiResponse(code = 202, message = "Successful operation", response = UserSubscription.class),
+    @ApiResponses(value = {@ApiResponse(code = 202, message = "Subscription has been deleted.", response = UserSubscription.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
@@ -153,7 +172,7 @@ public class UserSubscriptionManagerController {
     public Response delete(@Context HttpHeaders headers,
                         @ApiParam(
                                 name = "id",
-                                value = "id",
+                                value = "Subscription ID to delete",
                                 allowMultiple = false,
                                 required = true)
                         @PathParam(value = "id") String id,
@@ -179,13 +198,13 @@ public class UserSubscriptionManagerController {
     @Produces(UTF8JSON)
     @Consumes(UTF8JSON)
     @ApiOperation(
-            value = "Add a userSubscription",
+            value = "Register a new subscription",
             produces = UTF8JSON,
-            notes = "Add a userSubscription in the manager",
+            notes = "Register a subscription for further notification.",
             consumes = UTF8JSON,
             response = UserSubscription.class
     )
-    @ApiResponses(value = {@ApiResponse(code = 201, message = "Successful operation", response = UserSubscription.class),
+    @ApiResponses(value = {@ApiResponse(code = 201, message = "Subscription has been registered", response = UserSubscription.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
@@ -193,10 +212,10 @@ public class UserSubscriptionManagerController {
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
     public Response post(@Context UriInfo uriInfo,
             @Context HttpHeaders headers,
-            @ApiParam(name = "userSubscription",
-                    value = "userSubscription",
+            @ApiParam(name = "subscription",
+                    value = "Subscription description",
                     required = true)
-            @NotNull @Valid UserSubscription userSubscription,
+            @NotNull @Valid UserSubscription subscription,
 
             // --------------------------------------------------------
             // ----------------------- FORM -----------------------
@@ -209,10 +228,10 @@ public class UserSubscriptionManagerController {
 
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        if (user != null && !user.equals(userSubscription.created_by)) {
+        if (user != null && !user.equals(subscription.created_by)) {
             throw new ForbiddenException("New subscription does not belong to authenticated user " + user);
         }
-        return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),subscriptionManagerService.postUserSubscription(userSubscription, false));
+        return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),subscriptionManagerService.postUserSubscription(subscription, false));
     }
 
     @Path("{id}")
@@ -222,7 +241,8 @@ public class UserSubscriptionManagerController {
     @ApiOperation(
             value = "Update an existing subscription",
             produces = UTF8JSON,
-            notes = "Update an existing subscription",
+            notes = "Update an existing subscription. " +
+                    "Only creator can update their own subscriptions.",
             consumes = UTF8JSON,
             response = UserSubscription.class
     )
@@ -236,12 +256,12 @@ public class UserSubscriptionManagerController {
                         @Context HttpHeaders headers,
                         @ApiParam(
                                 name = "id",
-                                value = "id",
+                                value = "ID of subscription to return",
                                 allowMultiple = false,
                                 required = true)
                         @PathParam(value = "id") String id,
-                        @ApiParam(name = "userSubscription",
-                                value = "userSubscription",
+                        @ApiParam(name = "subscription",
+                                value = "Subscription description",
                                 required = true)
                         @NotNull @Valid UserSubscription updUserSubscription,
 
