@@ -32,7 +32,7 @@ import io.arlas.subscriptions.exception.ConstraintViolationExceptionMapper;
 import io.arlas.subscriptions.exception.IllegalArgumentExceptionMapper;
 import io.arlas.subscriptions.rest.UserSubscriptionManagerController;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
-import io.arlas.subscriptions.utils.JsonSchemaValidator;
+import io.arlas.subscriptions.utils.PrettyPrintFilter;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -82,6 +82,7 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
         environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
         environment.getObjectMapper().configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
         environment.jersey().register(MultiPartFeature.class);
+        environment.jersey().register(PrettyPrintFilter.class);
         environment.jersey().register(new ArlasSubscriptionsExceptionMapper());
         environment.jersey().register(new IllegalArgumentExceptionMapper());
         environment.jersey().register(new JsonProcessingExceptionMapper());
