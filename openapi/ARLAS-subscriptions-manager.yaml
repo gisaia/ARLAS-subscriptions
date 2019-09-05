@@ -1,0 +1,743 @@
+openapi: 3.0.2
+info:
+  title: ARLAS Subscriptions Manager API
+  description: |
+    Manage ARLAS subscriptions on ARLAS collections' events.
+  contact:
+    name: ARLAS
+    url: 'https://arlas.io/'
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+  version: 0.0.1-SNAPSHOT
+
+tags:
+  - name: end-user
+    description: standard endpoints to manage one's subscriptions as an end-user.
+  - name: admin
+    description: optional endpoints to manage all subscriptions as an administrator of the service.
+
+paths:
+  '/subscriptions':
+    get:
+      tags:
+        - end-user
+      summary: List all available subscriptions
+      description: |
+        Return the list of all registered subscriptions that are available
+        for current user from the latest created to the earliest.
+        Only current user's subscriptions that are not deleted are listed.
+      parameters:
+        - in: query
+          name: before
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Retrieve subscriptions created before given timestamp.
+        - in: query
+          name: active
+          required: false
+          schema:
+            type: boolean
+          description: Filter subscriptions whether they are active or not.
+        - in: query
+          name: expired
+          required: false
+          schema:
+            type: boolean
+          description: Filter subscriptions whether they are expired or not.
+        - name: page
+          in: query
+          description: Page ID
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: Page Size
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionListResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - end-user
+      summary: Register a new subscription
+      description: |
+        Register a subscription for further notification.
+      requestBody:
+        description: Subscription description
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        '201':
+          description: Subscription has been registered
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URI of the created process
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/InvalidInput'
+  '/subscriptions/{subId}':
+    get:
+      tags:
+        - end-user
+      summary: Find subscription by ID
+      description: |
+        Return a single subscription.
+        Only creator can access their subscriptions.
+      parameters:
+        - name: subId
+          in: path
+          description: ID of subscription to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - end-user
+      summary: Update an existing subscription
+      description: |
+        Update an existing subscription.
+        Only creator can update their own subscriptions.
+      parameters:
+        - name: subId
+          in: path
+          description: ID of subscription to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: |
+          Subscription description
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        '201':
+          description: Subscription has been updated
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URI of the updated subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/InvalidInput'
+    delete:
+      tags:
+        - end-user
+      summary: Delete a subscription
+      description: |
+        Mark a subscription as deleted.
+        Only creator can delete their own subscriptions.
+      parameters:
+        - name: subId
+          in: path
+          description: Subscription ID to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Deleted subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  '/admin/subscriptions':
+    get:
+      tags:
+        - admin
+      summary: List all available subscriptions
+      description: |
+        Return the list of all registered subscriptions from the latest created to the earliest.
+      parameters:
+        - in: query
+          name: before
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Retrieve subscriptions created before given timestamp.
+        - in: query
+          name: after
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Retrieve subscriptions created after given timestamp.
+        - in: query
+          name: active
+          required: false
+          schema:
+            type: boolean
+          description: Filter subscriptions whether they are active or not.
+        - in: query
+          name: started
+          required: false
+          schema:
+            type: boolean
+          description: Filter subscriptions whether they are started or not.
+        - in: query
+          name: expired
+          required: false
+          schema:
+            type: boolean
+          description: Filter subscriptions whether they are expired or not.
+        - in: query
+          name: created-by
+          required: false
+          schema:
+            type: string
+          description: Filter subscriptions by creator's identifier.
+        - in: query
+          name: deleted
+          required: false
+          schema:
+            type: boolean
+          description: Filter subscriptions whether they are deleted or not.
+        - in: query
+          name: created-by-admin
+          required: false
+          schema:
+            type: boolean
+          description: Filter subscriptions whether they have been created by admin or not.
+        - name: page
+          in: query
+          description: Page ID
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: Page Size
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubscriptionListResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - admin
+      summary: Register a new subscription
+      description: |
+        Register a subscription for further notification. Subscription will be marked as created_by_admin.
+      requestBody:
+        description: Subscription description
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        '201':
+          description: Subscription has been registered
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URI of the created process
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubscriptionResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/InvalidInput'
+  '/admin/subscriptions/{subId}':
+    get:
+      tags:
+        - admin
+      summary: Find subscription by ID
+      description: |
+        Return a single subscription.
+      parameters:
+        - name: subId
+          in: path
+          description: ID of subscription to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubscriptionResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - admin
+      summary: Update an existing subscription
+      description: |
+        Update an existing subscription.
+      parameters:
+        - name: subId
+          in: path
+          description: ID of subscription to return
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: |
+          Subscription description
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        '201':
+          description: Subscription has been updated
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URI of the updated subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubscriptionResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/InvalidInput'
+    delete:
+      tags:
+        - admin
+      summary: Delete a subscription
+      description: |
+        Mark a subscription as deleted.
+      parameters:
+        - name: subId
+          in: path
+          description: Subscription ID to delete
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Deleted subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubscriptionResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  '/admin/healthcheck':
+    get:
+      tags:
+        - admin
+        - end-user
+      summary: Service healthcheck
+      description: |
+        Return information about service health.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHealthcheckResource'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InvalidInput:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    SubscriptionListResource:
+      allOf:
+        - $ref: '#/components/schemas/ListResource'
+        - type: object
+          required:
+          - subscriptions
+          properties:
+            subscriptions:
+              type: array
+              items:
+                $ref: '#/components/schemas/SubscriptionResource'
+    AdminSubscriptionListResource:
+      allOf:
+        - $ref: '#/components/schemas/ListResource'
+        - type: object
+          required:
+          - subscriptions
+          properties:
+            subscriptions:
+              type: array
+              items:
+                $ref: '#/components/schemas/AdminSubscriptionResource'
+    Subscription:
+      description: Subscription model.
+      type: object
+      required:
+        - active
+        - subscription
+      properties:
+        title:
+          description: Human readable reference for the subscription.
+          type: string
+          example: Cloudless EO products of Toulouse
+        active:
+          description: Indicates if subscription is active and still send notification orders or not.
+          type: boolean
+          example: false
+        starts_at:
+          description: 'Indicates when subscription will start sending notifications orders. If no start date is provided, subscription will start when created.'
+          type: integer
+          format: int64
+          example: 1522000000
+        expires_at:
+          description: 'Indicates when subscription will expire and no longer send notifications orders. If no expiration date is provided, subscription will not expire.'
+          type: integer
+          format: int64
+          example: 1523000000
+        subscription:
+          type: object
+          properties:
+            trigger:
+              description: |
+                The mandatory subscription criteria used by Subscription Matcher to trigger this subscription for a given event.
+              type: object
+              example:
+                geometry: "POLYGON( … )"
+                operations: [ "CREATE" , "DELETE" ]
+                collection: "Sentinel-2"
+            callback:
+              description: Indicates where to send the notification when an event triggers this subscription and when this subscription match the event's associated hit.
+              type: string
+              example: "http://www.myservice/callback"
+            hits:
+              description: Gives a description of the process.
+              type: object
+              properties:
+                filter:
+                  description: ARLAS filter query parama to check if subscription matches event's hit.
+                  type: string
+                  example: "f=contentDescription.cloudCoverPercentage:lt:10"
+                projection:
+                  description: ARLAS projection query param to indicates which hit's fields must be forwarded with the notification order.
+                  type: string
+                  example: "include=contentDescription.cloudCoverPercentage"
+        user_metadata:
+          description: JSON object provided by subscription's creator that will be forwarded as is with the notification order.
+          type: object
+          example:
+            correlation_id: "subscription-123"
+    SubscriptionResource:
+      allOf:
+        - type: object
+          required:
+            - id
+            - created_by
+            - created_by_admin
+            - created_at
+            - modified_at
+            - deleted
+            - _links
+          properties:
+            id:
+              description: Unique identifier of the subscription.
+              type: string
+              format: uuid
+              example: 15c61933-0b06-442c-8bab-723b2b41f570
+            created_by:
+              description: Identifier of the subscription's creator.
+              type: string
+              example: "USER-123"
+            created_by_admin:
+              description: Indicates if subscription has been created with admin endpoint.
+              type: boolean
+              example: false
+            created_at:
+              type: integer
+              format: int64
+              example: 1522067882
+            modified_at:
+              type: integer
+              format: int64
+              example: 1522078965
+            deleted:
+              description: 'Indicates if subscription has been deleted and no longer visible/available for its creator unless he is admin.'
+              type: boolean
+              example: false
+            _links:
+              $ref: '#/components/schemas/SubscriptionLinks'
+        - $ref: '#/components/schemas/Subscription'
+    AdminSubscriptionResource:
+      allOf:
+        - $ref: '#/components/schemas/SubscriptionResource'
+        - type: object
+          required:
+            - created_by_admin
+          properties:
+            created_by_admin:
+              type: boolean
+              example: false
+    ListResource:
+      type: object
+      required:
+        - _links
+      properties:
+        count:
+          type: integer
+          example: 1
+        total:
+          type: integer
+          example: 1
+        _links:
+          $ref: '#/components/schemas/NavLinks'
+    NavLinks:
+      description: |
+        Links to related resources.
+      type: object
+      required:
+        - self
+      properties:
+        self:
+          $ref: '#/components/schemas/Reference'
+        next:
+          $ref: '#/components/schemas/Reference'
+        prev:
+          $ref: '#/components/schemas/Reference'
+        first:
+          $ref: '#/components/schemas/Reference'
+        last:
+          $ref: '#/components/schemas/Reference'
+    SubscriptionLinks:
+      description: |
+        Links for single process.
+      type: object
+      required:
+        - self
+      properties:
+        self:
+          $ref: '#/components/schemas/Reference'
+        list:
+          $ref: '#/components/schemas/Reference'
+        update:
+          $ref: '#/components/schemas/Reference'
+        delete:
+          $ref: '#/components/schemas/Reference'
+    AdminHealthcheckResource:
+      description: Manager healthcheck.
+      type: object
+      required:
+        - deadlocks
+        - elasticsearch
+        - mongo
+      properties:
+        deadlocks:
+          $ref: '#/components/schemas/ServiceHealthcheckResource'
+        elasticsearch:
+          $ref: '#/components/schemas/ServiceHealthcheckResource'
+        mongo:
+          $ref: '#/components/schemas/ServiceHealthcheckResource'
+    ServiceHealthcheckResource:
+      description: Backend service healthcheck.
+      type: object
+      required:
+        - healthy
+      properties:
+        healthy:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Connection with service is up and running
+    Reference:
+      description: |
+        Reference object.
+      type: object
+      required:
+        - href
+      properties:
+        relation:
+          description: Description of the relation.
+          type: string
+          example: myrelation
+        href:
+          description: Determine the target URI of the related resource.
+          type: string
+          format: uri
+          example: |
+            http://mysubscriptions.com/subcriptions/15c61933-0b06-442c-8bab-723b2b41f570
+        type:
+          description: Expected content type of the response of the reference.
+          type: string
+          example: application/json
+        method:
+          $ref: '#/components/schemas/ReferenceMethod'
+    ReferenceMethod:
+      description: |
+        HTTP verbs to access resources.
+      type: string
+      enum:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+      example: GET
+    Error:
+      description: |
+        Error returned when request fails
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          description: End user error description.
+          type: string
+          example: Something went wrong!
+        hint:
+          description: Internal / developper error message (no trace).
+          type: string
+          example: Class CatDetection threw an exception on line 125
+        correlationId:
+          description: System request identifier from request header.
+          type: string
+          example: run-1258
+        timestamp:
+          description: Error timestamp.
+          type: string
+          example: 1522067885
