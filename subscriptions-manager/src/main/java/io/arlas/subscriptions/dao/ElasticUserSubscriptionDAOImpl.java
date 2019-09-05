@@ -65,7 +65,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
 
     @Override
-    public List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted) throws ArlasSubscriptionsException {
+    public List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted, Integer page, Integer size) throws ArlasSubscriptionsException {
         return null;
     }
 

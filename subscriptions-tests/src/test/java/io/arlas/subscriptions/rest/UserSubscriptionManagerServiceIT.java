@@ -182,4 +182,22 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
                 .contentType(ContentType.JSON)
                 .body("size()", is(0));
     }
+
+    @Test
+    public void test14GetAllUserSubscriptionsWithPaging() {
+        given().param("size", "1")
+                .param("page", "1")
+                .when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(1));
+        given().param("size", "1")
+                .param("page", "2")
+                .when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(0));
+    }
 }

@@ -50,8 +50,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted) throws ArlasSubscriptionsException {
-
+    public List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted, Integer page, Integer size) throws ArlasSubscriptionsException {
         List<Bson> filters = new ArrayList<>();
         if (user != null) filters.add(eq("created_by", user));
         if (!getDeleted) filters.add(eq("deleted", Boolean.FALSE));
@@ -60,7 +59,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
         if (before != null) filters.add(lte("created_at", before));
 
         List<UserSubscription> userSubscriptionFind = new ArrayList<>();
-        try (MongoCursor<UserSubscription> userSubscriptions = this.mongoCollection.find(and(filters)).iterator()) {
+        try (MongoCursor<UserSubscription> userSubscriptions = this.mongoCollection.find(and(filters)).skip(size * (page - 1)).limit(size).iterator()) {
             while (userSubscriptions.hasNext()) {
                 final UserSubscription userSubscription = userSubscriptions.next();
                 userSubscriptionFind.add(userSubscription);
