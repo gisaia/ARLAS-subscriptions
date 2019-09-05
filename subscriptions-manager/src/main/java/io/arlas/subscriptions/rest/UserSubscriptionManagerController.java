@@ -101,10 +101,24 @@ public class UserSubscriptionManagerController {
                     allowMultiple = false,
                     defaultValue = "false",
                     required = false)
-            @QueryParam(value = "pretty") Boolean pretty
+            @QueryParam(value = "pretty") Boolean pretty,
+            @ApiParam(name = "size", value = "Page Size",
+                    defaultValue = "10",
+                    allowableValues = "range[1, infinity]",
+                    type = "integer",
+                    required = false)
+            @DefaultValue("10")
+            @QueryParam(value = "size") Integer size,
+            @ApiParam(name = "page", value = "Page ID",
+                    defaultValue = "1",
+                    allowableValues = "range[1, infinity]",
+                    type = "integer",
+                    required = false)
+            @DefaultValue("1")
+            @QueryParam(value = "page") Integer page
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions(user, before, active, expired, false);
+        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions(user, before, active, expired, false, page, size);
         return ResponseFormatter.getResultResponse(userSubscriptions);
     }
 
