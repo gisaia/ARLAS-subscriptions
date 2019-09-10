@@ -20,7 +20,7 @@
 package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.arlas.client.model.Hit;
+import io.arlas.server.client.model.Hit;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.kafka.SubscriptionEventKafkaConsumer;
 import io.arlas.subscriptions.logger.ArlasLogger;

@@ -25,7 +25,7 @@
         <dependency>
             <groupId>io.arlas</groupId>
             <artifactId>subscriptions-commons</artifactId>
-            <version>${pom.parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <!-- ____________________________________________________ -->
         <!-- SWAGGER -->

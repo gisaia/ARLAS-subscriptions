@@ -20,10 +20,11 @@
 package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.arlas.client.ApiClient;
-import io.arlas.client.ApiException;
-import io.arlas.client.model.Hit;
-import io.arlas.client.model.Hits;
+import io.arlas.server.exceptions.ArlasException;
+import io.arlas.server.client.ApiClient;
+import io.arlas.server.client.ApiException;
+import io.arlas.server.client.model.Hit;
+import io.arlas.server.client.model.Hits;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
@@ -75,7 +76,7 @@ public class ProductService extends AbstractArlasService {
                             .stream()
                             .forEach(h -> pushNotificationOrder(h, event, userSubscription));
                 }
-            } catch (ApiException|IOException|ArlasSubscriptionsException e) {
+            } catch (ApiException | IOException | ArlasSubscriptionsException | ArlasException e) {
                 logger.warn("Error while fetching matching products: " + e.getMessage());
             }
         }

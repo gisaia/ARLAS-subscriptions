@@ -71,8 +71,8 @@ services:
       - KAFKA_BROKERS=kafka:9092
       - ARLAS_ELASTIC_NODES=elasticsearch:9300
       - ARLAS_SERVER=arlas-server:9999
-      - ARLAS_SERVER_BASE_PATH=http://arlas-server:9999
-      - ARLAS_SUBSCRIPTIONS_BASE_PATH=http://arlas-server:9999
+      - ARLAS_SERVER_BASE_PATH=http://arlas-server:9999/arlas
+      - ARLAS_SUBSCRIPTIONS_BASE_PATH=http://arlas-server:9999/arlas
     command: ["/opt/app/wait-for-deps.sh $$KAFKA_BROKERS $$ARLAS_ELASTIC_NODES $$ARLAS_SERVER"]
 
   arlas-subscriptions-manager:

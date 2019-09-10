@@ -23,7 +23,13 @@
 
         <dependency>
             <groupId>io.arlas</groupId>
-            <artifactId>arlas-server-client</artifactId>
+            <artifactId>arlas-server-swagger-client</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.arlas</groupId>
+            <artifactId>arlas-core</artifactId>
             <version>${arlas.version}</version>
         </dependency>
 
@@ -38,6 +44,7 @@
             <artifactId>cyclops</artifactId>
             <version>${cyclops.version}</version>
         </dependency>
+
     </dependencies>
 
     <build>
