@@ -25,6 +25,7 @@ import io.arlas.client.ApiException;
 import io.arlas.client.model.Hit;
 import io.arlas.client.model.Hits;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.NotificationOrder;
@@ -73,12 +74,8 @@ public class ProductService extends AbstractArlasService {
                             .stream()
                             .forEach(h -> pushNotificationOrder(h, event, userSubscription));
                 }
-            } catch (UnsupportedEncodingException e) {
-                LOGGER.warn("Parsing exception:", e);
-            } catch (ApiException e) {
-                LOGGER.warn("Api exception:", e);
-            } catch (IOException e) {
-                LOGGER.warn("Parsing error:", e);
+            } catch (ApiException|IOException|ArlasSubscriptionsException e) {
+                LOGGER.warn("Error while fetching matching products", e);
             }
         }
     }
