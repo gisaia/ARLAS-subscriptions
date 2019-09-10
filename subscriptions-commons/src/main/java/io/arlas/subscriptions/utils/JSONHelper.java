@@ -25,19 +25,27 @@ import java.util.HashMap;
 
 public class JSONHelper {
 
+
     public static Object readJSONValue(String jsonPath, Object jsonObject) {
+        return JSONHelper.readJSONValue(jsonPath, jsonObject, false);
+    }
+
+    public static Object readJSONValue(String jsonPath, Object jsonObject, boolean partialFind) {
         try {
             String key = jsonPath.contains(".")?jsonPath.substring(0,jsonPath.indexOf(".")):jsonPath;
             if (!StringUtils.isEmpty(key)
                     && jsonObject instanceof HashMap
                     && ((HashMap)jsonObject).containsKey(key)) {
-                return readJSONValue(jsonPath.substring(jsonPath.indexOf(".")+1),((HashMap)jsonObject).get(key));
+                return readJSONValue(jsonPath.substring(jsonPath.indexOf(".")+1),((HashMap)jsonObject).get(key), true);
             } else {
-                return jsonObject;
+                if (partialFind) {
+                    return jsonObject;
+                } else {
+                    return null;
+                }
             }
         } catch (IndexOutOfBoundsException e) {
-            return jsonObject;
+            return null;
         }
-
     }
 }
