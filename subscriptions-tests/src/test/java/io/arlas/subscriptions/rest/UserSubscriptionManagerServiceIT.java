@@ -46,7 +46,7 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("size()", is(1));
+                .body("total", equalTo(1));
     }
 
     @Test
@@ -85,6 +85,11 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
                 .when().body(jsonAsMap)
                 .post(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(400);
+        when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("total", equalTo(2));
     }
 
     @Test
@@ -110,12 +115,32 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
     }
 
     @Test
-    public void test08DeleteExistingUserSubscription() throws Exception {
+    public void test08GetAllUserSubscriptionsWithPaging() {
+        given().param("size", "1")
+                .param("page", "1")
+                .when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("count", equalTo(1))
+                .body("total", equalTo(2));
+        given().param("size", "1")
+                .param("page", "2")
+                .when()
+                .get(arlasSubManagerPath + "subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("count", equalTo(1))
+                .body("total", equalTo(2));
+    }
+
+    @Test
+    public void test09DeleteExistingUserSubscription() throws Exception {
         when()
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("size()", is(2));
+                .body("total", equalTo(2));
 
         when().delete(arlasSubManagerPath + "subscriptions/1234")
                 .then()
@@ -130,74 +155,56 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("size()", is(1));
+                .body("total", equalTo(1));
     }
 
     @Test
-    public void test09GetAllUserSubscriptionsWithParamBefore() {
-        given().param("before", "1564578980")
+    public void test10GetAllUserSubscriptionsWithParamBefore() {
+        given().param("before", "2145913200")
                 .when()
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("size()", is(0));
+                .body("total", equalTo(1));
     }
 
     @Test
-    public void test10GetAllUserSubscriptionsWithParamExpiredTrue() {
+    public void test11GetAllUserSubscriptionsWithParamExpiredTrue() {
         given().param("expired", "true")
                 .when()
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("size()", is(0));
+                .body("total", equalTo(0));
     }
 
     @Test
-    public void test11GetAllUserSubscriptionsWithParamExpiredFalse() {
+    public void test12GetAllUserSubscriptionsWithParamExpiredFalse() {
         given().param("expired", "false")
                 .when()
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("size()", is(1));
+                .body("total", equalTo(1));
     }
 
     @Test
-    public void test12GetAllUserSubscriptionsWithParamActiveTrue() {
+    public void test13GetAllUserSubscriptionsWithParamActiveTrue() {
         given().param("active", "true")
                 .when()
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("size()", is(1));
+                .body("total", equalTo(1));
     }
 
     @Test
-    public void test13GetAllUserSubscriptionsWithParamActiveFalse() {
+    public void test14GetAllUserSubscriptionsWithParamActiveFalse() {
         given().param("active", "false")
                 .when()
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("size()", is(0));
-    }
-
-    @Test
-    public void test14GetAllUserSubscriptionsWithPaging() {
-        given().param("size", "1")
-                .param("page", "1")
-                .when()
-                .get(arlasSubManagerPath + "subscriptions/")
-                .then().statusCode(200)
-                .contentType(ContentType.JSON)
-                .body("size()", is(1));
-        given().param("size", "1")
-                .param("page", "2")
-                .when()
-                .get(arlasSubManagerPath + "subscriptions/")
-                .then().statusCode(200)
-                .contentType(ContentType.JSON)
-                .body("size()", is(0));
+                .body("total", equalTo(0));
     }
 }

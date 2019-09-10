@@ -26,6 +26,7 @@ import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
+import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -63,9 +64,8 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
             this.jsonSchemaValidator=jsonSchemaValidator;
     }
 
-
     @Override
-    public List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted, Integer page, Integer size) throws ArlasSubscriptionsException {
+    public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean deleted, Integer page, Integer size) throws ArlasSubscriptionsException {
         return null;
     }
 
@@ -99,7 +99,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     }
 
     @Override
-    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean getDeleted) {
+    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) {
         return Optional.empty();
     }
 

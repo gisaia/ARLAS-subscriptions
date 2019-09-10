@@ -24,12 +24,16 @@ import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.exception.ForbiddenException;
 import io.arlas.subscriptions.exception.NotFoundException;
 import io.arlas.subscriptions.exception.UnauthorizedException;
+import io.arlas.subscriptions.model.SubscriptionListResource;
 import io.arlas.subscriptions.model.UserSubscription;
+import io.arlas.subscriptions.model.UserSubscriptionWithLinks;
 import io.arlas.subscriptions.model.response.Error;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.ResponseFormatter;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.elasticsearch.common.collect.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +41,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Path("/subscriptions")
 @Api(value = "/subscriptions", tags = {"end-user"})
@@ -76,12 +84,13 @@ public class UserSubscriptionManagerController {
                     "Only current user's subscriptions that are not deleted are listed.",
             consumes = UTF8JSON
     )
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class, responseContainer = "List"),
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = SubscriptionListResource.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
-    public Response getAll(@Context HttpHeaders headers,
+    public Response getAll(@Context UriInfo uriInfo,
+                           @Context HttpHeaders headers,
             // --------------------------------------------------------
             // ----------------------- FORM -----------------------
             // --------------------------------------------------------
@@ -118,8 +127,14 @@ public class UserSubscriptionManagerController {
             @QueryParam(value = "page") Integer page
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        List<UserSubscription> userSubscriptions = subscriptionManagerService.getAllUserSubscriptions(user, before, active, expired, false, page, size);
-        return ResponseFormatter.getResultResponse(userSubscriptions);
+        Pair<Integer, List<UserSubscription>> subscriptionList = subscriptionManagerService.getAllUserSubscriptions(user, before, active, expired, false, page, size);
+        SubscriptionListResource subscriptionListResource = new SubscriptionListResource();
+        subscriptionListResource.total = subscriptionList.getLeft();
+        subscriptionListResource.count = subscriptionList.getRight().size();
+        subscriptionListResource.subscriptions = subscriptionList.getRight().stream().map(u -> new UserSubscriptionWithLinks(u)).collect(Collectors.toList());
+        subscriptionListResource.subscriptions.replaceAll(u -> subscriptionWithLinks(u, uriInfo));
+        subscriptionListResource.links = subListLinks(uriInfo, page, size, subscriptionListResource.total, subscriptionListResource.subscriptions.size());
+        return ResponseFormatter.getResultResponse(subscriptionListResource);
     }
 
     @Timed
@@ -133,15 +148,16 @@ public class UserSubscriptionManagerController {
             notes = "Return a single subscription. " +
                     "Only creator can access their subscriptions.",
             consumes = UTF8JSON,
-            response = UserSubscription.class
+            response = UserSubscriptionWithLinks.class
     )
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscription.class),
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscriptionWithLinks.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
             @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
-    public Response get(@Context HttpHeaders headers,
+    public Response get(@Context UriInfo uriInfo,
+                        @Context HttpHeaders headers,
             @ApiParam(
                     name = "id",
                     value = "ID of subscription to return",
@@ -161,7 +177,7 @@ public class UserSubscriptionManagerController {
         UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 
-        return ResponseFormatter.getResultResponse(userSubscription);
+        return ResponseFormatter.getResultResponse(subscriptionWithLinks(userSubscription, uriInfo));
     }
 
     @Timed
@@ -175,9 +191,9 @@ public class UserSubscriptionManagerController {
             notes = "Mark a subscription as deleted. " +
                     "Only creator can delete their own subscriptions.",
             consumes = UTF8JSON,
-            response = UserSubscription.class
+            response = UserSubscriptionWithLinks.class
     )
-    @ApiResponses(value = {@ApiResponse(code = 202, message = "Subscription has been deleted.", response = UserSubscription.class),
+    @ApiResponses(value = {@ApiResponse(code = 202, message = "Subscription has been deleted.", response = UserSubscriptionWithLinks.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
@@ -204,7 +220,7 @@ public class UserSubscriptionManagerController {
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
         subscriptionManagerService.deleteUserSubscription(userSubscription);
 
-        return ResponseFormatter.getAcceptedResponse(userSubscription);
+        return ResponseFormatter.getAcceptedResponse(new UserSubscriptionWithLinks(userSubscription));
     }
 
     @Path("/")
@@ -216,9 +232,9 @@ public class UserSubscriptionManagerController {
             produces = UTF8JSON,
             notes = "Register a subscription for further notification.",
             consumes = UTF8JSON,
-            response = UserSubscription.class
+            response = UserSubscriptionWithLinks.class
     )
-    @ApiResponses(value = {@ApiResponse(code = 201, message = "Subscription has been registered", response = UserSubscription.class),
+    @ApiResponses(value = {@ApiResponse(code = 201, message = "Subscription has been registered", response = UserSubscriptionWithLinks.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
@@ -245,7 +261,8 @@ public class UserSubscriptionManagerController {
         if (user != null && !user.equals(subscription.created_by)) {
             throw new ForbiddenException("New subscription does not belong to authenticated user " + user);
         }
-        return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),subscriptionManagerService.postUserSubscription(subscription, false));
+        return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
+                subscriptionWithLinks(subscriptionManagerService.postUserSubscription(subscription, false), uriInfo));
     }
 
     @Path("{id}")
@@ -258,9 +275,9 @@ public class UserSubscriptionManagerController {
             notes = "Update an existing subscription. " +
                     "Only creator can update their own subscriptions.",
             consumes = UTF8JSON,
-            response = UserSubscription.class
+            response = UserSubscriptionWithLinks.class
     )
-    @ApiResponses(value = {@ApiResponse(code = 201, message = "Successful operation", response = UserSubscription.class),
+    @ApiResponses(value = {@ApiResponse(code = 201, message = "Successful operation", response = UserSubscriptionWithLinks.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
@@ -301,7 +318,7 @@ public class UserSubscriptionManagerController {
             throw new ForbiddenException("Existing or updated subscription does not belong to authenticated user " + user);
         }
         return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
-                subscriptionManagerService.putUserSubscription(user, oldUserSubscription, updUserSubscription));
+                subscriptionWithLinks(subscriptionManagerService.putUserSubscription(user, oldUserSubscription, updUserSubscription), uriInfo));
     }
 
     private String getUser(HttpHeaders headers) throws UnauthorizedException, ForbiddenException {
@@ -317,5 +334,35 @@ public class UserSubscriptionManagerController {
             }
             return userId;
         }
+    }
+
+    private UserSubscriptionWithLinks subscriptionWithLinks(UserSubscription subscription, UriInfo uriInfo) {
+        String listUri = uriInfo.getRequestUriBuilder().build().toString();
+        String subUri = uriInfo.getRequestUriBuilder().path(subscription.getId()).build().toString();
+        Map<String, UserSubscriptionWithLinks.Link> links = new HashMap<>();
+        links.put("self", new UserSubscriptionWithLinks.Link("self", subUri, "GET"));
+        links.put("list", new UserSubscriptionWithLinks.Link("list", listUri, "GET"));
+        links.put("update", new UserSubscriptionWithLinks.Link("update", subUri, "PUT"));
+        links.put("delete", new UserSubscriptionWithLinks.Link("delete", subUri, "DELETE"));
+        return new UserSubscriptionWithLinks(subscription).withLinks(links);
+    }
+
+    private Map<String, UserSubscriptionWithLinks.Link> subListLinks(UriInfo uriInfo, Integer page, Integer size, Integer total, Integer count) {
+        UriBuilder uri = uriInfo.getRequestUriBuilder();
+        Map<String, UserSubscriptionWithLinks.Link> links = new HashMap<>();
+        links.put("self", new UserSubscriptionWithLinks.Link("self", getUri(uri, size, page), "GET"));
+        if (page != 1)
+            links.put("first", new UserSubscriptionWithLinks.Link("first", getUri(uri, size, 1), "GET"));
+        if (page > 1)
+            links.put("prev", new UserSubscriptionWithLinks.Link("prev", getUri(uri, size, page-1), "GET"));
+        if ((page-1)*size + count < total)
+            links.put("next", new UserSubscriptionWithLinks.Link("next", getUri(uri, size, page+1), "GET"));
+        if ((page-1)*size + count != total)
+            links.put("last", new UserSubscriptionWithLinks.Link("last", getUri(uri, size, new Double(Math.ceil(total/size)).intValue()), "GET"));
+        return links;
+    }
+
+    private String getUri(UriBuilder uri, Integer size, Integer page) {
+        return uri.replaceQueryParam("size", size).replaceQueryParam("page", page).build().toString();
     }
 }
