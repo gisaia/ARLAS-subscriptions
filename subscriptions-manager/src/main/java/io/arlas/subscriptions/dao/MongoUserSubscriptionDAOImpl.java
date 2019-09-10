@@ -19,69 +19,108 @@
 
 package io.arlas.subscriptions.dao;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Facet;
 import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.json.JsonWriterSettings;
 import org.everit.json.schema.ValidationException;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static com.mongodb.client.model.Aggregates.*;
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.set;
 import static io.arlas.subscriptions.utils.UUIDHelper.generateUUID;
 
 public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
-    private MongoCollection<UserSubscription> mongoCollection;
+    private MongoCollection<UserSubscription> mongoCollectionSub;
+    private MongoCollection<Document> mongoCollectionDoc;
     private JsonSchemaValidator jsonSchemaValidator;
+    private static ObjectMapper mapper = new ObjectMapper();
+    private static JsonWriterSettings jsonWritterSettings = JsonWriterSettings.builder()
+            .int64Converter((value, writer) -> writer.writeNumber(value.toString()))
+            .build();
 
     public MongoUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged,JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
         MongoDatabase mongoDatabase = mongoDBManaged.mongoClient.getDatabase(configuration.getMongoDBConnection().database);
-        this.mongoCollection = this.initSubscriptionsCollection(mongoDatabase);
+        this.mongoCollectionSub = this.initSubscriptionsCollection(mongoDatabase);
+        this.mongoCollectionDoc = mongoDatabase.getCollection("arlas-subscription");
         this.jsonSchemaValidator = jsonSchemaValidator;
     }
 
     @Override
-    public List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted, Integer page, Integer size) throws ArlasSubscriptionsException {
+    public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean deleted, Integer page, Integer size) throws ArlasSubscriptionsException {
         List<Bson> filters = new ArrayList<>();
-        if (user != null) filters.add(eq("created_by", user));
-        if (!getDeleted) filters.add(eq("deleted", Boolean.FALSE));
-        if (active != null) filters.add(eq("active", active));
-        if (expired != null) filters.add(expired ? lte("expires_at", System.currentTimeMillis()/1000) : gt("expires_at", System.currentTimeMillis()/1000));
-        if (before != null) filters.add(lte("created_at", before));
+        if (user != null)
+            filters.add(eq("created_by", user));
+        if (!deleted)
+            filters.add(eq("deleted", Boolean.FALSE));
+        if (active != null)
+            filters.add(eq("active", active));
+        if (expired != null)
+            filters.add(expired ? lte("expires_at", System.currentTimeMillis() / 1000l) : gt("expires_at", System.currentTimeMillis() / 1000l));
+        if (before != null)
+            filters.add(lte("created_at", before));
 
-        List<UserSubscription> userSubscriptionFind = new ArrayList<>();
-        try (MongoCursor<UserSubscription> userSubscriptions = this.mongoCollection.find(and(filters)).skip(size * (page - 1)).limit(size).iterator()) {
-            while (userSubscriptions.hasNext()) {
-                final UserSubscription userSubscription = userSubscriptions.next();
-                userSubscriptionFind.add(userSubscription);
-            }
+        Document aggResult = this.mongoCollectionDoc.aggregate(
+                Arrays.asList(
+                        match(and(filters)),
+                        facet(
+                                new Facet("subList", skip(size * (page - 1)), limit(size)),
+                                new Facet("totalCount", count())
+                        )
+                )
+        ).first();
+
+        Integer total = ((List<Document>) aggResult.get("totalCount")).size() == 1 ? (Integer)((List<Document>) aggResult.get("totalCount")).get(0).get("count") : new Integer(0);
+        List<UserSubscription> subList = ((List<Document>) aggResult.get("subList")).stream().map(d -> convertDocument(d)).collect(Collectors.toList());
+        return Pair.of(total, subList);
+    }
+
+    private UserSubscription convertDocument(Document document) {
+        try {
+            UserSubscription userSubscription = mapper.readValue(document.toJson(jsonWritterSettings), UserSubscription.class);
+            // these fields are READ_ONLY so we need to set them manually
+            userSubscription.setId((String)document.get("_id"));
+            userSubscription.setCreated_at((Long)document.get("created_at"));
+            userSubscription.setModified_at((Long)document.get("modified_at"));
+            userSubscription.setCreated_by_admin((Boolean)document.get("created_by_admin"));
+            userSubscription.setDeleted((Boolean)document.get("deleted"));
+            return userSubscription;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse JSON from MongoDB: "+document.toJson(jsonWritterSettings), e);
         }
-        return userSubscriptionFind;
     }
 
     @Override
-    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean getDeleted) {
+    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) {
         List<Bson> filters = new ArrayList<>();
         filters.add(eq("_id", id));
-        if (user != null) filters.add(eq("created_by", user));
-        if (!getDeleted) filters.add(eq("deleted", Boolean.FALSE));
+        if (user != null)
+            filters.add(eq("created_by", user));
+        if (!deleted)
+            filters.add(eq("deleted", Boolean.FALSE));
 
-        return Optional.ofNullable(this.mongoCollection.find(and(filters)).first());
+        return Optional.ofNullable(this.mongoCollectionSub.find(and(filters)).first());
     }
 
     @Override
     public void setUserSubscriptionDeletedFlag(UserSubscription userSubscription, boolean isDeleted) throws ArlasSubscriptionsException {
         try {
-            if (!this.mongoCollection.updateOne(eq("_id", userSubscription.getId()), set("deleted", isDeleted)).wasAcknowledged()) {
+            if (!this.mongoCollectionSub.updateOne(eq("_id", userSubscription.getId()), set("deleted", isDeleted)).wasAcknowledged()) {
                 throw new ArlasSubscriptionsException("userSubscription update in DB not acknowledged");
             }
         } catch (MongoException e) {
@@ -95,11 +134,11 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
             this.jsonSchemaValidator.validJsonObjet(userSubscription.subscription.trigger);
             UUID uuid = generateUUID();
             userSubscription.setId(uuid.toString());
-            userSubscription.setCreated_at(new Date().getTime());
-            userSubscription.setModified_at(new Date().getTime());
+            userSubscription.setCreated_at(new Date().getTime()/1000l);
+            userSubscription.setModified_at(new Date().getTime()/1000l);
             userSubscription.setCreated_by_admin(createdByAdmin);
             userSubscription.setDeleted(false);
-            this.mongoCollection.insertOne(userSubscription);
+            this.mongoCollectionSub.insertOne(userSubscription);
         } catch (ValidationException e) {
             throw new ArlasSubscriptionsException("Error in validation of trigger json schema :" + e.getErrorMessage(),e);
         } catch (MongoException e) {
@@ -112,7 +151,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     public void putUserSubscription(UserSubscription updUserSubscription) throws ArlasSubscriptionsException {
         try {
             this.jsonSchemaValidator.validJsonObjet(updUserSubscription.subscription.trigger);
-            if (!this.mongoCollection.replaceOne(eq("_id", updUserSubscription.getId()), updUserSubscription).wasAcknowledged()) {
+            if (!this.mongoCollectionSub.replaceOne(eq("_id", updUserSubscription.getId()), updUserSubscription).wasAcknowledged()) {
                 throw new ArlasSubscriptionsException("userSubscription update in DB not acknowledged");
             }
         } catch (ValidationException e) {
@@ -126,7 +165,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
     @Override
     public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException {
-        this.mongoCollection.deleteOne(new Document("_id", ref));
+        this.mongoCollectionSub.deleteOne(new Document("_id", ref));
     }
 
     private MongoCollection<UserSubscription> initSubscriptionsCollection(MongoDatabase mongoDatabase) throws ArlasSubscriptionsException {

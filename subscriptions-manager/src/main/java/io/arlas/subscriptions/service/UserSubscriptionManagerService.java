@@ -28,7 +28,7 @@ import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
-import io.dropwizard.jersey.params.IntParam;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.FileNotFoundException;
 import java.util.Date;
@@ -49,8 +49,8 @@ public class UserSubscriptionManagerService {
         this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration,elasticDBManaged,jsonSchemaValidator);
     }
 
-    public List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted, Integer page, Integer size) throws ArlasSubscriptionsException {
-        return  this.daoDatabase.getAllUserSubscriptions(user, before, active, expired, getDeleted, page, size);
+    public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean deleted, Integer page, Integer size) throws ArlasSubscriptionsException {
+        return  this.daoDatabase.getAllUserSubscriptions(user, before, active, expired, deleted, page, size);
     }
 
     public UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException {
@@ -65,8 +65,8 @@ public class UserSubscriptionManagerService {
         return userSubscriptionForIndex ;
     }
 
-    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean getDeleted) {
-        return this.daoDatabase.getUserSubscription(user, id, getDeleted);
+    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) {
+        return this.daoDatabase.getUserSubscription(user, id, deleted);
     }
 
     public void deleteUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {

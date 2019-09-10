@@ -21,6 +21,7 @@ package io.arlas.subscriptions.dao;
 
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,13 +31,13 @@ import java.util.Optional;
 public interface UserSubscriptionDAO {
     Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionDAO.class);
 
-    List<UserSubscription> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean getDeleted, Integer page, Integer size) throws ArlasSubscriptionsException;
+    Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean deleted, Integer page, Integer size) throws ArlasSubscriptionsException;
 
     UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException;
 
     void deleteUserSubscription(String ref) throws ArlasSubscriptionsException;
 
-    Optional<UserSubscription> getUserSubscription(String user, String id, boolean getDeleted);
+    Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted);
 
     void setUserSubscriptionDeletedFlag(UserSubscription userSubscription, boolean isDeleted) throws ArlasSubscriptionsException;
 
