@@ -27,6 +27,7 @@ import io.arlas.client.model.Hit;
 import io.arlas.client.model.Hits;
 import io.arlas.client.model.Link;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.SubscriptionEvent;
 import io.arlas.subscriptions.utils.JSONValueInjector;
 import org.locationtech.jts.io.ParseException;
@@ -66,10 +67,8 @@ public class SubscriptionsService extends AbstractArlasService {
                     }
                 }
             } while (items.getHits() != null && next != null);
-        } catch (ApiException e) {
-            LOGGER.warn("Api exception:", e);
-        } catch (IOException e) {
-            LOGGER.warn("Parsing error:", e);
+        } catch (ApiException|IOException| ArlasSubscriptionsException e) {
+            LOGGER.warn("Error while fetching matching subscriptions", e);
         }
 
         return result;

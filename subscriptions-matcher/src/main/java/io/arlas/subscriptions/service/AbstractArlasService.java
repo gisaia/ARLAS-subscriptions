@@ -26,6 +26,7 @@ import io.arlas.client.ApiClient;
 import io.arlas.client.ApiException;
 import io.arlas.client.Pair;
 import io.arlas.client.model.Hits;
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,16 +59,20 @@ public class AbstractArlasService {
                 .collect(Collectors.toList());
     }
 
-    Hits getItemHits(List<Pair> queryParams) throws ApiException, IOException {
+    Hits getItemHits(List<Pair> queryParams) throws ApiException, IOException, ArlasSubscriptionsException {
         return getItemHits(queryParams, emptyMapParams);
     }
 
-    Hits getItemHits(List<Pair> queryParams, Map<String, String> headerParams) throws ApiException, IOException {
+    Hits getItemHits(List<Pair> queryParams, Map<String, String> headerParams) throws ApiException, IOException, ArlasSubscriptionsException {
         Call searchCall = apiClient.buildCall(searchEndpoint, GET, queryParams,
                 emptyListParams, null, headerParams, emptyMapParams, emptyArrayParams, null);
         Response searchResponse = searchCall.execute();
         String body = searchResponse.body().string();
         LOGGER.debug("body="+body);
-        return objectMapper.readValue(body, Hits.class);
+        if (searchResponse.isSuccessful()) {
+            return objectMapper.readValue(body, Hits.class);
+        } else {
+            throw new ArlasSubscriptionsException("Error while interrogating Catalog: " + body);
+        }
     }
 }
