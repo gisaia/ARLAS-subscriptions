@@ -27,30 +27,40 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.arlas.subscriptions.utils.JSONHelper.readJSONValue;
 
 public class JSONValueInjector {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSONValueInjector.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final WKTWriter wktWriter = new WKTWriter();
     private static final GeoJsonReader geoJsonReader = new GeoJsonReader();
 
+    public static final String VAR_START = "(";
+    public static final String VAR_END = ")";
+
     /*
-     * Replace mentions to {json.path} in String by corresponding value in JSONObject.
+     * Replace mentions to VAR_START + json.path + VAR_END in String by corresponding value in JSONObject.
      */
     public static String inject(String s, JSONObject object) throws JsonProcessingException, ParseException {
         String ret = s;
-        String[] jsonPaths = StringUtils.substringsBetween(s,"{", "}");
+        String[] jsonPaths = StringUtils.substringsBetween(s,VAR_START, VAR_END);
         for(String jsonPath : jsonPaths) {
-            String searchString = "{" + jsonPath + "}";
+            String searchString = VAR_START + jsonPath + VAR_END;
             Object value = readJSONValue(jsonPath, object);
-            if (jsonPath.endsWith("geometry") || jsonPath.endsWith("centroid")) {
-                Geometry geometry = geoJsonReader.read(objectMapper.writeValueAsString(value));
-                String replacement = wktWriter.write(geometry);
-                ret = StringUtils.replace(ret, searchString, replacement);
+            if (value != null) {
+                if (jsonPath.endsWith("geometry") || jsonPath.endsWith("centroid")) {
+                    Geometry geometry = geoJsonReader.read(objectMapper.writeValueAsString(value));
+                    String replacement = wktWriter.write(geometry);
+                    ret = StringUtils.replace(ret, searchString, replacement);
+                } else {
+                    ret = StringUtils.replace(ret, searchString, value.toString());
+                }
             } else {
-                ret = StringUtils.replace(ret, searchString, value.toString());
+                LOGGER.warn("Trying to inject "+VAR_START+jsonPath+VAR_END+" but not found in object:" + object.toJSONString());
             }
         }
         return ret;
