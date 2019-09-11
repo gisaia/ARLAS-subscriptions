@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "arlas-subscriptions.fullname" . }}-manager
+  labels:
+{{ include "arlas-subscriptions.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.manager.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "arlas-subscriptions.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: manager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "arlas-subscriptions.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: manager
+    spec:
+      containers:
+        - name: container
+          env:
+            - name: ARLAS_SUB_ELASTIC_CLUSTER
+              value: {{ .Values.elasticsearch.cluster }}
+            - name: ARLAS_SUB_ELASTIC_INDEX
+              value: {{ .Values.elasticsearch.index }}
+            - name: ARLAS_SUB_ELASTIC_NODES
+              value: {{ .Values.elasticsearch.endpoints.transport | join "," }}
+            - name: ARLAS_SUB_ELASTIC_TYPE
+              value: {{ .Values.elasticsearch.mappingType.name }}
+            - name: ARLAS_SUB_TRIG_SCHEM_PATH
+              value: {{ .Values.manager.triggerSchema.path }}
+          {{- if .Values.manager.environmentVariables }}
+            {{- include "arlas-subscriptions.manager.environmentVariables" . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
+          imagePullPolicy: {{ .Values.manager.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 9998
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              # TODO: switch to /admin/healthcheck when implemented
+              path: /arlas-subscriptions-manager/subscriptions
+              port: http
+          readinessProbe:
+            httpGet:
+              # TODO: same as liveness
+              path: /arlas-subscriptions-manager/subscriptions
+              port: http
+          resources:
+            {{- toYaml .Values.manager.resources | nindent 12 }}
+          volumeMounts:
+            - name: trigger-schema
+              mountPath: {{ dir .Values.manager.triggerSchema.path }}
+    {{- if .Values.manager.init.elasticsearchIndex.enabled }}
+      initContainers:
+        - name: elasticsearch-index
+          image: {{ .Values.manager.init.elasticsearchIndex.container.image.repository }}:{{ .Values.manager.init.elasticsearchIndex.container.image.tag }}
+          imagePullPolicy: {{ .Values.manager.init.elasticsearchIndex.container.image.pullPolicy }}
+          env:
+            - name: ELASTICSEARCH_FIRST_NODE
+              value: {{ .Values.elasticsearch.endpoints.http | first }}
+            - name: ELASTICSEARCH_INDEX
+              value: {{ .Values.elasticsearch.index }}
+            - name: ELASTICSEARCH_MAPPING_TYPE
+              value: {{ .Values.elasticsearch.mappingType.name }}
+          command: ["bash", "-c"]
+          args:
+            - |
+              {{- include "arlas-subscriptions.manager.init.elasticsearchIndex" . | nindent 14 }}
+          resources:
+            {{- toYaml .Values.manager.init.elasticsearchIndex.container.resources | nindent 12 }}
+    {{- end }}
+      {{- with .Values.manager.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.manager.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.manager.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+        - name: trigger-schema
+          configMap:
+            name: {{ include "arlas-subscriptions.manager.triggerSchema.configMap" . }}
