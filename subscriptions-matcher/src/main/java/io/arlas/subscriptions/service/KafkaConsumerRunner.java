@@ -23,22 +23,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.client.model.Hit;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.kafka.SubscriptionEventKafkaConsumer;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.model.SubscriptionEvent;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.locationtech.jts.io.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static io.arlas.subscriptions.app.ArlasSubscriptionsMatcher.MATCHER;
+
 public class KafkaConsumerRunner implements Runnable {
-    private Logger LOGGER = LoggerFactory.getLogger(KafkaConsumerRunner.class);
+    private final ArlasLogger logger = ArlasLoggerFactory.getLogger(KafkaConsumerRunner.class, MATCHER);
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -56,7 +58,7 @@ public class KafkaConsumerRunner implements Runnable {
     @Override
     public void run() {
         try {
-            LOGGER.info("Starting consumer of topic '" + configuration.kafkaConfiguration.subscriptionEventsTopic + "'");
+            logger.info("Starting consumer of topic '" + configuration.kafkaConfiguration.subscriptionEventsTopic + "'");
             consumer = SubscriptionEventKafkaConsumer.build(configuration);
 
             while (true) {
@@ -65,15 +67,15 @@ public class KafkaConsumerRunner implements Runnable {
 
                     try {
                         final SubscriptionEvent event = objectMapper.readValue(record.value(), SubscriptionEvent.class);
-                        LOGGER.debug("Received subscription event:" + event.toString());
+                        logger.debug("Received subscription event:" + event.toString());
 
                         List<Hit> hits = subscriptionsService.searchMatchingSubscriptions(event);
-                        LOGGER.debug("Subscription matcher result=" + hits.toString());
+                        logger.debug("Subscription matcher result=" + hits.toString());
 
                         productService.processMatchingProducts(event, hits);
 
                     } catch (IOException|ParseException e) {
-                        LOGGER.warn("Could not parse record " + record.value(), e);
+                        logger.warn("Could not parse record " + record.value(), e);
                     }
                 }
                 consumer.commitSync();
@@ -83,7 +85,7 @@ public class KafkaConsumerRunner implements Runnable {
             // Ignore exception if closing
             if (!closed.get()) throw e;
         } finally {
-            LOGGER.info("Closing consumer of topic '" + configuration.kafkaConfiguration.subscriptionEventsTopic + "'");
+            logger.info("Closing consumer of topic '" + configuration.kafkaConfiguration.subscriptionEventsTopic + "'");
             consumer.close();
         }
     }

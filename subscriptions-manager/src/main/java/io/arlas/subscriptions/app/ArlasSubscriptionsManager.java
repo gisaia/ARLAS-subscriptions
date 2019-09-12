@@ -46,6 +46,8 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionManagerConfiguration> {
 
+    public final static String MANAGER = "MANAGER";
+
     public static void main(String... args) throws Exception {
         new ArlasSubscriptionsManager().run(args);
     }
@@ -68,6 +70,7 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
             }
         });
     }
+
     @Override
     public void run(ArlasSubscriptionManagerConfiguration configuration, Environment environment) throws Exception {
 
@@ -83,10 +86,10 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
         environment.getObjectMapper().configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
         environment.jersey().register(MultiPartFeature.class);
         environment.jersey().register(PrettyPrintFilter.class);
-        environment.jersey().register(new ArlasSubscriptionsExceptionMapper());
-        environment.jersey().register(new IllegalArgumentExceptionMapper());
+        environment.jersey().register(new ArlasSubscriptionsExceptionMapper(MANAGER));
+        environment.jersey().register(new IllegalArgumentExceptionMapper(MANAGER));
         environment.jersey().register(new JsonProcessingExceptionMapper());
-        environment.jersey().register(new ConstraintViolationExceptionMapper());
+        environment.jersey().register(new ConstraintViolationExceptionMapper(MANAGER));
         environment.lifecycle().manage(mongoDBManaged);
         environment.lifecycle().manage(elasticDBManaged);
         UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration,mongoDBManaged,elasticDBManaged);

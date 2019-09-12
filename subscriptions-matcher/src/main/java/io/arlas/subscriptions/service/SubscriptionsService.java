@@ -28,18 +28,20 @@ import io.arlas.client.model.Hits;
 import io.arlas.client.model.Link;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.model.SubscriptionEvent;
 import io.arlas.subscriptions.utils.JSONValueInjector;
 import org.locationtech.jts.io.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.arlas.subscriptions.app.ArlasSubscriptionsMatcher.MATCHER;
+
 public class SubscriptionsService extends AbstractArlasService {
-    private final Logger LOGGER = LoggerFactory.getLogger(SubscriptionsService.class);
+    private final ArlasLogger logger = ArlasLoggerFactory.getLogger(SubscriptionsService.class, MATCHER);
 
     SubscriptionsService(ArlasSubscriptionsConfiguration configuration) {
         this.apiClient = new ApiClient().setBasePath(configuration.subscriptionsBasePath);
@@ -68,7 +70,7 @@ public class SubscriptionsService extends AbstractArlasService {
                 }
             } while (items.getHits() != null && next != null);
         } catch (ApiException|IOException| ArlasSubscriptionsException e) {
-            LOGGER.warn("Error while fetching matching subscriptions", e);
+            logger.warn("Error while fetching matching subscriptions: " + e.getMessage());
         }
 
         return result;

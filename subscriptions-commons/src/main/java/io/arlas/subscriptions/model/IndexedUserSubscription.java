@@ -35,6 +35,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,10 +54,9 @@ public class IndexedUserSubscription extends UserSubscription {
     public List<Double> centroid;
 
     public IndexedUserSubscription() {
-
     }
 
-    public IndexedUserSubscription(UserSubscription userSubscription,String geometryKey, String centroidKey) throws ArlasSubscriptionsException, ParseException, JsonProcessingException {
+    public IndexedUserSubscription(UserSubscription userSubscription,String geometryKey, String centroidKey) throws ArlasSubscriptionsException {
         this.setId(userSubscription.getId());
         this.setCreated_at(userSubscription.getCreated_at());
         this.setModified_at(userSubscription.getModified_at());
@@ -76,7 +76,7 @@ public class IndexedUserSubscription extends UserSubscription {
             try {
                 this.geometry = reader.readValue(mapper.writer().writeValueAsString(geometryValue));
             } catch (Exception e) {
-                throw new ArlasSubscriptionsException("Invalid geosjon format in geometry trigger filed.",e);
+                throw new ArlasSubscriptionsException("Invalid geosjon format in geometry trigger filed: " + e.getMessage());
             }
         } else {
             List<LngLatAlt> coords = new ArrayList<>();
@@ -90,20 +90,22 @@ public class IndexedUserSubscription extends UserSubscription {
         }
 
         Object centroidValue = userSubscription.subscription.trigger.get(centroidKey);
-        if (centroidValue != null) {
-            try {
+        try {
+            if (centroidValue != null) {
                 this.centroid = (pointReader.readValue(mapper.writer().writeValueAsString(centroidValue)));
-            } catch (Exception e) {
-                throw new ArlasSubscriptionsException("Invalid geojson point format in centroid trigger filed.",e);
+            } else {
+                // Calculate centroid from geometry properties
+                Geometry geom = geoJsonReader.read(mapper.writeValueAsString(this.geometry));
+                Centroid centFromGeom = new Centroid(geom);
+                this.centroid = Doubles.asList(centFromGeom.getCentroid().x, centFromGeom.getCentroid().y);
             }
-        } else {
-            // Calculate centroid from geometry properties
-            Geometry geom = geoJsonReader.read(mapper.writeValueAsString(this.geometry));
-            Centroid centFromGeom = new Centroid(geom);
-            this.centroid = Doubles.asList(centFromGeom.getCentroid().x ,centFromGeom.getCentroid().y);
+        } catch (IOException|ParseException e) {
+            throw new ArlasSubscriptionsException(centroidValue != null ? ("Invalid geojson point format in centroid trigger field: " + e.getMessage()) :
+                    ("Invalid geojson point format in geometry trigger field: " + e.getMessage()));
         }
     }
 }
+
 
 
 

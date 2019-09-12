@@ -19,8 +19,8 @@
 
 package io.arlas.subscriptions.exception;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -29,11 +29,15 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 public class ArlasSubscriptionsExceptionMapper implements ExceptionMapper<ArlasSubscriptionsException> {
-    Logger logger = LoggerFactory.getLogger(ArlasSubscriptionsExceptionMapper.class);
+    private ArlasLogger logger;
+
+    public ArlasSubscriptionsExceptionMapper(String module) {
+        logger = ArlasLoggerFactory.getLogger(ArlasSubscriptionsExceptionMapper.class, module);
+    }
 
     @Override
     public Response toResponse(ArlasSubscriptionsException e) {
-        logger.error("Error occurred", e);
+        logger.warn(e.getMessage());
         return e.getResponse();
     }
 }

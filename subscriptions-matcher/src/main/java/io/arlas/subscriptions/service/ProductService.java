@@ -27,6 +27,8 @@ import io.arlas.client.model.Hits;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.NotificationOrder;
 import io.arlas.subscriptions.model.SubscriptionEvent;
@@ -34,17 +36,16 @@ import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JSONValueInjector;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.arlas.subscriptions.app.ArlasSubscriptionsMatcher.MATCHER;
+
 public class ProductService extends AbstractArlasService {
-    private final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
+    private final ArlasLogger logger = ArlasLoggerFactory.getLogger(ProductService.class, MATCHER);
     private final NotificationOrderKafkaProducer notificationOrderKafkaProducer;
     private final String identityHeader;
 
@@ -61,10 +62,10 @@ public class ProductService extends AbstractArlasService {
         String searchFilter = JSONValueInjector.inject(filterRoot, event);
 
         for (Hit hit : subscriptions) {
-            LOGGER.debug("processing hit: " + hit.toString());
+            logger.debug("processing hit: " + hit.toString());
             try {
                 IndexedUserSubscription userSubscription = objectMapper.convertValue(hit.getData(), IndexedUserSubscription.class);
-                LOGGER.debug("indexedUserSubscription: " + userSubscription.toString());
+                logger.debug("indexedUserSubscription: " + userSubscription.toString());
                 String f = searchFilter
                         + "&" + userSubscription.subscription.hits.filter
                         + "&" + userSubscription.subscription.hits.projection;
@@ -75,7 +76,7 @@ public class ProductService extends AbstractArlasService {
                             .forEach(h -> pushNotificationOrder(h, event, userSubscription));
                 }
             } catch (ApiException|IOException|ArlasSubscriptionsException e) {
-                LOGGER.warn("Error while fetching matching products", e);
+                logger.warn("Error while fetching matching products: " + e.getMessage());
             }
         }
     }
@@ -102,7 +103,7 @@ public class ProductService extends AbstractArlasService {
         subSummary.put("callback", userSubscription.subscription.callback);
         // User metadata fields (provided by subscription creator)
         notificationOrder.put("user_metadata", userSubscription.userMetadatas);
-        LOGGER.debug("notificationOrder: " + notificationOrder.toString());
+        logger.debug("notificationOrder: " + notificationOrder.toString());
         notificationOrderKafkaProducer.send(notificationOrder);
     }
 

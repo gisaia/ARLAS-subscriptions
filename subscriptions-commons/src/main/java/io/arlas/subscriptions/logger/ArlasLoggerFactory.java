@@ -17,24 +17,13 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.exception;
+package io.arlas.subscriptions.logger;
 
-import io.arlas.subscriptions.logger.ArlasLogger;
-import io.arlas.subscriptions.logger.ArlasLoggerFactory;
+import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+public class ArlasLoggerFactory {
 
-public class IllegalArgumentExceptionMapper implements ExceptionMapper<IllegalArgumentException> {
-    private ArlasLogger logger;
-
-    public IllegalArgumentExceptionMapper(String module) {
-        logger = ArlasLoggerFactory.getLogger(IllegalArgumentExceptionMapper.class, module);
-    }
-
-    @Override
-    public Response toResponse(IllegalArgumentException e) {
-        logger.warn(e.getMessage());
-        return ArlasSubscriptionsException.getResponse(e, Response.Status.BAD_REQUEST, e.getMessage());
+    public static ArlasLogger getLogger(Class<?> clazz, String module) {
+        return new ArlasLogger(LoggerFactory.getLogger(clazz), module);
     }
 }

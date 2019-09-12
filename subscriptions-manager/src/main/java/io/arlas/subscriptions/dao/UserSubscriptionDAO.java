@@ -22,14 +22,11 @@ package io.arlas.subscriptions.dao;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface UserSubscriptionDAO {
-    Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionDAO.class);
 
     Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean deleted, Integer page, Integer size) throws ArlasSubscriptionsException;
 

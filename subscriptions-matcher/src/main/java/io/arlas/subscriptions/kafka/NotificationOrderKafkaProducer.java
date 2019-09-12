@@ -23,19 +23,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cyclops.control.Try;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 import java.util.UUID;
 
+import static io.arlas.subscriptions.app.ArlasSubscriptionsMatcher.MATCHER;
+
 public class NotificationOrderKafkaProducer extends KafkaProducer<String, String> {
 
-    private Logger LOGGER = LoggerFactory.getLogger(NotificationOrderKafkaProducer.class);
+    private final ArlasLogger logger = ArlasLoggerFactory.getLogger(NotificationOrderKafkaProducer.class, MATCHER);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String topic;
@@ -47,7 +49,7 @@ public class NotificationOrderKafkaProducer extends KafkaProducer<String, String
 
     public Try<Void, Exception> send(Object object) {
 
-        LOGGER.debug("Sending to Kafka topic '" + topic + "'");
+        logger.debug("Sending to Kafka topic '" + topic + "'");
         return Try.runWithCatch(() -> {
 
             this.send(new ProducerRecord<>(topic, objectMapper.writeValueAsString(object)),
