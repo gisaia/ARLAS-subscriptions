@@ -27,8 +27,8 @@ import io.arlas.client.ApiException;
 import io.arlas.client.Pair;
 import io.arlas.client.model.Hits;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -37,8 +37,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.arlas.subscriptions.app.ArlasSubscriptionsMatcher.MATCHER;
+
 public class AbstractArlasService {
-    private final Logger LOGGER = LoggerFactory.getLogger(AbstractArlasService.class);
+    private final ArlasLogger logger = ArlasLoggerFactory.getLogger(AbstractArlasService.class, MATCHER);
     final ObjectMapper objectMapper = new ObjectMapper();
     ApiClient apiClient;
     String searchEndpoint;
@@ -52,7 +54,7 @@ public class AbstractArlasService {
 
     List<Pair> getQueryParams(String encodedSearchFilter) throws UnsupportedEncodingException {
         String searchFilter = URLDecoder.decode(encodedSearchFilter, StandardCharsets.UTF_8.toString());
-        LOGGER.debug("Calling '" + apiClient.getBasePath() + searchEndpoint + "' with query params: '" + searchFilter + "'");
+        logger.debug("Calling '" + apiClient.getBasePath() + searchEndpoint + "' with query params: '" + searchFilter + "'");
         return Arrays.stream(searchFilter.split("&"))
                 .map(s -> s.split("="))
                 .map(p -> new Pair(p[0], p[1]))
@@ -68,7 +70,7 @@ public class AbstractArlasService {
                 emptyListParams, null, headerParams, emptyMapParams, emptyArrayParams, null);
         Response searchResponse = searchCall.execute();
         String body = searchResponse.body().string();
-        LOGGER.debug("body="+body);
+        logger.debug("body="+body);
         if (searchResponse.isSuccessful()) {
             return objectMapper.readValue(body, Hits.class);
         } else {

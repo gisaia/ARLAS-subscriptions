@@ -29,6 +29,7 @@ import io.arlas.client.ApiClient;
 import io.arlas.client.ApiException;
 import io.arlas.client.Pair;
 import io.arlas.client.model.CollectionReferenceParameters;
+import io.arlas.subscriptions.dao.MongoUserSubscriptionDAOImpl;
 import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
@@ -237,7 +238,7 @@ public class DataSetTool {
             configuration.seeds = Arrays.asList(seed);
             MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration);
             MongoDatabase mongoDatabase = mongoDBFactoryConnection.getClient().getDatabase(mongoDBname);
-            mongoCollection = mongoDatabase.getCollection("arlas-subscription", UserSubscription.class);;
+            mongoCollection = mongoDatabase.getCollection(MongoUserSubscriptionDAOImpl.ARLAS_SUBSCRIPTION_DB_NAME, UserSubscription.class);;
             mongoCollection.insertOne(subscription);
         } else {
             //Create collection in ARLAS-server

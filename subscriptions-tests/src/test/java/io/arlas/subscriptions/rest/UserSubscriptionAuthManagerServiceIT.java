@@ -127,7 +127,7 @@ public class UserSubscriptionAuthManagerServiceIT extends AbstractTestWithData {
                 .when().get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("", empty());
+                .body("total", equalTo(0));
     }
 
     @Test
@@ -182,7 +182,7 @@ public class UserSubscriptionAuthManagerServiceIT extends AbstractTestWithData {
                 .get(arlasSubManagerPath + "subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("size()", is(1));
+                .body("total", equalTo(1));
     }
 
     @Test
@@ -218,7 +218,7 @@ public class UserSubscriptionAuthManagerServiceIT extends AbstractTestWithData {
                 .header(identityHeader, "gisaia").when()
                 .body(generateTestSubscription())
                 .post(arlasSubManagerPath + "subscriptions/")
-                .then().statusCode(200)
+                .then().statusCode(201)
                 .body("title", equalTo("title"))
                 .extract().jsonPath().get("id");
 

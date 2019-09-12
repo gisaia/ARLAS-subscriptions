@@ -22,11 +22,16 @@ package io.arlas.subscriptions.app;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.model.elastic.ElasticDBConnection;
 import io.arlas.subscriptions.model.mongo.MongoDBConnection;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
+import static io.arlas.subscriptions.app.ArlasSubscriptionsManager.MANAGER;
+
 public class ArlasSubscriptionManagerConfiguration extends ArlasSubscriptionsConfiguration {
+    private final ArlasLogger logger = ArlasLoggerFactory.getLogger(ArlasSubscriptionManagerConfiguration.class, MANAGER);
 
     @JsonProperty("mongo")
     public MongoDBConnection mongoDBConnection;
@@ -46,13 +51,20 @@ public class ArlasSubscriptionManagerConfiguration extends ArlasSubscriptionsCon
 
     public void check() throws ArlasSubscriptionsException {
         if (mongoDBConnection == null) {
-            throw new ArlasSubscriptionsException("mongoDB configuration missing in config file.");
+            logger.fatal("MongoDB configuration missing in config file.");
+            throw new ArlasSubscriptionsException("mongoDB configuration missing in config file");
+        }
+        if (elasticDBConnection == null) {
+            logger.fatal("Elastic configuration missing in config file");
+            throw new ArlasSubscriptionsException();
         }
         if (zipkinConfiguration == null) {
-            throw new ArlasSubscriptionsException("Zipkin configuration missing in config file.");
+            logger.fatal("Zipkin configuration missing in config file");
+            throw new ArlasSubscriptionsException();
         }
         if (swaggerBundleConfiguration == null) {
-            throw new ArlasSubscriptionsException("Swagger configuration missing in config file.");
+            logger.fatal("Swagger configuration missing in config file.");
+            throw new ArlasSubscriptionsException("Swagger configuration missing in config file");
 
         }
     }

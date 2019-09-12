@@ -19,8 +19,8 @@
 
 package io.arlas.subscriptions.exception;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
@@ -30,11 +30,15 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
 
     public static final String errorMessage = "Invalid JSON parameter. All required fields in userSubscription are mandatory.";
 
-    Logger logger = LoggerFactory.getLogger(ArlasSubscriptionsExceptionMapper.class);
+    private ArlasLogger logger;
+
+    public ConstraintViolationExceptionMapper(String module) {
+        logger = ArlasLoggerFactory.getLogger(ConstraintViolationExceptionMapper.class, module);
+    }
 
     @Override
     public Response toResponse(ConstraintViolationException e) {
-        logger.error("Error occurred", e);
+        logger.warn(errorMessage);
         return ArlasSubscriptionsException.getResponse(e, Response.Status.BAD_REQUEST,
                 errorMessage);
     }

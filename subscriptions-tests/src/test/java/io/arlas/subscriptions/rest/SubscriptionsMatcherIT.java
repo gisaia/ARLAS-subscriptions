@@ -19,30 +19,19 @@
 
 package io.arlas.subscriptions.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.subscriptions.AbstractTestContext;
 import io.arlas.subscriptions.DataSetTool;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.NotificationOrder;
-import io.arlas.subscriptions.model.SubscriptionEvent;
 import io.arlas.subscriptions.tools.KafkaTool;
-import org.geojson.LngLatAlt;
-import org.geojson.Polygon;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 

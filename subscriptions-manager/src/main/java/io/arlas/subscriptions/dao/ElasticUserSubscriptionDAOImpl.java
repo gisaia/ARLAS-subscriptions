@@ -19,6 +19,7 @@
 
 package io.arlas.subscriptions.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
@@ -38,14 +39,11 @@ import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
 import org.everit.json.schema.ValidationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
 public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
-    public Logger LOGGER = LoggerFactory.getLogger(ElasticUserSubscriptionDAOImpl.class);
 
     private Client client;
     private String arlasSubscriptionIndex;
@@ -77,14 +75,14 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
             IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription,this.configuration.triggerGeometryKey,this.configuration.triggerCentroidKey);
             response = client.prepareIndex(arlasSubscriptionIndex, arlasSubscriptionType, userSubscription.getId())
                     .setSource(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON).get();
-        }  catch (ValidationException e) {
-            throw new ArlasSubscriptionsException("Error in validation of trigger json schema :" + e.getErrorMessage(),e);
-        }catch (Exception e) {
-            throw new ArlasSubscriptionsException("Can not put userSubscription.", e);
+        } catch (ValidationException e) {
+            throw new ArlasSubscriptionsException("Error in validation of trigger json schema: " + e.getErrorMessage());
+        } catch (JsonProcessingException e) {
+            throw new ArlasSubscriptionsException("Error in writing subscription json: " + e.getMessage());
         }
         if (response.status().getStatus() != RestStatus.OK.getStatus()
                 && response.status().getStatus() != RestStatus.CREATED.getStatus()) {
-            throw new ArlasSubscriptionsException("Unable to index userSubscription : " + response.status().toString());
+            throw new ArlasSubscriptionsException("Unable to index subscription. Response: " + response.toString());
         }
         return userSubscription;
     }
@@ -111,28 +109,28 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
         try {
             response = client.update(updateRequest).get();
         } catch (Exception e) {
-            throw new ArlasSubscriptionsException("Can not update userSubscription.", e);
+            throw new ArlasSubscriptionsException("Cannot update subscription index: " + e.getMessage());
         }
 
         if (response.status().getStatus() != RestStatus.OK.getStatus()
                 && response.status().getStatus() != RestStatus.ACCEPTED.getStatus()) {
-            throw new ArlasSubscriptionsException("Unable to update userSubscription : " + response.status().toString());
+            throw new ArlasSubscriptionsException("Unable to update subscription. Response: " + response.status().toString());
         }
     }
 
     public void initSubscriptionIndex() throws ArlasSubscriptionsException {
         try {
             IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists().setIndices(arlasSubscriptionIndex).get();
-            if(indicesExistsResponse.isExists()){
+            if (indicesExistsResponse.isExists()) {
                 TypesExistsResponse typesExistsResponse = client.admin().indices().prepareTypesExists(arlasSubscriptionIndex).setTypes(arlasSubscriptionType).get();
-                if(! typesExistsResponse.isExists()){
+                if (! typesExistsResponse.isExists()) {
                     throw new ArlasSubscriptionsException("Type " + arlasSubscriptionType  + " does not exist in " + arlasSubscriptionIndex + " index , create it to run ARLAS-Subscription");
                 }
-            }else{
+            } else {
                 throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription");
             }
         } catch (IndexNotFoundException e) {
-            throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription",e);
+            throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription");
         }
     }
 }

@@ -33,15 +33,11 @@ import io.arlas.subscriptions.utils.ResponseFormatter;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.elasticsearch.common.collect.Tuple;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +55,6 @@ import java.util.stream.Collectors;
                 @Tag(name="admin", description = "Optional endpoints to manage all subscriptions as an administrator of the service.")}
         )
 public class UserSubscriptionManagerController {
-    public Logger LOGGER = LoggerFactory.getLogger(UserSubscriptionManagerController.class);
     public static final String UTF8JSON = MediaType.APPLICATION_JSON + ";charset=utf-8";
     private final UserSubscriptionManagerService subscriptionManagerService;
     private final String identityHeader;
@@ -327,10 +322,10 @@ public class UserSubscriptionManagerController {
         } else {
             String userId = headers.getHeaderString(identityHeader);
             if (StringUtils.isEmpty(userId)) {
-                throw new UnauthorizedException();
+                throw new UnauthorizedException("Missing header " + identityHeader);
             }
             if (userId.equals(identityAdmin)) {
-                throw new ForbiddenException();
+                throw new ForbiddenException("External endpoint forbidden to user " + identityAdmin);
             }
             return userId;
         }

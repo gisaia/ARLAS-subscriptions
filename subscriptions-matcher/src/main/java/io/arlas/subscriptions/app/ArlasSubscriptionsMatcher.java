@@ -25,11 +25,10 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ArlasSubscriptionsMatcher extends Application<ArlasSubscriptionsConfiguration> {
-    Logger LOGGER = LoggerFactory.getLogger(ArlasSubscriptionsMatcher.class);
+
+    public final static String MATCHER = "MATCHER";
 
     public static void main(String... args) throws Exception {
         new ArlasSubscriptionsMatcher().run(args);

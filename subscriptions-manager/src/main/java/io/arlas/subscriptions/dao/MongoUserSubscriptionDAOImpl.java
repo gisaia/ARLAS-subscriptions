@@ -46,6 +46,8 @@ import static io.arlas.subscriptions.utils.UUIDHelper.generateUUID;
 
 public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
+    public static final String ARLAS_SUBSCRIPTION_DB_NAME = "arlas-subscription";
+
     private MongoCollection<UserSubscription> mongoCollectionSub;
     private MongoCollection<Document> mongoCollectionDoc;
     private JsonSchemaValidator jsonSchemaValidator;
@@ -57,7 +59,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     public MongoUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged,JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
         MongoDatabase mongoDatabase = mongoDBManaged.mongoClient.getDatabase(configuration.getMongoDBConnection().database);
         this.mongoCollectionSub = this.initSubscriptionsCollection(mongoDatabase);
-        this.mongoCollectionDoc = mongoDatabase.getCollection("arlas-subscription");
+        this.mongoCollectionDoc = mongoDatabase.getCollection(ARLAS_SUBSCRIPTION_DB_NAME);
         this.jsonSchemaValidator = jsonSchemaValidator;
     }
 
@@ -101,7 +103,8 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
             userSubscription.setDeleted((Boolean)document.get("deleted"));
             return userSubscription;
         } catch (IOException e) {
-            throw new RuntimeException("Failed to parse JSON from MongoDB: "+document.toJson(jsonWritterSettings), e);
+            // not expected as we are reading a document that we wrote ourselves
+            throw new RuntimeException("Failed to parse JSON from MongoDB " + document.toJson(jsonWritterSettings) + ": " + e.getMessage());
         }
     }
 
@@ -121,10 +124,10 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     public void setUserSubscriptionDeletedFlag(UserSubscription userSubscription, boolean isDeleted) throws ArlasSubscriptionsException {
         try {
             if (!this.mongoCollectionSub.updateOne(eq("_id", userSubscription.getId()), set("deleted", isDeleted)).wasAcknowledged()) {
-                throw new ArlasSubscriptionsException("userSubscription update in DB not acknowledged");
+                throw new ArlasSubscriptionsException("Update deleted flag in mongoDB not acknowledged");
             }
         } catch (MongoException e) {
-            throw new ArlasSubscriptionsException("userSubscription update in DB failed",e);
+            throw new ArlasSubscriptionsException("Update deleted flag in mongoDB failed:" + e.getMessage());
         }
     }
 
@@ -140,9 +143,9 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
             userSubscription.setDeleted(false);
             this.mongoCollectionSub.insertOne(userSubscription);
         } catch (ValidationException e) {
-            throw new ArlasSubscriptionsException("Error in validation of trigger json schema :" + e.getErrorMessage(),e);
+            throw new ArlasSubscriptionsException("Error in validation of trigger json schema: " + e.getErrorMessage());
         } catch (MongoException e) {
-            throw new ArlasSubscriptionsException("Can not insert userSubscription in mongo.", e);
+            throw new ArlasSubscriptionsException("Insert subscription in mongoDB failed:" + e.getMessage());
         }
         return userSubscription;
     }
@@ -152,14 +155,12 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
         try {
             this.jsonSchemaValidator.validJsonObjet(updUserSubscription.subscription.trigger);
             if (!this.mongoCollectionSub.replaceOne(eq("_id", updUserSubscription.getId()), updUserSubscription).wasAcknowledged()) {
-                throw new ArlasSubscriptionsException("userSubscription update in DB not acknowledged");
+                throw new ArlasSubscriptionsException("Update subscription in mongoDB not acknowledged");
             }
         } catch (ValidationException e) {
-            throw new ArlasSubscriptionsException("Error in validation of trigger json schema :" + e.getErrorMessage(),e);
+            throw new ArlasSubscriptionsException("Error in validation of trigger json schema: " + e.getErrorMessage());
         } catch (MongoException e) {
-            throw new ArlasSubscriptionsException("userSubscription update in DB failed",e);
-        } catch (Exception e) {
-            throw new ArlasSubscriptionsException("Can not update userSubscription in mongo.", e);
+            throw new ArlasSubscriptionsException("Update subscription in mongoDB failed: " + e.getMessage());
         }
     }
 
@@ -169,11 +170,11 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     private MongoCollection<UserSubscription> initSubscriptionsCollection(MongoDatabase mongoDatabase) throws ArlasSubscriptionsException {
-        boolean collectionExists = mongoDatabase.listCollectionNames()
-                .into(new ArrayList<>()).contains("arlas-subscription");
+        boolean collectionExists = mongoDatabase.listCollectionNames().into(new ArrayList<>()).contains(ARLAS_SUBSCRIPTION_DB_NAME);
         if (!collectionExists) {
-            mongoDatabase.createCollection("arlas-subscription");
+            mongoDatabase.createCollection(ARLAS_SUBSCRIPTION_DB_NAME);
         }
-        return mongoDatabase.getCollection("arlas-subscription",UserSubscription.class) ;
+        return mongoDatabase.getCollection(ARLAS_SUBSCRIPTION_DB_NAME, UserSubscription.class) ;
     }
+
 }
