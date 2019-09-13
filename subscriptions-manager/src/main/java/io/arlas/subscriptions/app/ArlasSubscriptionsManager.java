@@ -27,9 +27,12 @@ import io.arlas.subscriptions.db.elastic.ElasticDBFactoryConnection;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsExceptionMapper;
 import io.arlas.subscriptions.exception.ConstraintViolationExceptionMapper;
 import io.arlas.subscriptions.exception.IllegalArgumentExceptionMapper;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.rest.UserSubscriptionManagerController;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.PrettyPrintFilter;
@@ -43,8 +46,11 @@ import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+import java.io.IOException;
+
 
 public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionManagerConfiguration> {
+    private final ArlasLogger logger = ArlasLoggerFactory.getLogger(ArlasSubscriptionsManager.class, MANAGER);
 
     public final static String MANAGER = "MANAGER";
 
@@ -79,22 +85,27 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
         final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.getMongoDBConnection());
         final ElasticDBFactoryConnection elasticDBFactoryConnection = new ElasticDBFactoryConnection(configuration.getElasticDBConnection());
 
-        final MongoDBManaged mongoDBManaged = new MongoDBManaged(mongoDBFactoryConnection.getClient());
-        final ElasticDBManaged elasticDBManaged = new ElasticDBManaged(elasticDBFactoryConnection.getClient());
+        try {
+            final MongoDBManaged mongoDBManaged = new MongoDBManaged(mongoDBFactoryConnection.getClient());
+            final ElasticDBManaged elasticDBManaged = new ElasticDBManaged(elasticDBFactoryConnection.getClient());
 
-        environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        environment.getObjectMapper().configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
-        environment.jersey().register(MultiPartFeature.class);
-        environment.jersey().register(PrettyPrintFilter.class);
-        environment.jersey().register(new ArlasSubscriptionsExceptionMapper(MANAGER));
-        environment.jersey().register(new IllegalArgumentExceptionMapper(MANAGER));
-        environment.jersey().register(new JsonProcessingExceptionMapper());
-        environment.jersey().register(new ConstraintViolationExceptionMapper(MANAGER));
-        environment.lifecycle().manage(mongoDBManaged);
-        environment.lifecycle().manage(elasticDBManaged);
-        UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration,mongoDBManaged,elasticDBManaged);
-        UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService,
-                configuration.identityHeader, configuration.identityAdmin);
-        environment.jersey().register(subscriptionsManagerController);
+            environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            environment.getObjectMapper().configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
+            environment.jersey().register(MultiPartFeature.class);
+            environment.jersey().register(PrettyPrintFilter.class);
+            environment.jersey().register(new ArlasSubscriptionsExceptionMapper(MANAGER));
+            environment.jersey().register(new IllegalArgumentExceptionMapper(MANAGER));
+            environment.jersey().register(new JsonProcessingExceptionMapper());
+            environment.jersey().register(new ConstraintViolationExceptionMapper(MANAGER));
+            environment.lifecycle().manage(mongoDBManaged);
+            environment.lifecycle().manage(elasticDBManaged);
+            UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration, mongoDBManaged, elasticDBManaged);
+            UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService,
+                    configuration.identityHeader, configuration.identityAdmin);
+            environment.jersey().register(subscriptionsManagerController);
+        } catch (IOException|ArlasSubscriptionsException e) {
+            logger.fatal(e.getMessage());
+            System.exit(1);
+        }
     }
 }

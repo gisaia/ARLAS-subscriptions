@@ -19,14 +19,18 @@
 
 package io.arlas.subscriptions.app;
 
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.service.ManagedKafkaConsumers;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.apache.kafka.common.KafkaException;
 
 public class ArlasSubscriptionsMatcher extends Application<ArlasSubscriptionsConfiguration> {
+    private final ArlasLogger logger = ArlasLoggerFactory.getLogger(ArlasSubscriptionsMatcher.class, MATCHER);
 
     public final static String MATCHER = "MATCHER";
 
@@ -43,7 +47,12 @@ public class ArlasSubscriptionsMatcher extends Application<ArlasSubscriptionsCon
 
     @Override
     public void run(ArlasSubscriptionsConfiguration configuration, Environment environment) {
-        ManagedKafkaConsumers consumersManager = new ManagedKafkaConsumers(configuration);
-        environment.lifecycle().manage(consumersManager);
+        try {
+            ManagedKafkaConsumers consumersManager = new ManagedKafkaConsumers(configuration);
+            environment.lifecycle().manage(consumersManager);
+        } catch (KafkaException e) {
+            logger.fatal("Kafka problem: " + e.getMessage() + "(" + e.getCause().getMessage() + ")");
+            System.exit(1);
+        }
     }
 }

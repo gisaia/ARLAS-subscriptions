@@ -15,7 +15,7 @@ kafka:
 
 arlas-subscriptions-basePath: ${ARLAS_SUBSCRIPTIONS_BASE_PATH:-http://localhost:9999}
 arlas-subscriptions-searchEndpoint: ${ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT:-/arlas/explore/subscriptions/_search}
-arlas-subscriptions-subscriptionFilterRoot: ${ARLAS_SUBSCRIPTIONS_FILTER_ROOT:-gintersect=(object.geometry)&f=subscription.trigger.event:eq:(event)&f=subscription.trigger.job:eq:(object.job)&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id}
+arlas-subscriptions-subscriptionFilterRoot: ${ARLAS_SUBSCRIPTIONS_FILTER_ROOT:-gintersect=(object.geometry)&f=subscription.trigger.event:eq:(object.event)&f=subscription.trigger.job:eq:(object.job)&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id}
 
 arlas-server-basePath: ${ARLAS_SERVER_BASE_PATH:-http://localhost:9999}
 arlas-server-searchEndpoint: ${ARLAS_SERVER_SEARCH_ENDPOINT:-/arlas/explore/geodata/_search}

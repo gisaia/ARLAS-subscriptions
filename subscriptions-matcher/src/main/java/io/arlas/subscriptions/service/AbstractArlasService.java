@@ -74,6 +74,10 @@ public class AbstractArlasService {
         if (searchResponse.isSuccessful()) {
             return objectMapper.readValue(body, Hits.class);
         } else {
+            if (searchResponse.code() == 404) {
+                logger.fatal("Arlas collection for subscription not found: " + searchEndpoint);
+                System.exit(1);
+            }
             throw new ArlasSubscriptionsException("Error while interrogating Catalog: " + body);
         }
     }

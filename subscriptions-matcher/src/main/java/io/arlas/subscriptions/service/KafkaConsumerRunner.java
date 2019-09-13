@@ -85,8 +85,9 @@ public class KafkaConsumerRunner implements Runnable {
             // Ignore exception if closing
             if (!closed.get()) throw e;
         } finally {
-            logger.info("Closing consumer of topic '" + configuration.kafkaConfiguration.subscriptionEventsTopic + "'");
+            logger.error("Closing consumer of topic '" + configuration.kafkaConfiguration.subscriptionEventsTopic + "'");
             consumer.close();
+            System.exit(1);
         }
     }
 
