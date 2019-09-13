@@ -21,6 +21,7 @@ package io.arlas.subscriptions.dao;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
+import com.mongodb.MongoTimeoutException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Facet;
@@ -170,11 +171,14 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     private MongoCollection<UserSubscription> initSubscriptionsCollection(MongoDatabase mongoDatabase) throws ArlasSubscriptionsException {
-        boolean collectionExists = mongoDatabase.listCollectionNames().into(new ArrayList<>()).contains(ARLAS_SUBSCRIPTION_DB_NAME);
-        if (!collectionExists) {
-            mongoDatabase.createCollection(ARLAS_SUBSCRIPTION_DB_NAME);
+        try {
+            boolean collectionExists = mongoDatabase.listCollectionNames().into(new ArrayList<>()).contains("arlas-subscription");
+            if (!collectionExists) {
+                mongoDatabase.createCollection(ARLAS_SUBSCRIPTION_DB_NAME);
+            }
+            return mongoDatabase.getCollection(ARLAS_SUBSCRIPTION_DB_NAME, UserSubscription.class);
+        } catch (MongoTimeoutException e) {
+            throw new ArlasSubscriptionsException("Unable to connect to MongoDB: " + e.getMessage());
         }
-        return mongoDatabase.getCollection(ARLAS_SUBSCRIPTION_DB_NAME, UserSubscription.class) ;
     }
-
 }

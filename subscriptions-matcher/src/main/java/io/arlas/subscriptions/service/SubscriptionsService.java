@@ -69,7 +69,7 @@ public class SubscriptionsService extends AbstractArlasService {
                     }
                 }
             } while (items.getHits() != null && next != null);
-        } catch (ApiException|IOException| ArlasSubscriptionsException e) {
+        } catch (ApiException | ArlasSubscriptionsException | IOException e) {
             logger.warn("Error while fetching matching subscriptions: " + e.getMessage());
         }
 

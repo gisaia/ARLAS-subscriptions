@@ -67,7 +67,7 @@ public class SubscriptionsMatcherIT extends AbstractTestContext {
     public void testMatchingSubscriptionEventWithExistingProductIndex() throws Exception {
 
         String  event =
-                "{\"object\": {\"id\": \"ID__10__30DI\",\"geometry\": {\"type\" : \"Polygon\",\"coordinates\" : [[[-11,-29],[-9,-29],[-9,-31],[-11,-31],[-11,-29]]]},\"job\": \"Brain Scientist\"},\"event\": \"UPDATE\"}";
+                "{\"object\": {\"id\": \"ID__10__30DI\",\"geometry\": {\"type\" : \"Polygon\",\"coordinates\" : [[[-11,-29],[-9,-29],[-9,-31],[-11,-31],[-11,-29]]]},\"job\": \"Brain Scientist\",\"event\": \"UPDATE\"}}";
         kafkaTool.produce(event);
         Thread.sleep(10000);
 
