@@ -70,7 +70,7 @@ public class UserSubscriptionManagerService {
         return userSubscriptionForIndex ;
     }
 
-    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) {
+    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) throws ArlasSubscriptionsException {
         logger.debug(String.format("User %s requests subscription %s (deleted %b)", user, id, deleted));
         return this.daoDatabase.getUserSubscription(user, id, deleted);
     }

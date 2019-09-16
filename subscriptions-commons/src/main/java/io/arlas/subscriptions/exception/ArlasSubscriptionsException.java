@@ -28,7 +28,7 @@ public class ArlasSubscriptionsException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    protected Response.Status status = Response.Status.INTERNAL_SERVER_ERROR;
+    protected Response.Status status = Response.Status.SERVICE_UNAVAILABLE;
 
     public ArlasSubscriptionsException() {
         super();

@@ -66,31 +66,35 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
     @Override
     public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean deleted, Integer page, Integer size) throws ArlasSubscriptionsException {
-        List<Bson> filters = new ArrayList<>();
-        if (user != null)
-            filters.add(eq("created_by", user));
-        if (!deleted)
-            filters.add(eq("deleted", Boolean.FALSE));
-        if (active != null)
-            filters.add(eq("active", active));
-        if (expired != null)
-            filters.add(expired ? lte("expires_at", System.currentTimeMillis() / 1000l) : gt("expires_at", System.currentTimeMillis() / 1000l));
-        if (before != null)
-            filters.add(lte("created_at", before));
+        try {
+            List<Bson> filters = new ArrayList<>();
+            if (user != null)
+                filters.add(eq("created_by", user));
+            if (!deleted)
+                filters.add(eq("deleted", Boolean.FALSE));
+            if (active != null)
+                filters.add(eq("active", active));
+            if (expired != null)
+                filters.add(expired ? lte("expires_at", System.currentTimeMillis() / 1000l) : gt("expires_at", System.currentTimeMillis() / 1000l));
+            if (before != null)
+                filters.add(lte("created_at", before));
 
-        Document aggResult = this.mongoCollectionDoc.aggregate(
-                Arrays.asList(
-                        match(and(filters)),
-                        facet(
-                                new Facet("subList", skip(size * (page - 1)), limit(size)),
-                                new Facet("totalCount", count())
-                        )
-                )
-        ).first();
+            Document aggResult = this.mongoCollectionDoc.aggregate(
+                    Arrays.asList(
+                            match(and(filters)),
+                            facet(
+                                    new Facet("subList", skip(size * (page - 1)), limit(size)),
+                                    new Facet("totalCount", count())
+                            )
+                    )
+            ).first();
 
-        Integer total = ((List<Document>) aggResult.get("totalCount")).size() == 1 ? (Integer)((List<Document>) aggResult.get("totalCount")).get(0).get("count") : new Integer(0);
-        List<UserSubscription> subList = ((List<Document>) aggResult.get("subList")).stream().map(d -> convertDocument(d)).collect(Collectors.toList());
-        return Pair.of(total, subList);
+            Integer total = ((List<Document>) aggResult.get("totalCount")).size() == 1 ? (Integer)((List<Document>) aggResult.get("totalCount")).get(0).get("count") : new Integer(0);
+            List<UserSubscription> subList = ((List<Document>) aggResult.get("subList")).stream().map(d -> convertDocument(d)).collect(Collectors.toList());
+            return Pair.of(total, subList);
+        } catch (MongoException e) {
+            throw new ArlasSubscriptionsException("Get subscriptions from mongoDB failed:" + e.getMessage());
+        }
     }
 
     private UserSubscription convertDocument(Document document) {
@@ -110,7 +114,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) {
+    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) throws ArlasSubscriptionsException {
         List<Bson> filters = new ArrayList<>();
         filters.add(eq("_id", id));
         if (user != null)
@@ -118,7 +122,12 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
         if (!deleted)
             filters.add(eq("deleted", Boolean.FALSE));
 
-        return Optional.ofNullable(this.mongoCollectionSub.find(and(filters)).first());
+        try {
+            return Optional.ofNullable(this.mongoCollectionSub.find(and(filters)).first());
+        } catch (MongoException e) {
+            throw new ArlasSubscriptionsException("Get subscription from mongoDB failed:" + e.getMessage());
+        }
+
     }
 
     @Override
@@ -167,7 +176,11 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
     @Override
     public void deleteUserSubscription(String ref) throws ArlasSubscriptionsException {
-        this.mongoCollectionSub.deleteOne(new Document("_id", ref));
+        try {
+            this.mongoCollectionSub.deleteOne(new Document("_id", ref));
+        } catch (MongoException e) {
+            throw new ArlasSubscriptionsException("Delete subscription in mongoDB failed:" + e.getMessage());
+        }
     }
 
     private MongoCollection<UserSubscription> initSubscriptionsCollection(MongoDatabase mongoDatabase) throws ArlasSubscriptionsException {

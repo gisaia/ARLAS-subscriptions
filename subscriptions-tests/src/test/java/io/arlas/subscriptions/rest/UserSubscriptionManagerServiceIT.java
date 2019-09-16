@@ -99,7 +99,7 @@ public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
         given().contentType("application/json")
                 .when().body(jsonAsMap)
                 .post(arlasSubManagerPath + "subscriptions/")
-                .then().statusCode(500);
+                .then().statusCode(503);
     }
 
     @Test

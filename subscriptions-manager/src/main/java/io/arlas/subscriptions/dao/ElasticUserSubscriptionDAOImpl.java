@@ -28,6 +28,7 @@ import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import org.apache.commons.lang3.tuple.Pair;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -79,6 +80,8 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
             throw new ArlasSubscriptionsException("Error in validation of trigger json schema: " + e.getErrorMessage());
         } catch (JsonProcessingException e) {
             throw new ArlasSubscriptionsException("Error in writing subscription json: " + e.getMessage());
+        } catch (ElasticsearchException e) {
+            throw new ArlasSubscriptionsException("Elasticsearch not available: " + e.getMessage());
         }
         if (response.status().getStatus() != RestStatus.OK.getStatus()
                 && response.status().getStatus() != RestStatus.CREATED.getStatus()) {
