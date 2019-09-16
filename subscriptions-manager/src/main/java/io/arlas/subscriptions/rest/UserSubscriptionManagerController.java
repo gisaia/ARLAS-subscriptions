@@ -52,7 +52,8 @@ import java.util.stream.Collectors;
                 license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html"),
                 version = "API_VERSION"),
         tags = {@Tag(name="end-user", description = "Standard endpoints to manage one's subscriptions as an end-user."),
-                @Tag(name="admin", description = "Optional endpoints to manage all subscriptions as an administrator of the service.")}
+                @Tag(name="admin", description = "Optional endpoints to manage all subscriptions as an administrator of the service.")},
+        schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS }
         )
 public class UserSubscriptionManagerController {
     public static final String UTF8JSON = MediaType.APPLICATION_JSON + ";charset=utf-8";
@@ -333,7 +334,11 @@ public class UserSubscriptionManagerController {
 
     private UserSubscriptionWithLinks subscriptionWithLinks(UserSubscription subscription, UriInfo uriInfo) {
         String listUri = uriInfo.getRequestUriBuilder().build().toString();
-        String subUri = uriInfo.getRequestUriBuilder().path(subscription.getId()).build().toString();
+        String subUri = uriInfo.getRequestUriBuilder()
+                .path(subscription.getId())
+                .replaceQueryParam("page", null)
+                .replaceQueryParam("size", null)
+                .build().toString();
         Map<String, UserSubscriptionWithLinks.Link> links = new HashMap<>();
         links.put("self", new UserSubscriptionWithLinks.Link("self", subUri, "GET"));
         links.put("list", new UserSubscriptionWithLinks.Link("list", listUri, "GET"));
@@ -353,7 +358,7 @@ public class UserSubscriptionManagerController {
         if ((page-1)*size + count < total)
             links.put("next", new UserSubscriptionWithLinks.Link("next", getUri(uri, size, page+1), "GET"));
         if ((page-1)*size + count != total)
-            links.put("last", new UserSubscriptionWithLinks.Link("last", getUri(uri, size, new Double(Math.ceil(total/size)).intValue()), "GET"));
+            links.put("last", new UserSubscriptionWithLinks.Link("last", getUri(uri, size, new Double(Math.ceil((double)total/(double)size)).intValue()), "GET"));
         return links;
     }
 
