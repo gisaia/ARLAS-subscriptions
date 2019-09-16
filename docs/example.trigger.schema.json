@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "arlas-subscriptions-trigger",
+  "description": "arlas subscriptions trigger criteria",
+  "type": "object",
+  "required": [
+    "geometry",
+    "collections",
+    "operations"
+  ],
+  "properties": {
+    "geometry": {
+      "type": "object",
+      "description": "Area of interest of this subscription as a GeoJSON geometry"
+    },
+    "species": {
+      "type": "array",
+      "description": "Species to trigger this subscription",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Mammals",
+          "Birds",
+          "Fishes"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "operations": {
+      "type": "array",
+      "description": "Operation to trigger this subscription",
+      "items": {
+        "type": "string",
+        "enum": [
+          "CREATE",
+          "UPDATE",
+          "DELETE"
+        ]
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    }
+  }
+}
