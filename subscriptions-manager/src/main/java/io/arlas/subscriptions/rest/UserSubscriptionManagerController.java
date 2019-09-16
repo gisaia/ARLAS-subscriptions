@@ -83,7 +83,7 @@ public class UserSubscriptionManagerController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = SubscriptionListResource.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
-            @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
     public Response getAll(@Context UriInfo uriInfo,
                            @Context HttpHeaders headers,
@@ -150,7 +150,7 @@ public class UserSubscriptionManagerController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
-            @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
     public Response get(@Context UriInfo uriInfo,
                         @Context HttpHeaders headers,
@@ -193,7 +193,7 @@ public class UserSubscriptionManagerController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
-            @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
     public Response delete(@Context HttpHeaders headers,
                         @ApiParam(
@@ -235,7 +235,7 @@ public class UserSubscriptionManagerController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
-            @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
     public Response post(@Context UriInfo uriInfo,
             @Context HttpHeaders headers,
             @ApiParam(name = "subscription",
@@ -278,7 +278,7 @@ public class UserSubscriptionManagerController {
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
             @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
-            @ApiResponse(code = 500, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
     public Response put(@Context UriInfo uriInfo,
                         @Context HttpHeaders headers,
                         @ApiParam(
