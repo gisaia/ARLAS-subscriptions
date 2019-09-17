@@ -28,8 +28,15 @@ import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
@@ -231,7 +238,45 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
                 .contentType(ContentType.JSON)
                 .body("subscriptions[0].id", equalTo(TEMP_SUBSCRIPTION_ID))
                 .body("subscriptions[1].id", equalTo("1234"));
+    }
 
+    @Test
+    public void testPostUserSubscription_withCorrectSubscription_shouldCreateSubscription() throws Exception {
+        String id = given().contentType("application/json")
+                .body(generateTestSubscription())
+                .post(arlasSubManagerPath + "admin/subscriptions/")
+                .then().statusCode(201)
+                .body("title", equalTo("title"))
+                .extract().jsonPath().get("id");
+
+        assertThat(DataSetTool.getUserSubscriptionFromMongo(id).get().title, is("title"));
+        assertThat(DataSetTool.getUserSubscriptionFromMongo(id).get().getCreated_by_admin(), is(true));
+        assertThat(DataSetTool.getUserSubscriptionFromES(id).title, is("title"));
+    }
+
+    @Test
+    public void testPostInvalidUserSubscription_withMissingFields_shouldFail() {
+        Map<String, Object> jsonAsMap = new HashMap<>();
+        jsonAsMap.put("created_by","John Doe");
+        given().contentType("application/json")
+                .when().body(jsonAsMap)
+                .post(arlasSubManagerPath + "admin/subscriptions/")
+                .then().statusCode(400);
+        when()
+                .get(arlasSubManagerPath + "admin/subscriptions/")
+                .then().statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("total", equalTo(1));
+    }
+
+    @Test
+    public void testPostInvalidUserSubscription_withBadTrigger_shouldFail() {
+        Map<String,Object> jsonAsMap = generateTestSubscription();
+        ((UserSubscription.Subscription )jsonAsMap.get("subscription")).trigger.put("job","Aviator");
+        given().contentType("application/json")
+                .when().body(jsonAsMap)
+                .post(arlasSubManagerPath + "admin/subscriptions/")
+                .then().statusCode(503);
     }
 
 }

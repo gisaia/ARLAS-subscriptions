@@ -243,8 +243,6 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     @ApiResponses(value = {@ApiResponse(code = 201, message = "Subscription has been registered", response = UserSubscriptionWithLinks.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
-            @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
-            @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
             @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
     public Response post(@Context UriInfo uriInfo,
             @Context HttpHeaders headers,
@@ -263,13 +261,15 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
             @QueryParam(value = "pretty") Boolean pretty
 
     ) throws ArlasSubscriptionsException {
-//        String user = getUser(headers);
-//        if (user != null && !user.equals(subscription.created_by)) {
-//            throw new ForbiddenException("New subscription does not belong to authenticated user " + user);
-//        }
-//        return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
-//                subscriptionWithLinks(subscriptionManagerService.postUserSubscription(subscription, false), uriInfo));
-        return null;
+        checkIsNotLogged(headers);
+
+        return ResponseFormatter.getCreatedResponse(
+                uriInfo.getRequestUriBuilder().build(),
+                halService.subscriptionWithLinks(
+                        subscriptionManagerService.postUserSubscription(
+                                subscription,
+                                true),
+                        uriInfo));
     }
 
     @Path("{id}")
