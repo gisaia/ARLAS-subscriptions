@@ -20,12 +20,13 @@
 package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.arlas.client.ApiClient;
-import io.arlas.client.ApiException;
-import io.arlas.client.Pair;
-import io.arlas.client.model.Hit;
-import io.arlas.client.model.Hits;
-import io.arlas.client.model.Link;
+import io.arlas.server.exceptions.ArlasException;
+import io.arlas.server.client.ApiClient;
+import io.arlas.server.client.ApiException;
+import io.arlas.server.client.Pair;
+import io.arlas.server.client.model.Hit;
+import io.arlas.server.client.model.Hits;
+import io.arlas.server.client.model.Link;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.logger.ArlasLogger;
@@ -69,7 +70,7 @@ public class SubscriptionsService extends AbstractArlasService {
                     }
                 }
             } while (items.getHits() != null && next != null);
-        } catch (ApiException | ArlasSubscriptionsException | IOException e) {
+        } catch (ApiException | ArlasSubscriptionsException | IOException | ArlasException e) {
             logger.warn("Error while fetching matching subscriptions: " + e.getMessage());
         }
 

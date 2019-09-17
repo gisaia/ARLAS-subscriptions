@@ -9,6 +9,7 @@
     <name>ARLAS subscriptions parent</name>
 
     <modules>
+        <module>arlas-server-swagger-client</module>
         <module>subscriptions-commons</module>
         <module>subscriptions-matcher</module>
         <module>subscriptions-manager</module>
@@ -32,7 +33,7 @@
         <org.hamcrest.version>1.3</org.hamcrest.version>
 
         <!-- BACKENDS -->
-        <arlas.version>11.6.0</arlas.version>
+        <arlas.version>11.6.1</arlas.version>
         <elastic.version>6.8.1</elastic.version>
         <kafka.version>2.1.1</kafka.version>
 

@@ -22,10 +22,12 @@ package io.arlas.subscriptions.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
-import io.arlas.client.ApiClient;
-import io.arlas.client.ApiException;
-import io.arlas.client.Pair;
-import io.arlas.client.model.Hits;
+import io.arlas.server.exceptions.ArlasException;
+import io.arlas.server.client.ApiClient;
+import io.arlas.server.client.ApiException;
+import io.arlas.server.client.Pair;
+import io.arlas.server.client.model.Hits;
+import io.arlas.server.utils.ParamsParser;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
@@ -35,6 +37,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static io.arlas.subscriptions.app.ArlasSubscriptionsMatcher.MATCHER;
@@ -61,11 +64,14 @@ public class AbstractArlasService {
                 .collect(Collectors.toList());
     }
 
-    Hits getItemHits(List<Pair> queryParams) throws ApiException, IOException, ArlasSubscriptionsException {
+    Hits getItemHits(List<Pair> queryParams) throws ApiException, IOException, ArlasSubscriptionsException, ArlasException {
         return getItemHits(queryParams, emptyMapParams);
     }
 
-    Hits getItemHits(List<Pair> queryParams, Map<String, String> headerParams) throws ApiException, IOException, ArlasSubscriptionsException {
+    Hits getItemHits(List<Pair> queryParams, Map<String, String> headerParams) throws ApiException, IOException, ArlasException, ArlasSubscriptionsException {
+
+        validateArlasQueryParams(queryParams);
+
         Call searchCall = apiClient.buildCall(searchEndpoint, GET, queryParams,
                 emptyListParams, null, headerParams, emptyMapParams, emptyArrayParams, null);
         Response searchResponse = searchCall.execute();
@@ -81,4 +87,30 @@ public class AbstractArlasService {
             throw new ArlasSubscriptionsException("Error while interrogating Catalog: " + body);
         }
     }
+
+    private void validateArlasQueryParams(List<Pair> queryParams) throws ArlasException {
+
+        Function<String, List<String>> getListOfStringFromQueryParams = (String key) -> queryParams.stream()
+                .filter(p -> p.getName().equals(key))
+                .map(Pair::getValue)
+                .collect(Collectors.toList());
+
+        Function<String, String> getStringFromQueryParams = (String key) -> queryParams.stream()
+                .filter(p -> p.getName().equals(key))
+                .map(Pair::getValue)
+                .findFirst()
+                .orElse(null);
+
+        ParamsParser.getFilter(
+                getListOfStringFromQueryParams.apply("f"),
+                getListOfStringFromQueryParams.apply("q"),
+                getListOfStringFromQueryParams.apply("pwithin"),
+                getListOfStringFromQueryParams.apply("gwithin"),
+                getListOfStringFromQueryParams.apply("gintersect"),
+                getListOfStringFromQueryParams.apply("notpwithin"),
+                getListOfStringFromQueryParams.apply("notgwithin"),
+                getListOfStringFromQueryParams.apply("notgintersect"),
+                getStringFromQueryParams.apply("dateformat"));
+    }
+
 }

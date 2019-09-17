@@ -31,8 +31,8 @@
 
         <dependency>
             <groupId>io.arlas</groupId>
-            <artifactId>arlas-server-client</artifactId>
-            <version>${arlas.version}</version>
+            <artifactId>arlas-server-swagger-client</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <!-- ____________________________________________________ -->

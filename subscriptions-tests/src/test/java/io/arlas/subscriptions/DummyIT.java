@@ -22,7 +22,7 @@ package io.arlas.subscriptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
-import io.arlas.client.model.Hits;
+import io.arlas.server.client.model.Hits;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
