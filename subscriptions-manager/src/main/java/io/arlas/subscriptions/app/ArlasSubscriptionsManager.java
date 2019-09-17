@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.smoketurner.dropwizard.zipkin.ZipkinBundle;
 import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
+import io.arlas.server.health.ElasticsearchHealthCheck;
 import io.arlas.subscriptions.db.elastic.ElasticDBFactoryConnection;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
@@ -33,6 +34,7 @@ import io.arlas.subscriptions.exception.ConstraintViolationExceptionMapper;
 import io.arlas.subscriptions.exception.IllegalArgumentExceptionMapper;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
+import io.arlas.subscriptions.healthcheck.MongoHealthCheck;
 import io.arlas.subscriptions.rest.UserSubscriptionManagerController;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.PrettyPrintFilter;
@@ -103,6 +105,8 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
             UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService,
                     configuration.identityHeader, configuration.identityAdmin);
             environment.jersey().register(subscriptionsManagerController);
+	        environment.healthChecks().register("elasticsearch", new ElasticsearchHealthCheck(elasticDBManaged.esClient));
+    	    environment.healthChecks().register("mongo", new MongoHealthCheck(mongoDBManaged.mongoClient));
         } catch (IOException|ArlasSubscriptionsException e) {
             logger.fatal(e.getMessage());
             System.exit(1);

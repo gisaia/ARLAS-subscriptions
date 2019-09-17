@@ -23,8 +23,6 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       LOG4J_LOGGER_KAFKA: INFO
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.8.1
@@ -73,7 +71,14 @@ services:
       - ARLAS_SERVER=arlas-server:9999
       - ARLAS_SERVER_BASE_PATH=http://arlas-server:9999/arlas
       - ARLAS_SUBSCRIPTIONS_BASE_PATH=http://arlas-server:9999/arlas
+    ports:
+      - 9997:9998
     command: ["/opt/app/wait-for-deps.sh $$KAFKA_BROKERS $$ARLAS_ELASTIC_NODES $$ARLAS_SERVER"]
+    healthcheck:
+      test: curl http://localhost:9998/admin/healthcheck | grep -v "\"healthy\":false" || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
 
   arlas-subscriptions-manager:
     build:
@@ -97,3 +102,8 @@ services:
     ports:
       - 9998:9998
     command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST:$$MONGO_PORT $$ARLAS_SUB_ELASTIC_NODES "]
+    healthcheck:
+      test: curl http://localhost:9998/admin/healthcheck | grep -v "\"healthy\":false" || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
