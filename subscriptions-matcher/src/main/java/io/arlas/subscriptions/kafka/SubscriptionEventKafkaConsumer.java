@@ -19,11 +19,11 @@
 
 package io.arlas.subscriptions.kafka;
 
-import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
+import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
+import io.arlas.subscriptions.app.KafkaConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-
 import java.util.Collections;
 import java.util.Properties;
 import java.util.UUID;
@@ -34,18 +34,18 @@ public class SubscriptionEventKafkaConsumer extends KafkaConsumer<String, String
         super(properties);
     }
 
-    public static SubscriptionEventKafkaConsumer build(ArlasSubscriptionsConfiguration configuration) {
+    public static SubscriptionEventKafkaConsumer build(KafkaConfiguration kafkaConfiguration) {
         final Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.kafkaConfiguration.bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, configuration.kafkaConfiguration.consumerGroupId);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConfiguration.bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConfiguration.consumerGroupId);
         props.put(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, configuration.kafkaConfiguration.batchSize);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaConfiguration.batchSize);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
         SubscriptionEventKafkaConsumer consumer = new SubscriptionEventKafkaConsumer(props);
-        consumer.subscribe(Collections.singletonList(configuration.kafkaConfiguration.subscriptionEventsTopic));
+        consumer.subscribe(Collections.singletonList(kafkaConfiguration.subscriptionEventsTopic));
 
         return consumer;
     }

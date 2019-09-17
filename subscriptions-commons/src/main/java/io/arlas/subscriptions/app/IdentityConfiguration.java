@@ -17,26 +17,15 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.service;
+package io.arlas.subscriptions.app;
 
-import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
-import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
-import io.dropwizard.lifecycle.Managed;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ManagedKafkaConsumers implements Managed {
-    private KafkaConsumerRunner consumerRunner;
+public class IdentityConfiguration {
 
-    public ManagedKafkaConsumers(ArlasSubscriptionsMatcherConfiguration configuration) {
-        this.consumerRunner = new KafkaConsumerRunner(configuration);
-    }
+    @JsonProperty("identity-header")
+    public String identityHeader;
 
-    @Override
-    public void start() {
-        new Thread(this.consumerRunner).start();
-    }
-
-    @Override
-    public void stop() {
-        this.consumerRunner.stop();
-    }
+    @JsonProperty("identity-admin")
+    public String identityAdmin;
 }

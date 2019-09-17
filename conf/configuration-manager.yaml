@@ -1,26 +1,14 @@
-#################################################
-############ KAFKA                ###############
-#################################################
-kafka:
-  kafka-consumer-poll-timeout: ${KAFKA_CONSUMER_POLL_TIMEOUT:-100}
-  kafka-batch-size: ${KAFKA_BATCH_SIZE:-10}
-  kafka-bootstrap-servers: ${KAFKA_BROKERS:-kafka:9092}
-  kafka-consumer-group-id: ${KAFKA_CONSUMER_GROUP_ID:-subscription_events_consumer_group}
-  kafka-topic-subscription-events: ${KAFKA_TOPIC_SUBSCRIPTION_EVENTS:-subscription_events}
-  kafka-topic-notification-orders: ${KAFKA_TOPIC_NOTIFICATION_ORDERS:-notification_orders}
+trigger:
+  trigger-geometry-key: ${ARLAS_SUB_GEOM_KEY:-geometry}
+  trigger-centroid-key: ${ARLAS_SUB_CENT_KEY:-centroid}
 
-#################################################
-############ ARLAS ENDPOINTS      ###############
-#################################################
+########################################################
+######################### IDENTITY #####################
+########################################################
 
-arlas-subscriptions-basePath: ${ARLAS_SUBSCRIPTIONS_BASE_PATH:-http://localhost:9999/arlas}
-arlas-subscriptions-searchEndpoint: ${ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT:-/explore/subscriptions/_search}
-arlas-subscriptions-subscriptionFilterRoot: ${ARLAS_SUBSCRIPTIONS_FILTER_ROOT:-gintersect=(object.geometry)&f=subscription.trigger.event:eq:(object.event)&f=subscription.trigger.job:eq:(object.job)&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id}
-
-arlas-server-basePath: ${ARLAS_SERVER_BASE_PATH:-http://localhost:9999/arlas}
-arlas-server-searchEndpoint: ${ARLAS_SERVER_SEARCH_ENDPOINT:-/explore/geodata/_search}
-arlas-server-hitFilterRoot: ${ARLAS_SERVER_FILTER_ROOT:-f=id:eq:(object.id)}
-
+identity:
+  identity-header: ${ARLAS_SUB_IDENTITY_HEADER:-}
+  identity-admin: ${ARLAS_SUB_IDENTITY_ADMIN:-admin}
 
 ########################################################
 ############ SWAGGER                     ###############
@@ -95,12 +83,3 @@ elastic:
   cluster: ${ARLAS_SUB_ELASTIC_CLUSTER:-elasticsearch}
   index:  ${ARLAS_SUB_ELASTIC_INDEX:-subscription}
   type: ${ARLAS_SUB_ELASTIC_TYPE:-sub_type}
-
-########################################################
-############ Subcription DATA model      ###############
-########################################################
-trigger-geometry-key: ${ARLAS_SUB_GEOM_KEY:-geometry}
-trigger-centroid-key: ${ARLAS_SUB_CENT_KEY:-centroid}
-
-identity-header: ${ARLAS_SUB_IDENTITY_HEADER:-}
-identity-admin: ${ARLAS_SUB_IDENTITY_ADMIN:-admin}

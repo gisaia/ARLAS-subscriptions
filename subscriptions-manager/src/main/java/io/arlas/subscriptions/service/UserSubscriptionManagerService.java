@@ -48,8 +48,8 @@ public class UserSubscriptionManagerService {
 
     public UserSubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged, ElasticDBManaged elasticDBManaged) throws ArlasSubscriptionsException, FileNotFoundException {
         JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator(ARLAS_SUB_TRIG_SCHEM_PATH);
-        this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration,mongoDBManaged,jsonSchemaValidator);
-        this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration,elasticDBManaged,jsonSchemaValidator);
+        this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration.mongoDBConnection,mongoDBManaged,jsonSchemaValidator);
+        this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration.elasticDBConnection, configuration.triggerConfiguration,elasticDBManaged,jsonSchemaValidator);
     }
 
     public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean deleted, Integer page, Integer size) throws ArlasSubscriptionsException {

@@ -25,7 +25,7 @@ import io.arlas.server.client.ApiClient;
 import io.arlas.server.client.ApiException;
 import io.arlas.server.client.model.Hit;
 import io.arlas.server.client.model.Hits;
-import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
+import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
 import io.arlas.subscriptions.logger.ArlasLogger;
@@ -37,7 +37,6 @@ import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JSONValueInjector;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -50,12 +49,12 @@ public class ProductService extends AbstractArlasService {
     private final NotificationOrderKafkaProducer notificationOrderKafkaProducer;
     private final String identityHeader;
 
-    ProductService(ArlasSubscriptionsConfiguration configuration) {
+    ProductService(ArlasSubscriptionsMatcherConfiguration configuration) {
         this.apiClient = new ApiClient().setBasePath(configuration.arlasServerBasePath);
         this.searchEndpoint = configuration.arlasServerSearchEndpoint;
         this.filterRoot = configuration.arlasServerFilterRoot;
         this.notificationOrderKafkaProducer = NotificationOrderKafkaProducer.build(configuration);
-        this.identityHeader = configuration.identityHeader;
+        this.identityHeader = configuration.identityConfiguration.identityHeader;
     }
 
     void processMatchingProducts(SubscriptionEvent event, List<Hit> subscriptions) throws JsonProcessingException, ParseException {

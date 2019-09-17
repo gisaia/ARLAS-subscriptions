@@ -27,7 +27,7 @@ import io.arlas.server.client.Pair;
 import io.arlas.server.client.model.Hit;
 import io.arlas.server.client.model.Hits;
 import io.arlas.server.client.model.Link;
-import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
+import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
@@ -44,7 +44,7 @@ import static io.arlas.subscriptions.app.ArlasSubscriptionsMatcher.MATCHER;
 public class SubscriptionsService extends AbstractArlasService {
     private final ArlasLogger logger = ArlasLoggerFactory.getLogger(SubscriptionsService.class, MATCHER);
 
-    SubscriptionsService(ArlasSubscriptionsConfiguration configuration) {
+    SubscriptionsService(ArlasSubscriptionsMatcherConfiguration configuration) {
         this.apiClient = new ApiClient().setBasePath(configuration.subscriptionsBasePath);
         this.searchEndpoint = configuration.subscriptionsSearchEndpoint;
         this.filterRoot = configuration.subscriptionFilterRoot;

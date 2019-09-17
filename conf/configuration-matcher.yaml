@@ -1,0 +1,74 @@
+#################################################
+#################### IDENTITY ###################
+#################################################
+
+identity:
+  identity-header: ${ARLAS_SUB_IDENTITY_HEADER:-}
+  identity-admin: ${ARLAS_SUB_IDENTITY_ADMIN:-admin}
+
+#################################################
+############ KAFKA                ###############
+#################################################
+kafka:
+  kafka-consumer-poll-timeout: ${KAFKA_CONSUMER_POLL_TIMEOUT:-100}
+  kafka-batch-size: ${KAFKA_BATCH_SIZE:-10}
+  kafka-bootstrap-servers: ${KAFKA_BROKERS:-kafka:9092}
+  kafka-consumer-group-id: ${KAFKA_CONSUMER_GROUP_ID:-subscription_events_consumer_group}
+  kafka-topic-subscription-events: ${KAFKA_TOPIC_SUBSCRIPTION_EVENTS:-subscription_events}
+  kafka-topic-notification-orders: ${KAFKA_TOPIC_NOTIFICATION_ORDERS:-notification_orders}
+
+#################################################
+############ ARLAS ENDPOINTS      ###############
+#################################################
+
+arlas-subscriptions-basePath: ${ARLAS_SUBSCRIPTIONS_BASE_PATH:-http://localhost:9999/arlas}
+arlas-subscriptions-searchEndpoint: ${ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT:-/explore/subscriptions/_search}
+arlas-subscriptions-subscriptionFilterRoot: ${ARLAS_SUBSCRIPTIONS_FILTER_ROOT:-gintersect=(object.geometry)&f=subscription.trigger.event:eq:(object.event)&f=subscription.trigger.job:eq:(object.job)&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id}
+
+arlas-server-basePath: ${ARLAS_SERVER_BASE_PATH:-http://localhost:9999/arlas}
+arlas-server-searchEndpoint: ${ARLAS_SERVER_SEARCH_ENDPOINT:-/explore/geodata/_search}
+arlas-server-hitFilterRoot: ${ARLAS_SERVER_FILTER_ROOT:-f=id:eq:(object.id)}
+
+
+########################################################
+############ SWAGGER                     ###############
+########################################################
+#
+#swagger: # Configuration of SWAGGER for generating documentation and APIs
+#  resourcePackage: io.arlas.subscriptions.rest # The java package to process for extracting the APIs
+
+########################################################
+############ HTTP SERVER                 ###############
+########################################################
+# Configuration of the HTTP Server and of the HTTP ACCESS LOGGING
+server:
+  requestLog:
+    appenders:
+      - type: file
+        currentLogFilename: ${ARLAS_SUB_MATCHER_ACCESS_LOG_FILE:-arlas-sub-matcher-access.log}
+        archivedLogFilenamePattern: ${ARLAS_SUB_MATCHER_ACCESS_LOG_FILE_ARCHIVE:-arlas-sub-matcher-access-%d.log.gz}
+  registerDefaultExceptionMappers: false
+  type: simple
+  rootPath: ${ARLAS_SUB_MATCHER_PREFIX:-/arlas-subscriptions-matcher}
+  applicationContextPath: ${ARLAS_SUB_MATCHER_APP_PATH:-/}
+  adminContextPath: ${ARLAS_SUB_MATCHER_ADMIN_PATH:-/admin}
+  connector:
+    type: http
+    port: ${ARLAS_SUB_MATCHER_PORT:-9997}
+
+
+########################################################
+############ LOGGING                     ###############
+########################################################
+# Configuration console and file LOGGING
+logging:
+  level: ${ARLAS_SUB_MATCHER_LOGGING_LEVEL:-INFO}
+  appenders:
+    - type: console
+      threshold:  ${ARLAS_SUB_MATCHER_LOGGING_CONSOLE_LEVEL:-INFO}
+    - type: file
+      currentLogFilename: ${ARLAS_SUB_MATCHER_LOGGING_FILE:-arlas.log}
+      threshold: ${ARLAS_SUB_MATCHER_LOGGING_FILE_LEVEL:-INFO}
+      archive: ${ARLAS_SUB_MATCHER_LOGGING_FILE_ARCHIVE:-true}
+      archivedLogFilenamePattern: ${ARLAS_SUB_MATCHER_LOGGING_FILE_ARCHIVE_FILE_PATTERN:-arlas-%d.log}
+      archivedFileCount: ${ARLAS_SUB_MATCHER_LOGGING_FILE_ARCHIVE_FILE_COUNT:-5}

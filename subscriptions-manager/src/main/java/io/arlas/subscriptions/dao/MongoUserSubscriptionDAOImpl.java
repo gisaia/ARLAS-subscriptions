@@ -29,6 +29,7 @@ import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
+import io.arlas.subscriptions.model.mongo.MongoDBConnection;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
@@ -57,8 +58,8 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
             .int64Converter((value, writer) -> writer.writeNumber(value.toString()))
             .build();
 
-    public MongoUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged,JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
-        MongoDatabase mongoDatabase = mongoDBManaged.mongoClient.getDatabase(configuration.getMongoDBConnection().database);
+    public MongoUserSubscriptionDAOImpl(MongoDBConnection mongoDBConnection, MongoDBManaged mongoDBManaged, JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
+        MongoDatabase mongoDatabase = mongoDBManaged.mongoClient.getDatabase(mongoDBConnection.database);
         this.mongoCollectionSub = this.initSubscriptionsCollection(mongoDatabase);
         this.mongoCollectionDoc = mongoDatabase.getCollection(ARLAS_SUBSCRIPTION_DB_NAME);
         this.jsonSchemaValidator = jsonSchemaValidator;
