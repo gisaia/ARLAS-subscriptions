@@ -28,45 +28,30 @@ import io.arlas.subscriptions.model.SubscriptionListResource;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.model.UserSubscriptionWithLinks;
 import io.arlas.subscriptions.model.response.Error;
+import io.arlas.subscriptions.service.UserSubscriptionHALService;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.ResponseFormatter;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Path("/subscriptions")
 @Api(value = "/subscriptions", tags = {"end-user"})
-@SwaggerDefinition(
-        info = @Info(contact = @Contact(email = "contact@gisaia.com", name = "ARLAS", url = "https://arlas.io/"),
-                title = "ARLAS Subscriptions Manager API",
-                description = "Manage ARLAS subscriptions on ARLAS collections' events.",
-                license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html"),
-                version = "API_VERSION"),
-        tags = {@Tag(name="end-user", description = "Standard endpoints to manage one's subscriptions as an end-user."),
-                @Tag(name="admin", description = "Optional endpoints to manage all subscriptions as an administrator of the service.")},
-        schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS }
-        )
-public class UserSubscriptionManagerController {
-    public static final String UTF8JSON = MediaType.APPLICATION_JSON + ";charset=utf-8";
-    private final UserSubscriptionManagerService subscriptionManagerService;
-    private final String identityHeader;
-    private final String identityAdmin;
+public class UserSubscriptionManagerEndUserController extends UserSubscriptionManagerAbstractController {
 
-    public UserSubscriptionManagerController(UserSubscriptionManagerService subscriptionManagerService, String identityHeader, String identityAdmin) {
-        this.subscriptionManagerService = subscriptionManagerService;
-        this.identityHeader = identityHeader;
-        this.identityAdmin = identityAdmin;
+    public UserSubscriptionManagerEndUserController(
+            UserSubscriptionManagerService subscriptionManagerService,
+            UserSubscriptionHALService halService,
+            String identityHeader,
+            String identityAdmin) {
+        super(subscriptionManagerService, halService, identityHeader, identityAdmin);
     }
-
     @Timed
     @Path("/")
     @GET
@@ -123,13 +108,8 @@ public class UserSubscriptionManagerController {
             @QueryParam(value = "page") Integer page
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        Pair<Integer, List<UserSubscription>> subscriptionList = subscriptionManagerService.getAllUserSubscriptions(user, before, active, expired, false, page, size);
-        SubscriptionListResource subscriptionListResource = new SubscriptionListResource();
-        subscriptionListResource.total = subscriptionList.getLeft();
-        subscriptionListResource.count = subscriptionList.getRight().size();
-        subscriptionListResource.subscriptions = subscriptionList.getRight().stream().map(u -> new UserSubscriptionWithLinks(u)).collect(Collectors.toList());
-        subscriptionListResource.subscriptions.replaceAll(u -> subscriptionWithLinks(u, uriInfo));
-        subscriptionListResource.links = subListLinks(uriInfo, page, size, subscriptionListResource.total, subscriptionListResource.subscriptions.size());
+        Pair<Integer, List<UserSubscription>> subscriptionList = subscriptionManagerService.getAllUserSubscriptions(user, before, null, active, null, expired, false, null, page, size);
+        SubscriptionListResource subscriptionListResource = halService.subscriptionListToResource(subscriptionList, uriInfo, page, size);
         return ResponseFormatter.getResultResponse(subscriptionListResource);
     }
 
@@ -173,7 +153,7 @@ public class UserSubscriptionManagerController {
         UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 
-        return ResponseFormatter.getResultResponse(subscriptionWithLinks(userSubscription, uriInfo));
+        return ResponseFormatter.getResultResponse(halService.subscriptionWithLinks(userSubscription, uriInfo));
     }
 
     @Timed
@@ -258,7 +238,7 @@ public class UserSubscriptionManagerController {
             throw new ForbiddenException("New subscription does not belong to authenticated user " + user);
         }
         return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
-                subscriptionWithLinks(subscriptionManagerService.postUserSubscription(subscription, false), uriInfo));
+                halService.subscriptionWithLinks(subscriptionManagerService.postUserSubscription(subscription, false), uriInfo));
     }
 
     @Path("{id}")
@@ -314,7 +294,7 @@ public class UserSubscriptionManagerController {
             throw new ForbiddenException("Existing or updated subscription does not belong to authenticated user " + user);
         }
         return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
-                subscriptionWithLinks(subscriptionManagerService.putUserSubscription(user, oldUserSubscription, updUserSubscription), uriInfo));
+                halService.subscriptionWithLinks(subscriptionManagerService.putUserSubscription(user, oldUserSubscription, updUserSubscription), uriInfo));
     }
 
     private String getUser(HttpHeaders headers) throws UnauthorizedException, ForbiddenException {
@@ -332,37 +312,4 @@ public class UserSubscriptionManagerController {
         }
     }
 
-    private UserSubscriptionWithLinks subscriptionWithLinks(UserSubscription subscription, UriInfo uriInfo) {
-        String listUri = uriInfo.getRequestUriBuilder().build().toString();
-        String subUri = uriInfo.getRequestUriBuilder()
-                .path(subscription.getId())
-                .replaceQueryParam("page", null)
-                .replaceQueryParam("size", null)
-                .build().toString();
-        Map<String, UserSubscriptionWithLinks.Link> links = new HashMap<>();
-        links.put("self", new UserSubscriptionWithLinks.Link("self", subUri, "GET"));
-        links.put("list", new UserSubscriptionWithLinks.Link("list", listUri, "GET"));
-        links.put("update", new UserSubscriptionWithLinks.Link("update", subUri, "PUT"));
-        links.put("delete", new UserSubscriptionWithLinks.Link("delete", subUri, "DELETE"));
-        return new UserSubscriptionWithLinks(subscription).withLinks(links);
-    }
-
-    private Map<String, UserSubscriptionWithLinks.Link> subListLinks(UriInfo uriInfo, Integer page, Integer size, Integer total, Integer count) {
-        UriBuilder uri = uriInfo.getRequestUriBuilder();
-        Map<String, UserSubscriptionWithLinks.Link> links = new HashMap<>();
-        links.put("self", new UserSubscriptionWithLinks.Link("self", getUri(uri, size, page), "GET"));
-        if (page != 1)
-            links.put("first", new UserSubscriptionWithLinks.Link("first", getUri(uri, size, 1), "GET"));
-        if (page > 1)
-            links.put("prev", new UserSubscriptionWithLinks.Link("prev", getUri(uri, size, page-1), "GET"));
-        if ((page-1)*size + count < total)
-            links.put("next", new UserSubscriptionWithLinks.Link("next", getUri(uri, size, page+1), "GET"));
-        if ((page-1)*size + count != total)
-            links.put("last", new UserSubscriptionWithLinks.Link("last", getUri(uri, size, new Double(Math.ceil((double)total/(double)size)).intValue()), "GET"));
-        return links;
-    }
-
-    private String getUri(UriBuilder uri, Integer size, Integer page) {
-        return uri.replaceQueryParam("size", size).replaceQueryParam("page", page).build().toString();
-    }
 }

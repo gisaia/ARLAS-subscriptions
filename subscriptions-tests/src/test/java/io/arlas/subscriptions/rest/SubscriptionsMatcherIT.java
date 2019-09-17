@@ -59,8 +59,7 @@ public class SubscriptionsMatcherIT extends AbstractTestContext {
     public static void afterClass() {
         kafkaTool.stop();
         DataSetTool.clearDataSet();
-        DataSetTool.clearSubscriptions();
-        DataSetTool.close();
+        DataSetTool.clearSubscriptions(false);
     }
 
     @Test

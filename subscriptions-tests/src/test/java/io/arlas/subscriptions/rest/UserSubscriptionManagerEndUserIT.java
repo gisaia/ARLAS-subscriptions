@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class UserSubscriptionManagerServiceIT extends AbstractTestWithData {
+public class UserSubscriptionManagerEndUserIT extends AbstractTestWithData {
 
     @Test
     public void test01GetAllUserSubscriptions() {

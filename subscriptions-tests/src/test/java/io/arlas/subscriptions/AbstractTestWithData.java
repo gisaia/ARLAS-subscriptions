@@ -34,7 +34,6 @@ import java.util.*;
 
 public abstract class AbstractTestWithData extends AbstractTestContext {
 
-
     @BeforeClass
     public static void beforeClass() {
         try {
@@ -54,8 +53,7 @@ public abstract class AbstractTestWithData extends AbstractTestContext {
     @AfterClass
     public static void afterClass() {
         DataSetTool.clearDataSet();
-        DataSetTool.clearSubscriptions();
-        DataSetTool.close();
+        DataSetTool.clearSubscriptions(true);
     }
 
     protected Map<String, Object> generateTestSubscription() {
