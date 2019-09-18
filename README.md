@@ -83,11 +83,11 @@ KAFKA_BATCH_SIZE | Kafka consumer batch size | 10
 KAFKA_CONSUMER_GROUP_ID | Kafka consumer group id | subscription_events_consumer_group
 KAFKA_TOPIC_SUBSCRIPTION_EVENTS | Kafka consumer topic for new events | subscription_events
 KAFKA_TOPIC_NOTIFICATION_ORDERS | Kafka producer topic for notification order | notification_orders
-ARLAS_SUBSCRIPTIONS_BASE_PATH | ARLAS server for the subscriptions collection | http://localhost:9999
-ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT | ARLAS server search endpoint for the subscriptions collection | /arlas/explore/subscriptions/_search
+ARLAS_SUBSCRIPTIONS_BASE_PATH | ARLAS server for the subscriptions collection | http://localhost:9999/arlas
+ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT | ARLAS server search endpoint for the subscriptions collection | /explore/subscriptions/_search
 ARLAS_SUBSCRIPTIONS_FILTER_ROOT | ARLAS server filter request to be applied to the subscription collection in order to find matching subscriptions | gintersect=(object.geometry)&f=subscription.trigger.event:eq:(event)&f=subscription.trigger.job:eq:(object.job)&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id}
-ARLAS_SERVER_BASE_PATH | ARLAS server for the documents collection | http://localhost:9999
-ARLAS_SERVER_SEARCH_ENDPOINT | ARLAS server search endpoint for the documents collection | /arlas/explore/geodata/_search
+ARLAS_SERVER_BASE_PATH | ARLAS server for the documents collection | http://localhost:9999/arlas
+ARLAS_SERVER_SEARCH_ENDPOINT | ARLAS server search endpoint for the documents collection | /explore/geodata/_search
 ARLAS_SERVER_FILTER_ROOT | ARLAS server filter request to be applied to the documents collection in order to find matching documents | f=id:eq:(object.id)
 
 ## Build
