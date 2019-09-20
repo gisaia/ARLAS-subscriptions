@@ -3,6 +3,8 @@
 [![Build Status](https://api.travis-ci.org/gisaia/ARLAS-subscriptions.svg?branch=develop)](https://travis-ci.org/gisaia/ARLAS-subscriptions)
 
 # Overview
+**Warning: Work in Progress**
+
 ARLAS-subscriptions is a service used to generate notification orders (i.e. a message containing information to be
 pushed to a user by a *notification service* \[not provided by ARLAS\]), according to some criteria subscribed by a user
 on an ARLAS-server collection (e.g. a user wants to be notified of any new 'document' created in Europe).
