@@ -66,6 +66,7 @@ public class ProductService extends AbstractArlasService {
             logger.debug("processing hit: " + hit.toString());
             try {
                 IndexedUserSubscription userSubscription = objectMapper.convertValue(hit.getData(), IndexedUserSubscription.class);
+                userSubscription.setId((String)((Map<String, Object>) hit.getData()).get("id"));
                 logger.debug("indexedUserSubscription: " + userSubscription.toString());
                 String f = searchFilter
                         + "&" + userSubscription.subscription.hits.filter
@@ -102,6 +103,7 @@ public class ProductService extends AbstractArlasService {
         Map<String, Object> subSummary = new HashMap<>();
         subSummary.put("id", userSubscription.getId());
         subSummary.put("callback", userSubscription.subscription.callback);
+        notificationOrder.put("subscription", subSummary);
         // User metadata fields (provided by subscription creator)
         notificationOrder.put("user_metadata", userSubscription.userMetadatas);
         logger.debug("notificationOrder: " + notificationOrder.toString());
