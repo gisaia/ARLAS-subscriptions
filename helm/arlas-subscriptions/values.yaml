@@ -1,0 +1,156 @@
+################################################################################
+# Component-specific configuration
+################################################################################
+
+manager:
+  affinity: {}
+
+  # See here for available variables: https://github.com/gisaia/ARLAS-subscriptions#manager-configuration
+  # Beware, some environment variables are not managed in this dictionary, but directly in the deployment (see deployment)
+  environmentVariables:
+    MONGO_HOST: mongodb
+    MONGO_PORT: 27017
+  image:
+    repository: gisaia/arlas-subscriptions-manager
+    tag: 0.0.1-SNAPSHOT
+    pullPolicy: IfNotPresent
+  init:
+    elasticsearchIndex:
+      container:
+        image:
+          pullPolicy: IfNotPresent
+          # Using centos image, because contrarily to alpine,debian,ubuntu, it has curl installed. Thus, there is no need to install any packages, which brings following benefits:
+          # - on offline environments: it will work
+          # - on proxy environments: it will work without having to set an HTTP proxy
+          # Inconvenient is that image is ~30 times bigger than alpine (71.92MB vs 2.66MB)
+          repository: centos
+          tag: 7
+        resources:
+          limits:
+            cpu: 1
+            memory: 1G
+          requests:
+            cpu: 1
+            memory: 1G
+      enabled: false
+  nodeSelector: {}
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 4G
+    requests:
+      cpu: 1
+      memory: 4G
+  service:
+    type: ClusterIP
+    port: 80
+  tolerations: []
+  triggerSchema:
+    path: /mnt/trigger.schema.json
+    # TODO: link to schema documentation
+    # content: ...
+
+################################################################################
+
+matcher:
+  affinity: {}
+  containerPort: 9998
+  # See here for available variables: https://github.com/gisaia/ARLAS-subscriptions#matcher-configuration
+  # Beware, some environment variables are not managed in this dictionary, but directly in the deployment (see deployment)
+  environmentVariables:
+    ARLAS_SERVER_BASE_PATH: http://catalog
+    KAFKA_BROKERS: kafka:9092
+  image:
+    repository: gisaia/arlas-subscriptions-matcher
+    tag: 0.0.1-SNAPSHOT
+    pullPolicy: IfNotPresent
+  init:
+    serverCollection:
+      container:
+        image:
+          pullPolicy: IfNotPresent
+          # Using centos image, because contrarily to alpine,debian,ubuntu, it has curl installed. Thus, there is no need to install any packages, which brings following benefits:
+          # - on offline environments: it will work
+          # - on proxy environments: it will work without having to set an HTTP proxy
+          # Inconvenient is that image is ~30 times bigger than alpine (71.92MB vs 2.66MB)
+          repository: centos
+          tag: 7
+        resources:
+          limits:
+            cpu: 1
+            memory: 1G
+          requests:
+            cpu: 1
+            memory: 1G
+      enabled: true
+  nodeSelector: {}
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 4G
+    requests:
+      cpu: 1
+      memory: 4G
+  tolerations: []
+
+################################################################################
+
+server:
+  affinity: {}
+  # ARLAS collection to index the subscriptions objects. All commented fields are required
+  # See here for the general documentation on the concept of "collection" in ARLAS: http://docs.arlas.io/arlas-tech/current/arlas-collection-model/
+  collection:
+  #   centroidPath:
+  #   geometryPath:
+  #   idPath:
+    name: subscriptions
+  #   timestampPath:
+
+  # Environment variables documentation: http://docs.arlas.io/arlas-tech/current/arlas-server-configuration/
+  # Beware, some environment variables are not managed in this dictionary, but directly in the deployment (see deployment)
+  environmentVariables:
+    ARLAS_PORT: 9999
+    ARLAS_PREFIX: /arlas/
+  image:
+    repository: gisaia/arlas-server
+    tag: 11.6.0
+    pullPolicy: IfNotPresent
+  nodeSelector: {}
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 4G
+    requests:
+      cpu: 1
+      memory: 4G
+  service:
+    type: ClusterIP
+    port: 9999
+  tolerations: []
+
+################################################################################
+# General configuration
+################################################################################
+
+elasticsearch:
+  cluster: elasticsearch
+  endpoints:
+    http:
+      - elasticsearch:9200 
+    transport:
+      - elasticsearch:9300
+  index: subs
+  mappingType:
+    name: sub
+
+    # A JSON body defining the Elasticsearch type mapping for the subscriptions' index
+    # This field is required
+    # See here for general documentation about the Elasticsearch concept of "type mapping" :https://www.elastic.co/guide/en/elasticsearch/reference/6.4/indices-create-index.html#mappings
+
+    # definition: ...
+
+fullnameOverride: ""
+nameOverride: ""

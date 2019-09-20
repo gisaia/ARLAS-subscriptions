@@ -115,3 +115,9 @@ docker-compose up -d
 ```sh
 ./scripts/tests-stack.sh
 ```
+
+# Packaging
+
+## Helm
+
+ARLAS-subscriptions is packaged as a Helm chart, which can be found here: [helm/arlas-subscriptions](helm/arlas-subscriptions) (documentation embedded).

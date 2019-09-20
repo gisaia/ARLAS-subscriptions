@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "arlas-subscriptions.fullname" . }}-matcher
+  labels:
+{{ include "arlas-subscriptions.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.matcher.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "arlas-subscriptions.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: matcher
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "arlas-subscriptions.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: matcher
+    spec:
+      containers:
+        - name: container
+          env:
+            - name: ARLAS_ELASTIC_NODES
+              value: {{ .Values.elasticsearch.endpoints.transport | join "," }}
+            - name: ARLAS_SUBSCRIPTIONS_BASE_PATH
+              value: {{ include "arlas-subscriptions.server.basePath" . }}
+          {{- if .Values.matcher.environmentVariables }}
+            {{- include "arlas-subscriptions.matcher.environmentVariables" . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.matcher.image.repository }}:{{ .Values.matcher.image.tag }}"
+          imagePullPolicy: {{ .Values.matcher.image.pullPolicy }}
+# # TODO: enable when implemented
+#           livenessProbe:
+#             httpGet:
+#               path: /admin/healthcheck
+#               port: {{ .Values.matcher.containerPort }}
+#           readinessProbe:
+#             httpGet:
+#               path: /admin/healthcheck
+#               port: {{ .Values.matcher.containerPort }}
+          resources:
+            {{- toYaml .Values.matcher.resources | nindent 12 }}
+    {{- if .Values.matcher.init.serverCollection.enabled }}
+      initContainers:
+        - name: server-collection
+          image: {{ .Values.matcher.init.serverCollection.container.image.repository }}:{{ .Values.matcher.init.serverCollection.container.image.tag }}
+          imagePullPolicy: {{ .Values.matcher.init.serverCollection.container.image.pullPolicy }}
+          env:
+            - name: ARLAS_SUBSCRIPTIONS_BASE_PATH
+              value: {{ include "arlas-subscriptions.server.basePath" . }}
+            - name: ARLAS_SUBSCRIPTIONS_COLLECTION_CENTROID_PATH
+              value: {{ .Values.server.collection.centroidPath }}
+            - name: ARLAS_SUBSCRIPTIONS_COLLECTION_GEOMETRY_PATH
+              value: {{ .Values.server.collection.geometryPath }}
+            - name: ARLAS_SUBSCRIPTIONS_COLLECTION_ID_PATH
+              value: {{ .Values.server.collection.idPath }}
+            - name: ARLAS_SUBSCRIPTIONS_COLLECTION_NAME
+              value: {{ .Values.server.collection.name }}
+            - name: ARLAS_SUBSCRIPTIONS_COLLECTION_TIMESTAMP_PATH
+              value: {{ .Values.server.collection.timestampPath }}
+            - name: ARLAS_SUBSCRIPTIONS_ENDPOINT
+              value: {{ include "arlas-subscriptions.server.endpoint" . }}
+            - name: ELASTICSEARCH_FIRST_NODE
+              value: {{ .Values.elasticsearch.endpoints.http | first }}
+            - name: ELASTICSEARCH_INDEX
+              value: {{ .Values.elasticsearch.index }}
+            - name: ELASTICSEARCH_MAPPING_TYPE
+              value: {{ .Values.elasticsearch.mappingType.name }}
+          {{- if .Values.matcher.init.serverCollection.container.environmentVariables }}
+            {{- include "arlas-subscriptions.matcher.init.serverCollection.container.environmentVariables" . | nindent 12 }}
+          {{- end }}
+          command: ["bash", "-c"]
+          args:
+            - |
+              {{- include "arlas-subscriptions.matcher.init.serverCollection" . | nindent 14 }}
+          resources:
+            {{- toYaml .Values.matcher.init.serverCollection.container.resources | nindent 12 }}
+    {{- end }}
+      {{- with .Values.matcher.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.matcher.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.matcher.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
