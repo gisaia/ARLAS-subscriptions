@@ -162,12 +162,12 @@ export ELASTIC_DATADIR="/tmp"
 export KAFKA_DATADIR="/tmp"
 docker-compose --project-name arlas-subscriptions up -d --build elasticsearch
 DOCKER_IP=$(docker-machine ip || echo "localhost")
-i=1; until nc -w 2 ${DOCKER_IP} 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
+docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 curl -X PUT "${DOCKER_IP}:9200/subs" -H 'Content-Type: application/json' -d'{}'
 curl -X PUT "${DOCKER_IP}:9200/subs/_mapping/sub_type" -H 'Content-Type: application/json' -d @"./subscriptions-tests/src/test/resources/arlas.subtest.mapping.json"
 docker-compose --project-name arlas-subscriptions up -d --build arlas-subscriptions-manager
 echo "===> wait for arlas-subscriptions-manager up and running"
-i=1; until nc -w 2 ${DOCKER_IP} 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
+docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 
 echo "=> Get swagger documentation"
 mkdir -p target/tmp || echo "target/tmp exists"
