@@ -9,6 +9,7 @@ PROJECT_ROOT_DIRECTORY="$SCRIPT_DIRECTORY"
 #########################################
 TEST="YES"
 RELEASE="NO"
+BASEDIR=$PWD
 
 #########################################
 #### Cleaning functions #################
