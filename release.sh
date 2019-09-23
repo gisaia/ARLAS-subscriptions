@@ -157,9 +157,8 @@ docker run \
 ##################################################
 
 echo "=> Start arlas-subscriptions-manager stack"
-export ARLAS_SERVER_NODE=""
-export ELASTIC_DATADIR="/tmp"
-export KAFKA_DATADIR="/tmp"
+export ARLAS_SUB_TRIG_SCHEM_PATH="/opt/app/trigger.schema.json"
+export ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL="./subscriptions-tests/src/test/resources/trigger.schema.json"
 docker-compose --project-name arlas-subscriptions up -d --build elasticsearch
 DOCKER_IP=$(docker-machine ip || echo "localhost")
 docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
