@@ -11,7 +11,7 @@
     <parent>
         <groupId>io.arlas</groupId>
         <artifactId>subscriptions-parent</artifactId>
-        <version>11.6.0-alpha</version>
+        <version>11.6.0-beta-SNAPSHOT</version>
     </parent>
 
     <properties>
