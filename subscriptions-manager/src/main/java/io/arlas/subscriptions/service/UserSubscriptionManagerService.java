@@ -72,9 +72,14 @@ public class UserSubscriptionManagerService {
         return userSubscriptionForIndex ;
     }
 
-    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) throws ArlasSubscriptionsException {
-        logger.debug(String.format("User %s requests subscription %s (deleted %b)", user, id, deleted));
-        return this.daoDatabase.getUserSubscription(user, id, deleted);
+    public Optional<UserSubscription> getUserSubscription(String id, Optional<String> user, boolean deleted) throws ArlasSubscriptionsException {
+        logger.debug(String.format("User %s requests subscription %s (deleted %b)", user.orElse("unknown"), id, deleted));
+        return this.daoDatabase.getSubscription(id, user, deleted);
+    }
+
+    public Optional<UserSubscription> getSubscription(String id, boolean deleted) throws ArlasSubscriptionsException {
+        logger.debug(String.format("Requesting subscription %s (deleted %b)", id, deleted));
+        return this.daoDatabase.getSubscription(id, Optional.empty(), deleted);
     }
 
     public void deleteUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {

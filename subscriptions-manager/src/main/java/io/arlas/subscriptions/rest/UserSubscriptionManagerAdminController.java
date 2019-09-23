@@ -162,27 +162,31 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
 
     public Response get(@Context UriInfo uriInfo,
                         @Context HttpHeaders headers,
+            // --------------------------------------------------------
+            // ----------------------- FORM -----------------------
+            // --------------------------------------------------------
             @ApiParam(
                     name = "id",
                     value = "ID of subscription to return",
                     allowMultiple = false,
                     required = true)
             @PathParam(value = "id") String id,
-            // --------------------------------------------------------
-            // ----------------------- FORM -----------------------
-            // --------------------------------------------------------
+            @ApiParam(name = "deleted", value = "Filter subscriptions whether they are deleted or not.",
+                    allowMultiple = false,
+                    required = false,
+                    defaultValue = "true" )
+                @QueryParam(value = "deleted") Boolean deleted,
             @ApiParam(name = "pretty", value = "Pretty print",
                     allowMultiple = false,
                     defaultValue = "false",
                     required = false)
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
-//        String user = getUser(headers);
-//        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
-//                .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
-//
-//        return ResponseFormatter.getResultResponse(subscriptionWithLinks(userSubscription, uriInfo));
-        return null;
+        checkIsNotLogged(headers);
+        UserSubscription userSubscription = subscriptionManagerService.getSubscription(id, Optional.ofNullable(deleted).orElse(Boolean.TRUE))
+                .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found"));
+
+        return ResponseFormatter.getResultResponse(halService.subscriptionWithLinks(userSubscription, uriInfo));
     }
 
     @Timed

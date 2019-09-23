@@ -125,11 +125,11 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) throws ArlasSubscriptionsException {
+    public Optional<UserSubscription> getSubscription(String id, Optional<String> user, boolean deleted) throws ArlasSubscriptionsException {
         List<Bson> filters = new ArrayList<>();
         filters.add(eq("_id", id));
-        if (user != null)
-            filters.add(eq("created_by", user));
+        user.ifPresent(u -> filters.add(eq("created_by", u)));
+
         if (!deleted)
             filters.add(eq("deleted", Boolean.FALSE));
 
