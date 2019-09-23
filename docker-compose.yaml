@@ -60,7 +60,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-matcher
-    image: arlas-subscriptions-matcher:latest
+    image: gisaia/arlas-subscriptions-matcher:${ARLAS_SUBSCRIPTIONS_VERSION:-latest}
     container_name: "arlas-subscriptions-matcher"
     depends_on:
       - arlas-server
@@ -84,7 +84,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-manager
-    image: arlas-subscriptions-manager:latest
+    image: gisaia/arlas-subscriptions-manager:${ARLAS_SUBSCRIPTIONS_VERSION:-latest}
     container_name: "arlas-subscriptions-manager"
     depends_on:
       - mongodb
