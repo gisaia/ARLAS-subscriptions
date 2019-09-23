@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
                 title = "ARLAS Subscriptions Manager API",
                 description = "Manage ARLAS subscriptions on ARLAS collections' events.",
                 license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html"),
-                version = "API_VERSION"),
+                version = "11.0.0-alpha"),
         tags = {@Tag(name="end-user", description = "Standard endpoints to manage one's subscriptions as an end-user."),
                 @Tag(name="admin", description = "Optional endpoints to manage all subscriptions as an administrator of the service.")},
         schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS }

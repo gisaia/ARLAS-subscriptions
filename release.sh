@@ -187,18 +187,18 @@ if [ "$TESTS" == "YES" ]; then itests; else echo "=> Skip integration tests"; fi
 
 cd ${BASEDIR}
 
-if [ "$RELEASE" == "YES" ]; then
-    echo "=> Tag arlas-subscriptions-manager docker image"
-    docker tag gisaia/arlas-subscriptions-manager:${ARLAS_SUBSCRIPTIONS_VERSION} gisaia/arlas-subscriptions-manager:latest
-    echo "=> Tag arlas-subscriptions-matcher docker image"
-    docker tag gisaia/arlas-subscriptions-matcher:${ARLAS_SUBSCRIPTIONS_VERSION} gisaia/arlas-subscriptions-matcher:latest
-    echo "=> Push arlas-subscriptions-manager docker image"
-    docker push gisaia/arlas-subscriptions-manager:${ARLAS_SUBSCRIPTIONS_VERSION}
-    docker push gisaia/arlas-subscriptions-manager:latest
-    echo "=> Push arlas-subscriptions-matcher docker image"
-    docker push gisaia/arlas-subscriptions-matcher:${ARLAS_SUBSCRIPTIONS_VERSION}
-    docker push gisaia/arlas-subscriptions-matcher:latest
-else echo "=> Skip docker push image"; fi
+#if [ "$RELEASE" == "YES" ]; then
+#    echo "=> Tag arlas-subscriptions-manager docker image"
+#    docker tag gisaia/arlas-subscriptions-manager:${ARLAS_SUBSCRIPTIONS_VERSION} gisaia/arlas-subscriptions-manager:latest
+#    echo "=> Tag arlas-subscriptions-matcher docker image"
+#    docker tag gisaia/arlas-subscriptions-matcher:${ARLAS_SUBSCRIPTIONS_VERSION} gisaia/arlas-subscriptions-matcher:latest
+#    echo "=> Push arlas-subscriptions-manager docker image"
+#    docker push gisaia/arlas-subscriptions-manager:${ARLAS_SUBSCRIPTIONS_VERSION}
+#    docker push gisaia/arlas-subscriptions-manager:latest
+#    echo "=> Push arlas-subscriptions-matcher docker image"
+#    docker push gisaia/arlas-subscriptions-matcher:${ARLAS_SUBSCRIPTIONS_VERSION}
+#    docker push gisaia/arlas-subscriptions-matcher:latest
+#else echo "=> Skip docker push image"; fi
 
 if [ "$RELEASE" == "YES" ]; then
     echo "=> Generate CHANGELOG.md"
