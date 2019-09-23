@@ -71,8 +71,9 @@ services:
       - ARLAS_SERVER=arlas-server:9999
       - ARLAS_SERVER_BASE_PATH=http://arlas-server:9999/arlas
       - ARLAS_SUBSCRIPTIONS_BASE_PATH=http://arlas-server:9999/arlas
+      - ARLAS_SUB_IDENTITY_HEADER=${ARLAS_SUB_IDENTITY_HEADER:-}
     ports:
-      - 9997:9998
+      - 9997:9998    
     command: ["/opt/app/wait-for-deps.sh $$KAFKA_BROKERS $$ARLAS_ELASTIC_NODES $$ARLAS_SERVER"]
     healthcheck:
       test: curl http://localhost:9998/admin/healthcheck | grep -v "\"healthy\":false" || exit 1

@@ -23,38 +23,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown = false)
 public class ArlasSubscriptionsConfiguration extends Configuration {
-    @JsonProperty("kafka")
-    public KafkaConfiguration kafkaConfiguration;
 
-    @JsonProperty("arlas-subscriptions-basePath")
-    public String subscriptionsBasePath;
+    @JsonProperty("identity")
+    public IdentityConfiguration identityConfiguration;
 
-    @JsonProperty("arlas-subscriptions-searchEndpoint")
-    public String subscriptionsSearchEndpoint;
-
-    @JsonProperty("arlas-subscriptions-subscriptionFilterRoot")
-    public String subscriptionFilterRoot;
-
-    @JsonProperty("arlas-server-basePath")
-    public String arlasServerBasePath;
-
-    @JsonProperty("arlas-server-searchEndpoint")
-    public String arlasServerSearchEndpoint;
-
-    @JsonProperty("arlas-server-hitFilterRoot")
-    public String arlasServerFilterRoot;
-
-    @JsonProperty("trigger-geometry-key")
-    public String triggerGeometryKey;
-
-    @JsonProperty("trigger-centroid-key")
-    public String triggerCentroidKey;
-
-    @JsonProperty("identity-header")
-    public String identityHeader;
-
-    @JsonProperty("identity-admin")
-    public String identityAdmin;
 }
+

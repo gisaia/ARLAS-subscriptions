@@ -21,7 +21,8 @@ package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.server.client.model.Hit;
-import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
+import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
+import io.arlas.subscriptions.app.KafkaConfiguration;
 import io.arlas.subscriptions.kafka.SubscriptionEventKafkaConsumer;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
@@ -31,7 +32,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.locationtech.jts.io.ParseException;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
@@ -44,13 +44,13 @@ public class KafkaConsumerRunner implements Runnable {
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ArlasSubscriptionsConfiguration configuration;
+    private final KafkaConfiguration kafkaConfiguration;
     private final SubscriptionsService subscriptionsService;
     private final ProductService productService;
     private KafkaConsumer consumer;
 
-    KafkaConsumerRunner(ArlasSubscriptionsConfiguration configuration) {
-        this.configuration = configuration;
+    KafkaConsumerRunner(ArlasSubscriptionsMatcherConfiguration configuration) {
+        this.kafkaConfiguration = configuration.kafkaConfiguration;
         this.subscriptionsService = new SubscriptionsService(configuration);
         this.productService = new ProductService(configuration);
     }
@@ -58,11 +58,11 @@ public class KafkaConsumerRunner implements Runnable {
     @Override
     public void run() {
         try {
-            logger.info("Starting consumer of topic '" + configuration.kafkaConfiguration.subscriptionEventsTopic + "'");
-            consumer = SubscriptionEventKafkaConsumer.build(configuration);
+            logger.info("Starting consumer of topic '" + kafkaConfiguration.subscriptionEventsTopic + "'");
+            consumer = SubscriptionEventKafkaConsumer.build(kafkaConfiguration);
 
             while (true) {
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(configuration.kafkaConfiguration.consumerPollTimeout));
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(kafkaConfiguration.consumerPollTimeout));
                 for (ConsumerRecord<String, String> record : records) {
 
                     try {
@@ -85,7 +85,7 @@ public class KafkaConsumerRunner implements Runnable {
             // Ignore exception if closing
             if (!closed.get()) throw e;
         } finally {
-            logger.error("Closing consumer of topic '" + configuration.kafkaConfiguration.subscriptionEventsTopic + "'");
+            logger.error("Closing consumer of topic '" + kafkaConfiguration.subscriptionEventsTopic + "'");
             consumer.close();
             System.exit(1);
         }

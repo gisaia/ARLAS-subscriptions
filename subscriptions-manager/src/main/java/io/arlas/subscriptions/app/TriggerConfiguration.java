@@ -17,26 +17,16 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.service;
+package io.arlas.subscriptions.app;
 
-import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
-import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
-import io.dropwizard.lifecycle.Managed;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ManagedKafkaConsumers implements Managed {
-    private KafkaConsumerRunner consumerRunner;
+public class TriggerConfiguration {
 
-    public ManagedKafkaConsumers(ArlasSubscriptionsMatcherConfiguration configuration) {
-        this.consumerRunner = new KafkaConsumerRunner(configuration);
-    }
+    @JsonProperty(value = "trigger-geometry-key", required = true)
+    public String triggerGeometryKey;
 
-    @Override
-    public void start() {
-        new Thread(this.consumerRunner).start();
-    }
+    @JsonProperty(value = "trigger-centroid-key", required = true)
+    public String triggerCentroidKey;
 
-    @Override
-    public void stop() {
-        this.consumerRunner.stop();
-    }
 }

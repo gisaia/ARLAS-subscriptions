@@ -82,10 +82,8 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
     @Override
     public void run(ArlasSubscriptionManagerConfiguration configuration, Environment environment) throws Exception {
 
-        configuration.check();
-
-        final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.getMongoDBConnection());
-        final ElasticDBFactoryConnection elasticDBFactoryConnection = new ElasticDBFactoryConnection(configuration.getElasticDBConnection());
+        final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.mongoDBConnection);
+        final ElasticDBFactoryConnection elasticDBFactoryConnection = new ElasticDBFactoryConnection(configuration.elasticDBConnection);
 
         try {
             final MongoDBManaged mongoDBManaged = new MongoDBManaged(mongoDBFactoryConnection.getClient());
@@ -103,10 +101,11 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
             environment.lifecycle().manage(elasticDBManaged);
             UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration, mongoDBManaged, elasticDBManaged);
             UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService,
-                    configuration.identityHeader, configuration.identityAdmin);
+                    configuration.identityConfiguration.identityHeader, configuration.identityConfiguration.identityAdmin);
             environment.jersey().register(subscriptionsManagerController);
 	        environment.healthChecks().register("elasticsearch", new ElasticsearchHealthCheck(elasticDBManaged.esClient));
     	    environment.healthChecks().register("mongo", new MongoHealthCheck(mongoDBManaged.mongoClient));
+
         } catch (IOException|ArlasSubscriptionsException e) {
             logger.fatal(e.getMessage());
             System.exit(1);

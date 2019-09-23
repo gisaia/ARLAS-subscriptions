@@ -27,4 +27,4 @@ IFS=',' read -r -a es_hosts <<< $2
 
 wait_for_hosts ${mongo_hosts[@]} ${es_hosts[@]}
 
-java -jar /opt/app/subscriptions-manager.jar server /opt/app/configuration.yaml
+java -jar /opt/app/subscriptions-manager.jar server /opt/app/configuration-manager.yaml

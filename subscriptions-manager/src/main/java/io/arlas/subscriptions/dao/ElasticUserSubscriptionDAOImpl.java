@@ -22,10 +22,12 @@ package io.arlas.subscriptions.dao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
+import io.arlas.subscriptions.app.TriggerConfiguration;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
+import io.arlas.subscriptions.model.elastic.ElasticDBConnection;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.ElasticsearchException;
@@ -49,16 +51,17 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     private Client client;
     private String arlasSubscriptionIndex;
     private String arlasSubscriptionType;
-    private ArlasSubscriptionManagerConfiguration configuration;
+    private TriggerConfiguration triggerConfiguration;
     private JsonSchemaValidator jsonSchemaValidator;
 
     private static ObjectMapper mapper = new ObjectMapper();
 
-    public ElasticUserSubscriptionDAOImpl(ArlasSubscriptionManagerConfiguration configuration, ElasticDBManaged elasticDBManaged, JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
+    public ElasticUserSubscriptionDAOImpl(ElasticDBConnection elasticDBConnection, TriggerConfiguration triggerConfiguration, ElasticDBManaged elasticDBManaged,
+                                          JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
             this.client=elasticDBManaged.esClient;
-            this.arlasSubscriptionIndex = configuration.elasticDBConnection.elasticsubindex;
-            this.configuration=configuration;
-            this.arlasSubscriptionType = configuration.elasticDBConnection.elasticsubtype;
+            this.arlasSubscriptionIndex = elasticDBConnection.elasticsubindex;
+            this.arlasSubscriptionType = elasticDBConnection.elasticsubtype;
+            this.triggerConfiguration=triggerConfiguration;
             this.initSubscriptionIndex();
             this.jsonSchemaValidator=jsonSchemaValidator;
     }
@@ -73,7 +76,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
         IndexResponse response = null;
         try {
             this.jsonSchemaValidator.validJsonObjet(userSubscription.subscription.trigger);
-            IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription,this.configuration.triggerGeometryKey,this.configuration.triggerCentroidKey);
+            IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription,this.triggerConfiguration.triggerGeometryKey,this.triggerConfiguration.triggerCentroidKey);
             response = client.prepareIndex(arlasSubscriptionIndex, arlasSubscriptionType, userSubscription.getId())
                     .setSource(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON).get();
         } catch (ValidationException e) {

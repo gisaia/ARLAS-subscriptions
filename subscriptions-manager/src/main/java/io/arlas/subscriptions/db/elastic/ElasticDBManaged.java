@@ -19,7 +19,6 @@
 
 package io.arlas.subscriptions.db.elastic;
 
-import com.mongodb.client.MongoClient;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.dropwizard.lifecycle.Managed;
 import org.elasticsearch.client.Client;

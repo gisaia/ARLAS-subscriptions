@@ -22,7 +22,7 @@ package io.arlas.subscriptions.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cyclops.control.Try;
-import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
+import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -62,7 +62,7 @@ public class NotificationOrderKafkaProducer extends KafkaProducer<String, String
         }, JsonProcessingException.class);
     }
 
-    public static NotificationOrderKafkaProducer build(ArlasSubscriptionsConfiguration configuration) {
+    public static NotificationOrderKafkaProducer build(ArlasSubscriptionsMatcherConfiguration configuration) {
         Properties kafkaProperties = new Properties();
         kafkaProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.kafkaConfiguration.bootstrapServers);
         kafkaProperties.put(ProducerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());

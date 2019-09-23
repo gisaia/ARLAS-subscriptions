@@ -28,4 +28,4 @@ IFS=',' read -r -a arlas_host <<< $3
 
 wait_for_hosts ${kafka_hosts[@]} ${es_hosts[@]} ${arlas_host[@]}
 
-java -jar /opt/app/subscriptions-matcher.jar server /opt/app/configuration.yaml
+java -jar /opt/app/subscriptions-matcher.jar server /opt/app/configuration-matcher.yaml

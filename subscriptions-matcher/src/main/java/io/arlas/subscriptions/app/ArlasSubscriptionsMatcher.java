@@ -29,7 +29,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.apache.kafka.common.KafkaException;
 
-public class ArlasSubscriptionsMatcher extends Application<ArlasSubscriptionsConfiguration> {
+public class ArlasSubscriptionsMatcher extends Application<ArlasSubscriptionsMatcherConfiguration> {
     private final ArlasLogger logger = ArlasLoggerFactory.getLogger(ArlasSubscriptionsMatcher.class, MATCHER);
 
     public final static String MATCHER = "MATCHER";
@@ -39,14 +39,14 @@ public class ArlasSubscriptionsMatcher extends Application<ArlasSubscriptionsCon
     }
 
     @Override
-    public void initialize(Bootstrap<ArlasSubscriptionsConfiguration> bootstrap) {
+    public void initialize(Bootstrap<ArlasSubscriptionsMatcherConfiguration> bootstrap) {
         bootstrap.registerMetrics();
         bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
                 bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
     }
 
     @Override
-    public void run(ArlasSubscriptionsConfiguration configuration, Environment environment) {
+    public void run(ArlasSubscriptionsMatcherConfiguration configuration, Environment environment) {
         try {
             ManagedKafkaConsumers consumersManager = new ManagedKafkaConsumers(configuration);
             environment.lifecycle().manage(consumersManager);

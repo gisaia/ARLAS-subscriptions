@@ -21,27 +21,29 @@ package io.arlas.subscriptions.app;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
-import io.arlas.subscriptions.model.elastic.ElasticDBConnection;
-import io.arlas.subscriptions.model.mongo.MongoDBConnection;
-import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
 @JsonIgnoreProperties(ignoreUnknown = false)
-public class ArlasSubscriptionManagerConfiguration extends ArlasSubscriptionsConfiguration {
+public class ArlasSubscriptionsMatcherConfiguration extends ArlasSubscriptionsConfiguration {
 
-    @JsonProperty(value = "trigger", required = true)
-    public TriggerConfiguration triggerConfiguration;
+    @JsonProperty(value = "kafka", required = true)
+    public KafkaConfiguration kafkaConfiguration;
 
-    @JsonProperty(value = "mongo", required = true)
-    public MongoDBConnection mongoDBConnection;
+    @JsonProperty(value = "arlas-subscriptions-basePath", required = true)
+    public String subscriptionsBasePath;
 
-    @JsonProperty(value = "elastic", required = true)
-    public ElasticDBConnection elasticDBConnection;
+    @JsonProperty(value = "arlas-subscriptions-searchEndpoint", required = true)
+    public String subscriptionsSearchEndpoint;
 
-    @JsonProperty(value = "zipkin", required = true)
-    public ZipkinFactory zipkinConfiguration;
+    @JsonProperty(value = "arlas-subscriptions-subscriptionFilterRoot", required = true)
+    public String subscriptionFilterRoot;
 
-    @JsonProperty(value = "swagger", required = true)
-    public SwaggerBundleConfiguration swaggerBundleConfiguration;
+    @JsonProperty(value = "arlas-server-basePath", required = true)
+    public String arlasServerBasePath;
+
+    @JsonProperty(value = "arlas-server-searchEndpoint", required = true)
+    public String arlasServerSearchEndpoint;
+
+    @JsonProperty(value = "arlas-server-hitFilterRoot", required = true)
+    public String arlasServerFilterRoot;
 
 }
