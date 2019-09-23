@@ -74,6 +74,7 @@ public class UserSubscriptionManagerEndUserIT extends AbstractTestWithData {
                 .extract().jsonPath().get("id");
 
         assertThat(DataSetTool.getUserSubscriptionFromMongo(id).get().title, is("title"));
+        assertThat(DataSetTool.getUserSubscriptionFromMongo(id).get().getCreated_by_admin(), is(false));
         assertThat(DataSetTool.getUserSubscriptionFromES(id).title, is("title"));
     }
 

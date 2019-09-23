@@ -38,4 +38,13 @@ public class UserSubscriptionManagerAdminAuthIT extends AbstractTestWithData {
                 .then().statusCode(401);
     }
 
+    @Test
+    public void test02PostSubscriptionsWithIdentityHeader() {
+        given().header(identityHeader, "admin")
+                .contentType("application/json")
+                .body(generateTestSubscription())
+                .when().post(arlasSubManagerPath + "admin/subscriptions/")
+                .then().statusCode(401);
+    }
+
     }
