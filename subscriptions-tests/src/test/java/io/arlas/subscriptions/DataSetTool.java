@@ -325,12 +325,11 @@ public class DataSetTool {
         adminClient.indices().prepareDelete(DATASET_INDEX_NAME).get();
     }
 
-    public static void clearSubscriptions() {
+    public static void clearSubscriptions(boolean clearMongo) {
         adminClient.indices().prepareDelete(SUBSCRIPTIONS_INDEX_NAME).get();
-    }
-
-    public static void close() {
-        client.close();
+        if (clearMongo) {
+            mongoCollection.drop();
+        }
     }
 
     public static String getString(InputStream is) throws IOException {

@@ -52,9 +52,11 @@ public class UserSubscriptionManagerService {
         this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration.elasticDBConnection, configuration.triggerConfiguration,elasticDBManaged,jsonSchemaValidator);
     }
 
-    public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean deleted, Integer page, Integer size) throws ArlasSubscriptionsException {
-        logger.debug(String.format("User %s requests all subscriptions (before %d, active %b, expired %b, deleted %b, page %d, size %d)", user, before, active, expired, deleted, page, size));
-        return  this.daoDatabase.getAllUserSubscriptions(user, before, active, expired, deleted, page, size);
+    public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Long after, Boolean active, Boolean started, Boolean expired, boolean deleted, Boolean createdByAdmin, Integer page,
+                                                                         Integer size) throws ArlasSubscriptionsException {
+        logger.debug(String.format("User %s requests all subscriptions (before %d, after %d, active %b, started %b, expired %b, deleted %b, created-by-admin %b, page %d, size %d)",
+                user, before, after, active, started, expired, deleted, createdByAdmin, page, size));
+        return  this.daoDatabase.getAllUserSubscriptions(user, before, after, active, started, expired, deleted, createdByAdmin, page, size);
     }
 
     public UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException {

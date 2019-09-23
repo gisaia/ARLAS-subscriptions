@@ -36,7 +36,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class UserSubscriptionAuthManagerServiceIT extends AbstractTestWithData {
+public class UserSubscriptionManagerEndUserAuthIT extends AbstractTestWithData {
 
     //
     // Tests without identity header

@@ -25,6 +25,7 @@ import com.mongodb.MongoTimeoutException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Facet;
+import com.mongodb.client.model.Sorts;
 import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
@@ -66,7 +67,8 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
     }
 
     @Override
-    public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Boolean active, Boolean expired, boolean deleted, Integer page, Integer size) throws ArlasSubscriptionsException {
+    public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Long after, Boolean active, Boolean started, Boolean expired, boolean deleted, Boolean createdByAdmin, Integer page,
+                                                                         Integer size) throws ArlasSubscriptionsException {
         try {
             List<Bson> filters = new ArrayList<>();
             if (user != null)
@@ -75,20 +77,28 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
                 filters.add(eq("deleted", Boolean.FALSE));
             if (active != null)
                 filters.add(eq("active", active));
+            if (started != null)
+                filters.add(started ? lte("starts_at", System.currentTimeMillis() / 1000l) : gt("started", System.currentTimeMillis() / 1000l));
+            if (createdByAdmin != null)
+                filters.add(eq("created_by_admin", createdByAdmin));
             if (expired != null)
                 filters.add(expired ? lte("expires_at", System.currentTimeMillis() / 1000l) : gt("expires_at", System.currentTimeMillis() / 1000l));
             if (before != null)
                 filters.add(lte("created_at", before));
+            if (after != null)
+                filters.add(gte("created_at", after));
 
-            Document aggResult = this.mongoCollectionDoc.aggregate(
-                    Arrays.asList(
-                            match(and(filters)),
-                            facet(
-                                    new Facet("subList", skip(size * (page - 1)), limit(size)),
-                                    new Facet("totalCount", count())
-                            )
-                    )
-            ).first();
+            List<Bson> aggregate = new ArrayList<>();
+            aggregate.add(sort(Sorts.descending("created_at")));
+            if (!filters.isEmpty()) {
+                aggregate.add(match(and(filters)));
+            }
+            aggregate.add(facet(
+                    new Facet("subList", skip(size * (page - 1)), limit(size)),
+                    new Facet("totalCount", count())
+            ));
+
+            Document aggResult = this.mongoCollectionDoc.aggregate(aggregate).first();
 
             Integer total = ((List<Document>) aggResult.get("totalCount")).size() == 1 ? (Integer)((List<Document>) aggResult.get("totalCount")).get(0).get("count") : new Integer(0);
             List<UserSubscription> subList = ((List<Document>) aggResult.get("subList")).stream().map(d -> convertDocument(d)).collect(Collectors.toList());

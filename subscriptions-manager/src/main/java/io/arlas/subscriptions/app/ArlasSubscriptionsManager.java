@@ -35,7 +35,9 @@ import io.arlas.subscriptions.exception.IllegalArgumentExceptionMapper;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.healthcheck.MongoHealthCheck;
-import io.arlas.subscriptions.rest.UserSubscriptionManagerController;
+import io.arlas.subscriptions.rest.UserSubscriptionManagerAdminController;
+import io.arlas.subscriptions.rest.UserSubscriptionManagerEndUserController;
+import io.arlas.subscriptions.service.UserSubscriptionHALService;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.PrettyPrintFilter;
 import io.dropwizard.Application;
@@ -48,6 +50,7 @@ import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
@@ -99,16 +102,37 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
             environment.jersey().register(new ConstraintViolationExceptionMapper(MANAGER));
             environment.lifecycle().manage(mongoDBManaged);
             environment.lifecycle().manage(elasticDBManaged);
-            UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration, mongoDBManaged, elasticDBManaged);
-            UserSubscriptionManagerController subscriptionsManagerController = new UserSubscriptionManagerController(subscriptionManagerService,
-                    configuration.identityConfiguration.identityHeader, configuration.identityConfiguration.identityAdmin);
-            environment.jersey().register(subscriptionsManagerController);
-	        environment.healthChecks().register("elasticsearch", new ElasticsearchHealthCheck(elasticDBManaged.esClient));
+            registerControllers(configuration, environment, mongoDBManaged, elasticDBManaged);
+            environment.healthChecks().register("elasticsearch", new ElasticsearchHealthCheck(elasticDBManaged.esClient));
     	    environment.healthChecks().register("mongo", new MongoHealthCheck(mongoDBManaged.mongoClient));
 
         } catch (IOException|ArlasSubscriptionsException e) {
             logger.fatal(e.getMessage());
             System.exit(1);
         }
+    }
+
+    private void registerControllers(ArlasSubscriptionManagerConfiguration configuration,
+                                     Environment environment,
+                                     MongoDBManaged mongoDBManaged,
+                                     ElasticDBManaged elasticDBManaged)
+            throws ArlasSubscriptionsException, FileNotFoundException {
+
+        UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration, mongoDBManaged, elasticDBManaged);
+        UserSubscriptionHALService halService = new UserSubscriptionHALService();
+
+        UserSubscriptionManagerEndUserController subscriptionsManagerEndUserController = new UserSubscriptionManagerEndUserController(
+                subscriptionManagerService,
+                halService,
+                configuration.identityConfiguration.identityHeader,
+                configuration.identityConfiguration.identityAdmin);
+        environment.jersey().register(subscriptionsManagerEndUserController);
+
+        UserSubscriptionManagerAdminController subscriptionsManagerAdminController = new UserSubscriptionManagerAdminController(
+                subscriptionManagerService,
+                halService,
+                configuration.identityConfiguration.identityHeader,
+                configuration.identityConfiguration.identityAdmin);
+        environment.jersey().register(subscriptionsManagerAdminController);
     }
 }
