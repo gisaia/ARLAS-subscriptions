@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "arlas-subscriptions.fullname" . }}-manager
+  name: {{ include "arlas-subscriptions.fullname" . }}-arlas-sub-manager
   labels:
 {{ include "arlas-subscriptions.labels" . | indent 4 }}
     app.kubernetes.io/component: manager

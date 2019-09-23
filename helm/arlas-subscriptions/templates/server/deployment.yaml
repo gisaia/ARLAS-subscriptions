@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "arlas-subscriptions.fullname" . }}-server
+  name: {{ include "arlas-subscriptions.fullname" . }}-arlas-sub-server
   labels:
 {{ include "arlas-subscriptions.labels" . | indent 4 }}
 spec:
@@ -45,6 +45,10 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
+    {{- if .Values.server.imagePullSecrets }}
+      imagePullSecrets:
+      {{- include "arlas-subscriptions.server.imagePullSecrets" . | nindent 8 }}
+    {{- end }}
       {{- with .Values.server.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

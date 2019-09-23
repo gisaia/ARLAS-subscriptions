@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "arlas-subscriptions.fullname" . }}-matcher
+  name: {{ include "arlas-subscriptions.fullname" . }}-arlas-sub-matcher
   labels:
 {{ include "arlas-subscriptions.labels" . | indent 4 }}
 spec:
@@ -30,17 +30,20 @@ spec:
           {{- end }}
           image: "{{ .Values.matcher.image.repository }}:{{ .Values.matcher.image.tag }}"
           imagePullPolicy: {{ .Values.matcher.image.pullPolicy }}
-# # TODO: enable when implemented
-#           livenessProbe:
-#             httpGet:
-#               path: /admin/healthcheck
-#               port: {{ .Values.matcher.containerPort }}
-#           readinessProbe:
-#             httpGet:
-#               path: /admin/healthcheck
-#               port: {{ .Values.matcher.containerPort }}
+          livenessProbe:
+            httpGet:
+              path: /admin/healthcheck
+              port: {{ .Values.matcher.environmentVariables.ARLAS_SUB_MATCHER_PORT }}
+          readinessProbe:
+            httpGet:
+              path: /admin/healthcheck
+              port: {{ .Values.matcher.environmentVariables.ARLAS_SUB_MATCHER_PORT }}
           resources:
             {{- toYaml .Values.matcher.resources | nindent 12 }}
+    {{- if .Values.matcher.imagePullSecrets }}
+      imagePullSecrets:
+      {{- include "arlas-subscriptions.matcher.imagePullSecrets" . | nindent 8 }}
+    {{- end }}
     {{- if .Values.matcher.init.serverCollection.enabled }}
       initContainers:
         - name: server-collection
