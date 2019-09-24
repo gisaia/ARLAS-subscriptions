@@ -56,7 +56,7 @@ curl -X PUT "http://$ARLAS_HOST:9999/arlas/collections/subscriptions?pretty=fals
 
 The `manager` and `matcher` can then be started.
 
-## Global configuration
+# Global configuration
 
 
 ## Manager configuration
@@ -116,6 +116,22 @@ docker-compose up -d
 ./scripts/tests-stack.sh
 ```
 
+## Elasticsearch synchronisation
+If needed the ES index can be rebuilt by following these steps:  
+0 - Stop the `matcher`  
+1 - Make sure there are no ongoing request to any endpoint of the Manager (to be found under `/arlas-subscriptions-manager`) and disallow access to it 
+2 - If the index mapping already exist, delete it:
+```
+curl -XDELETE "$ELASTIC_HOST:9200/subscription"
+```
+3 - Recreate the index (see [Pre-requisites]) 
+4 - Call the following task (it will synchronise the content of MongoDB into ES):
+```
+curl -XPOST http://localhost:9998/admin/tasks/MongoDB-to-ES-sync
+```  
+5 - Start the `matcher`  
+Logs of the process are available in the `Manager` container logs. 
+6 - Allow access to the Manager' endpoints again
 # Packaging
 
 ## Helm

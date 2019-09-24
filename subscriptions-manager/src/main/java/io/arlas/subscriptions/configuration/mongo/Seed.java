@@ -17,25 +17,21 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.service;
+package io.arlas.subscriptions.configuration.mongo;
 
-import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
-import io.dropwizard.lifecycle.Managed;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ManagedKafkaConsumers implements Managed {
-    private KafkaConsumerRunner consumerRunner;
+public class Seed {
+    @JsonProperty("host")
+    public String host;
+    @JsonProperty("port")
+    public int port;
 
-    public ManagedKafkaConsumers(ArlasSubscriptionsMatcherConfiguration configuration) {
-        this.consumerRunner = new KafkaConsumerRunner(configuration);
+    public String getHost() {
+        return host;
     }
 
-    @Override
-    public void start() {
-        new Thread(this.consumerRunner).start();
-    }
-
-    @Override
-    public void stop() {
-        this.consumerRunner.stop();
+    public int getPort() {
+        return port;
     }
 }

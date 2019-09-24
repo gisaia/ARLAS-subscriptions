@@ -23,21 +23,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
 import com.mongodb.MongoTimeoutException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Facet;
 import com.mongodb.client.model.Sorts;
-import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
+import io.arlas.subscriptions.configuration.mongo.MongoDBConfiguration;
 import io.arlas.subscriptions.db.mongo.MongoDBManaged;
-import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
-import io.arlas.subscriptions.model.mongo.MongoDBConnection;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonWriterSettings;
 import org.everit.json.schema.ValidationException;
-
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,8 +58,8 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
             .int64Converter((value, writer) -> writer.writeNumber(value.toString()))
             .build();
 
-    public MongoUserSubscriptionDAOImpl(MongoDBConnection mongoDBConnection, MongoDBManaged mongoDBManaged, JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
-        MongoDatabase mongoDatabase = mongoDBManaged.mongoClient.getDatabase(mongoDBConnection.database);
+    public MongoUserSubscriptionDAOImpl(MongoDBConfiguration mongoDBConfiguration, MongoDBManaged mongoDBManaged, JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
+        MongoDatabase mongoDatabase = mongoDBManaged.mongoClient.getDatabase(mongoDBConfiguration.database);
         this.mongoCollectionSub = this.initSubscriptionsCollection(mongoDatabase);
         this.mongoCollectionDoc = mongoDatabase.getCollection(ARLAS_SUBSCRIPTION_DB_NAME);
         this.jsonSchemaValidator = jsonSchemaValidator;
@@ -204,5 +203,9 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
         } catch (MongoTimeoutException e) {
             throw new ArlasSubscriptionsException("Unable to connect to MongoDB: " + e.getMessage());
         }
+    }
+
+    public Pair<Long, MongoCursor<UserSubscription>> getAllUserSubscriptions() {
+        return Pair.of(mongoCollectionSub.countDocuments(), mongoCollectionSub.find().iterator());
     }
 }

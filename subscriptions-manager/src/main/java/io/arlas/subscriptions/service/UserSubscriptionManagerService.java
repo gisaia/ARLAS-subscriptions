@@ -19,7 +19,8 @@
 
 package io.arlas.subscriptions.service;
 
-import io.arlas.subscriptions.app.ArlasSubscriptionManagerConfiguration;
+import com.mongodb.client.MongoCursor;
+import io.arlas.subscriptions.configuration.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.dao.ElasticUserSubscriptionDAOImpl;
 import io.arlas.subscriptions.dao.MongoUserSubscriptionDAOImpl;
 import io.arlas.subscriptions.dao.UserSubscriptionDAO;
@@ -31,12 +32,10 @@ import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import org.apache.commons.lang3.tuple.Pair;
-
 import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-
 import static io.arlas.subscriptions.app.ArlasSubscriptionsManager.MANAGER;
 
 public class UserSubscriptionManagerService {
@@ -49,8 +48,8 @@ public class UserSubscriptionManagerService {
 
     public UserSubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged, ElasticDBManaged elasticDBManaged) throws ArlasSubscriptionsException, FileNotFoundException {
         JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator(ARLAS_SUB_TRIG_SCHEM_PATH);
-        this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration.mongoDBConnection,mongoDBManaged,jsonSchemaValidator);
-        this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration.elasticDBConnection, configuration.triggerConfiguration,elasticDBManaged,jsonSchemaValidator);
+        this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration.mongoDBConfiguration,mongoDBManaged,jsonSchemaValidator);
+        this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration.elasticDBConfiguration, configuration.triggerConfiguration,elasticDBManaged,jsonSchemaValidator);
     }
 
     public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Long after, Boolean active, Boolean started, Boolean expired, boolean deleted, Boolean createdByAdmin, Integer page,
@@ -62,7 +61,7 @@ public class UserSubscriptionManagerService {
 
     public UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException {
         logger.debug(String.format("User %s creates a new subscription (created_by_admin %b)", userSubscription.created_by, createdByAdmin));
-        UserSubscription userSubscriptionForIndex = this.daoDatabase.postUserSubscription(userSubscription, createdByAdmin);
+            UserSubscription userSubscriptionForIndex = this.daoDatabase.postUserSubscription(userSubscription, createdByAdmin);
 
         try {
             this.daoIndexDatabase.postUserSubscription(userSubscriptionForIndex, createdByAdmin);
@@ -70,7 +69,7 @@ public class UserSubscriptionManagerService {
             this.daoDatabase.deleteUserSubscription(userSubscriptionForIndex.getId());
             throw new ArlasSubscriptionsException("Index subscription in ES failed: " + e.getMessage());
         }
-        return userSubscriptionForIndex ;
+        return userSubscriptionForIndex;
     }
 
     public Optional<UserSubscription> getUserSubscription(String id, Optional<String> user, boolean deleted) throws ArlasSubscriptionsException {
@@ -107,4 +106,23 @@ public class UserSubscriptionManagerService {
         }
         return updUserSubscription;
     }
+
+    public void syncDBtoIndex() {
+        logger.info("SyncDBtoIndex request received");
+        Pair<Long, MongoCursor<UserSubscription>> allSubs = ((MongoUserSubscriptionDAOImpl) this.daoDatabase).getAllUserSubscriptions();
+        logger.info("Total number of documents to index: " + allSubs.getLeft());
+
+        MongoCursor<UserSubscription> cursor = allSubs.getRight();
+        try {
+            ((ElasticUserSubscriptionDAOImpl) daoIndexDatabase).initBulkProcessor(allSubs.getLeft());
+            allSubs.getRight().forEachRemaining(subscription -> ((ElasticUserSubscriptionDAOImpl) daoIndexDatabase).addToBulkProcessor(subscription));
+            ((ElasticUserSubscriptionDAOImpl) daoIndexDatabase).finaliseBulkProcessor();
+        } catch (ArlasSubscriptionsException e) {
+            logger.error("Can't do sync: " + e.getMessage());
+        } finally {
+            cursor.close();
+            logger.info("SyncDBtoIndex finished");
+        }
+    }
+
 }

@@ -24,8 +24,8 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import io.arlas.subscriptions.model.mongo.MongoDBConnection;
-import io.arlas.subscriptions.model.mongo.Seed;
+import io.arlas.subscriptions.configuration.mongo.MongoDBConfiguration;
+import io.arlas.subscriptions.configuration.mongo.Seed;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -37,10 +37,10 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 public class MongoDBFactoryConnection {
-    private MongoDBConnection mongoDBConnection;
+    private MongoDBConfiguration mongoDBConfiguration;
 
-    public MongoDBFactoryConnection(final MongoDBConnection mongoDBConnection) {
-        this.mongoDBConnection = mongoDBConnection;
+    public MongoDBFactoryConnection(final MongoDBConfiguration mongoDBConfiguration) {
+        this.mongoDBConfiguration = mongoDBConfiguration;
     }
 
     public MongoClient getClient() {
@@ -59,7 +59,7 @@ public class MongoDBFactoryConnection {
 
 
     private List<ServerAddress> getServers() {
-        final List<Seed> seeds = mongoDBConnection.getSeeds();
+        final List<Seed> seeds = mongoDBConfiguration.getSeeds();
         return seeds.stream()
                 .map(seed -> {
                     final ServerAddress serverAddress = new ServerAddress(seed.getHost(), seed.getPort());

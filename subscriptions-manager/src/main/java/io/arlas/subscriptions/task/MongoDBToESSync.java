@@ -17,25 +17,24 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.service;
+package io.arlas.subscriptions.task;
 
-import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
-import io.dropwizard.lifecycle.Managed;
+import com.google.common.collect.ImmutableMultimap;
+import io.arlas.subscriptions.service.UserSubscriptionManagerService;
+import io.dropwizard.servlets.tasks.Task;
 
-public class ManagedKafkaConsumers implements Managed {
-    private KafkaConsumerRunner consumerRunner;
+import java.io.PrintWriter;
 
-    public ManagedKafkaConsumers(ArlasSubscriptionsMatcherConfiguration configuration) {
-        this.consumerRunner = new KafkaConsumerRunner(configuration);
+public class MongoDBToESSync extends Task {
+    final UserSubscriptionManagerService subscriptionManagerService;
+
+    public MongoDBToESSync(UserSubscriptionManagerService subscriptionManagerService) {
+        super("MongoDB-to-ES-sync");
+        this.subscriptionManagerService = subscriptionManagerService;
     }
 
     @Override
-    public void start() {
-        new Thread(this.consumerRunner).start();
-    }
-
-    @Override
-    public void stop() {
-        this.consumerRunner.stop();
+    public void execute(ImmutableMultimap<String, String> immutableMultimap, PrintWriter printWriter) throws Exception {
+        subscriptionManagerService.syncDBtoIndex();
     }
 }

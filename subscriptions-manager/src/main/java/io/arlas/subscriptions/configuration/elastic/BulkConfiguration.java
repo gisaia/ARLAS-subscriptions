@@ -17,16 +17,30 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.app;
+package io.arlas.subscriptions.configuration.elastic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TriggerConfiguration {
+public class BulkConfiguration {
 
-    @JsonProperty(value = "trigger-geometry-key", required = true)
-    public String triggerGeometryKey;
+    @JsonProperty("concurrent-requests")
+    public int concurrentRequests;
 
-    @JsonProperty(value = "trigger-centroid-key", required = true)
-    public String triggerCentroidKey;
+    @JsonProperty("bulk-actions")
+    public int bulkActions;
+
+    @JsonProperty("bulk-size")
+    public long bulkSize;
+
+    @JsonProperty("flush-interval")
+    public long flushInterval;
+
+    @JsonProperty("backoff-delay")
+    public long backoffDelay;
+
+    @JsonProperty("backoff-retries")
+    public int backoffRetries;
+
+
 
 }

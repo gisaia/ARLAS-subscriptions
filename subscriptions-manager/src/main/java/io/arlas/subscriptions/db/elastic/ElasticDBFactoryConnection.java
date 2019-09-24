@@ -19,7 +19,7 @@
 
 package io.arlas.subscriptions.db.elastic;
 
-import io.arlas.subscriptions.model.elastic.ElasticDBConnection;
+import io.arlas.subscriptions.configuration.elastic.ElasticDBConfiguration;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -35,24 +35,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ElasticDBFactoryConnection {
-    private ElasticDBConnection elasticBConnection;
+    private ElasticDBConfiguration elasticBConfiguration;
 
-    public ElasticDBFactoryConnection(final ElasticDBConnection elasticBConnection) {
-        this.elasticBConnection = elasticBConnection;
+    public ElasticDBFactoryConnection(final ElasticDBConfiguration elasticBConfiguration) {
+        this.elasticBConfiguration = elasticBConfiguration;
     }
 
     public Client getClient() throws Exception{
         Settings.Builder settingsBuilder = Settings.builder();
-        if(elasticBConnection.elasticsniffing) {
+        if(elasticBConfiguration.elasticsniffing) {
             settingsBuilder.put("client.transport.sniff", true);
         }
-        if(!Strings.isNullOrEmpty(elasticBConnection.elasticcluster)) {
-            settingsBuilder.put("cluster.name", elasticBConnection.elasticcluster);
+        if(!Strings.isNullOrEmpty(elasticBConfiguration.elasticcluster)) {
+            settingsBuilder.put("cluster.name", elasticBConfiguration.elasticcluster);
         }
         Settings settings = settingsBuilder.build();
 
         PreBuiltTransportClient transportClient = new PreBuiltTransportClient(settings);
-        for(Pair<String,Integer> node : this.getElasticNodes(elasticBConnection.elasticnodes)) {
+        for(Pair<String,Integer> node : this.getElasticNodes(elasticBConfiguration.elasticnodes)) {
             transportClient.addTransportAddress(new TransportAddress(InetAddress.getByName(node.getLeft()),
                     node.getRight()));
         }

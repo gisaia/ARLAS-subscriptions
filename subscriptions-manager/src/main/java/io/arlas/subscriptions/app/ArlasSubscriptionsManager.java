@@ -35,10 +35,12 @@ import io.arlas.subscriptions.exception.IllegalArgumentExceptionMapper;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.healthcheck.MongoHealthCheck;
+import io.arlas.subscriptions.configuration.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.rest.UserSubscriptionManagerAdminController;
 import io.arlas.subscriptions.rest.UserSubscriptionManagerEndUserController;
 import io.arlas.subscriptions.service.UserSubscriptionHALService;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
+import io.arlas.subscriptions.task.MongoDBToESSync;
 import io.arlas.subscriptions.utils.PrettyPrintFilter;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -49,10 +51,7 @@ import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
-
 
 public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionManagerConfiguration> {
     private final ArlasLogger logger = ArlasLoggerFactory.getLogger(ArlasSubscriptionsManager.class, MANAGER);
@@ -85,12 +84,13 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
     @Override
     public void run(ArlasSubscriptionManagerConfiguration configuration, Environment environment) throws Exception {
 
-        final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.mongoDBConnection);
-        final ElasticDBFactoryConnection elasticDBFactoryConnection = new ElasticDBFactoryConnection(configuration.elasticDBConnection);
+        final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.mongoDBConfiguration);
+        final ElasticDBFactoryConnection elasticDBFactoryConnection = new ElasticDBFactoryConnection(configuration.elasticDBConfiguration);
 
         try {
             final MongoDBManaged mongoDBManaged = new MongoDBManaged(mongoDBFactoryConnection.getClient());
             final ElasticDBManaged elasticDBManaged = new ElasticDBManaged(elasticDBFactoryConnection.getClient());
+            final UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration, mongoDBManaged, elasticDBManaged);
 
             environment.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
             environment.getObjectMapper().configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
@@ -102,9 +102,12 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
             environment.jersey().register(new ConstraintViolationExceptionMapper(MANAGER));
             environment.lifecycle().manage(mongoDBManaged);
             environment.lifecycle().manage(elasticDBManaged);
-            registerControllers(configuration, environment, mongoDBManaged, elasticDBManaged);
+            registerControllers(configuration, environment, subscriptionManagerService);
             environment.healthChecks().register("elasticsearch", new ElasticsearchHealthCheck(elasticDBManaged.esClient));
     	    environment.healthChecks().register("mongo", new MongoHealthCheck(mongoDBManaged.mongoClient));
+
+            //tasks
+            environment.admin().addTask(new MongoDBToESSync(subscriptionManagerService));
 
         } catch (IOException|ArlasSubscriptionsException e) {
             logger.fatal(e.getMessage());
@@ -114,11 +117,8 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
 
     private void registerControllers(ArlasSubscriptionManagerConfiguration configuration,
                                      Environment environment,
-                                     MongoDBManaged mongoDBManaged,
-                                     ElasticDBManaged elasticDBManaged)
-            throws ArlasSubscriptionsException, FileNotFoundException {
+                                     UserSubscriptionManagerService subscriptionManagerService) {
 
-        UserSubscriptionManagerService subscriptionManagerService = new UserSubscriptionManagerService(configuration, mongoDBManaged, elasticDBManaged);
         UserSubscriptionHALService halService = new UserSubscriptionHALService();
 
         UserSubscriptionManagerEndUserController subscriptionsManagerEndUserController = new UserSubscriptionManagerEndUserController(
