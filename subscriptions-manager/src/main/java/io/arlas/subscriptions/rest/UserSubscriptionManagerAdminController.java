@@ -156,7 +156,6 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     )
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscriptionWithLinks.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
-            @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
             @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
@@ -197,40 +196,38 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     @ApiOperation(
             value = "Delete a subscription",
             produces = UTF8JSON,
-            notes = "Mark a subscription as deleted. " +
-                    "Only creator can delete their own subscriptions.",
+            notes = "Mark a subscription as deleted.",
             consumes = UTF8JSON,
             response = UserSubscriptionWithLinks.class
     )
     @ApiResponses(value = {@ApiResponse(code = 202, message = "Subscription has been deleted.", response = UserSubscriptionWithLinks.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
-            @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
             @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
 
     public Response delete(@Context HttpHeaders headers,
-                        @ApiParam(
-                                name = "id",
-                                value = "Subscription ID to delete",
-                                allowMultiple = false,
-                                required = true)
-                        @PathParam(value = "id") String id,
-                        // --------------------------------------------------------
-                        // ----------------------- FORM -----------------------
-                        // --------------------------------------------------------
-                        @ApiParam(name = "pretty", value = "Pretty print",
-                                allowMultiple = false,
-                                defaultValue = "false",
-                                required = false)
-                        @QueryParam(value = "pretty") Boolean pretty
+           // --------------------------------------------------------
+           // ----------------------- FORM -----------------------
+           // --------------------------------------------------------
+            @ApiParam(
+                    name = "id",
+                    value = "Subscription ID to delete",
+                    allowMultiple = false,
+                    required = true)
+            @PathParam(value = "id") String id,
+            @ApiParam(name = "pretty", value = "Pretty print",
+                    allowMultiple = false,
+                    defaultValue = "false",
+                    required = false)
+            @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
-//        String user = getUser(headers);
-//        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
-//                .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
-//        subscriptionManagerService.deleteUserSubscription(userSubscription);
-//
-//        return ResponseFormatter.getAcceptedResponse(new UserSubscriptionWithLinks(userSubscription));
-        return null;
+
+        checkIsNotLogged(headers);
+        UserSubscription userSubscription = subscriptionManagerService.getSubscription(id, true)
+                .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found"));
+        subscriptionManagerService.deleteUserSubscription(userSubscription);
+
+        return ResponseFormatter.getAcceptedResponse(new UserSubscriptionWithLinks(userSubscription));
     }
 
     @Path("/")

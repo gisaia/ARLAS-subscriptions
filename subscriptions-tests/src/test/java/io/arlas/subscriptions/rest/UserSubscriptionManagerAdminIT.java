@@ -19,43 +19,38 @@
 
 package io.arlas.subscriptions.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.Filters;
 import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.DataSetTool;
+import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.restassured.http.ContentType;
 import org.bson.Document;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.junit.After;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import java.util.HashMap;
 import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
 
     //marks subscriptions created by given tests, to be removed after each test
     public static final String TEMP_SUBS_CREATED_BY = "junit";
 
+    protected static final ObjectMapper MAPPER = new ObjectMapper();
+
     @After
     public void after() {
         DataSetTool.mongoCollection.deleteOne(new Document("created_by", TEMP_SUBS_CREATED_BY));
-    }
-
-    protected UserSubscription insertTestSubscription(Boolean deleted, Long createdAt) {
-        UserSubscription subscription = new UserSubscription();
-        subscription.setDeleted(deleted);
-        subscription.created_by = TEMP_SUBS_CREATED_BY;
-        subscription.setId("9876");
-        subscription.setCreated_at(createdAt);
-        DataSetTool.mongoCollection.insertOne(subscription);
-        return subscription;
     }
 
     @Test
@@ -187,7 +182,7 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
     @Test
     public void testGetAllUserSubscriptions_ByNotDeleted_shouldReturnNotDeletedSubscription() {
 
-        insertTestSubscription(true, null);
+        insertTestSubscriptionInMongo(true, null);
 
         when()
                 .get(arlasSubManagerPath + "admin/subscriptions")
@@ -223,7 +218,7 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
     @Test
     public void testGetAllUserSubscriptions_shouldSortSubscriptions() {
 
-        UserSubscription subscription = insertTestSubscription(null, 1564578987l);
+        UserSubscription subscription = insertTestSubscriptionInMongo(null, 1564578987l);
 
         when()
                 .get(arlasSubManagerPath + "admin/subscriptions/")
@@ -306,7 +301,7 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
     @Test
     public void testGetUserSubscription_withNoAdditionalParam_shouldReturnDeletedSubscrption() {
 
-        UserSubscription deletedSubscription = insertTestSubscription(true, null);
+        UserSubscription deletedSubscription = insertTestSubscriptionInMongo(true, null);
 
         when().get(arlasSubManagerPath + "admin/subscriptions/" + deletedSubscription.getId())
                 .then()
@@ -318,10 +313,53 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
     @Test
     public void testGetUserSubscription_withDeleteParamFalse_shouldNotReturnDeletedSubscription() {
 
-        UserSubscription deletedSubscription = insertTestSubscription(true, null);
+        UserSubscription deletedSubscription = insertTestSubscriptionInMongo(true, null);
 
         when().get(arlasSubManagerPath + "admin/subscriptions/" + deletedSubscription.getId() + "?deleted=false")
                 .then().statusCode(404);
+    }
+
+    @Test
+    public void testDeleteUserSubscription_withUnknownSubscriptions_shouldFail() throws Exception {
+
+        when().delete(arlasSubManagerPath + "admin/subscriptions/foo")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    public void testDeleteUserSubscription_withExistingSubscriptions_shouldDeleteIt() throws Exception {
+
+        String subscriptionId = insertTestSubscriptionInMongo(false, null).getId();
+        insertTestSubscriptionInES(subscriptionId);
+
+        when().delete(arlasSubManagerPath + "admin/subscriptions/" + subscriptionId)
+                .then()
+                .statusCode(202)
+                .contentType(ContentType.JSON)
+                .body("id", equalTo(subscriptionId));
+
+        assertTrue(DataSetTool.getUserSubscriptionFromMongo(subscriptionId).get().getDeleted());
+        assertTrue(DataSetTool.getUserSubscriptionFromES(subscriptionId).getDeleted());
+    }
+
+    private UserSubscription insertTestSubscriptionInMongo(Boolean deleted, Long createdAt) {
+        UserSubscription subscription = new UserSubscription();
+        subscription.setDeleted(deleted);
+        subscription.setId("9876");
+        subscription.created_by = TEMP_SUBS_CREATED_BY;
+        subscription.setCreated_at(createdAt);
+        DataSetTool.mongoCollection.insertOne(subscription);
+        return subscription;
+    }
+
+    private void insertTestSubscriptionInES(String id) throws JsonProcessingException {
+        IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription();
+        indexedUserSubscription.setId(id);
+        indexedUserSubscription.created_by = TEMP_SUBS_CREATED_BY;
+        DataSetTool.client.prepareIndex(DataSetTool.SUBSCRIPTIONS_INDEX_NAME, DataSetTool.SUBSCRIPTIONS_TYPE_NAME, indexedUserSubscription.getId())
+                .setSource(MAPPER.writer().writeValueAsString(indexedUserSubscription), XContentType.JSON)
+                .get();
     }
 
 }
