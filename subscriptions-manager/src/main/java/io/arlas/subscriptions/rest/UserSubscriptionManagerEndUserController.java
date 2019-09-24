@@ -192,7 +192,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
                         @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.ofNullable(user), false)
+        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.ofNullable(user), true)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
         subscriptionManagerService.deleteUserSubscription(userSubscription);
 
@@ -294,7 +294,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
             throw new ForbiddenException("Existing or updated subscription does not belong to authenticated user " + user);
         }
         return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
-                halService.subscriptionWithLinks(subscriptionManagerService.putUserSubscription(user, oldUserSubscription, updUserSubscription), uriInfo));
+                halService.subscriptionWithLinks(subscriptionManagerService.putUserSubscription(oldUserSubscription, updUserSubscription, Optional.ofNullable(user)), uriInfo));
     }
 
     private String getUser(HttpHeaders headers) throws UnauthorizedException, ForbiddenException {

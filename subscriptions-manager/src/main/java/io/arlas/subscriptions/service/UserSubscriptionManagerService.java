@@ -41,6 +41,7 @@ import static io.arlas.subscriptions.app.ArlasSubscriptionsManager.MANAGER;
 
 public class UserSubscriptionManagerService {
     public final ArlasLogger logger = ArlasLoggerFactory.getLogger(UserSubscriptionManagerService.class, MANAGER);
+    private static final String UNKNOWN_USER = "unknown";
 
     private UserSubscriptionDAO daoDatabase;
     private UserSubscriptionDAO daoIndexDatabase;
@@ -73,13 +74,8 @@ public class UserSubscriptionManagerService {
     }
 
     public Optional<UserSubscription> getUserSubscription(String id, Optional<String> user, boolean deleted) throws ArlasSubscriptionsException {
-        logger.debug(String.format("User %s requests subscription %s (deleted %b)", user.orElse("unknown"), id, deleted));
+        logger.debug(String.format("User %s requests subscription %s (deleted %b)", user.orElse(UNKNOWN_USER), id, deleted));
         return this.daoDatabase.getSubscription(id, user, deleted);
-    }
-
-    public Optional<UserSubscription> getSubscription(String id, boolean deleted) throws ArlasSubscriptionsException {
-        logger.debug(String.format("Requesting subscription %s (deleted %b)", id, deleted));
-        return this.daoDatabase.getSubscription(id, Optional.empty(), deleted);
     }
 
     public void deleteUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
@@ -94,8 +90,8 @@ public class UserSubscriptionManagerService {
         }
     }
 
-    public UserSubscription putUserSubscription(String user, UserSubscription oldUserSubscription, UserSubscription updUserSubscription) throws ArlasSubscriptionsException {
-        logger.debug(String.format("User %s updates subscription %s", user, updUserSubscription.getId()));
+    public UserSubscription putUserSubscription(UserSubscription oldUserSubscription, UserSubscription updUserSubscription, Optional<String> user) throws ArlasSubscriptionsException {
+        logger.debug(String.format("User %s updates subscription %s", user.orElse(UNKNOWN_USER), updUserSubscription.getId()));
         updUserSubscription.setId(oldUserSubscription.getId());
         updUserSubscription.setCreated_at(oldUserSubscription.getCreated_at());
         updUserSubscription.setModified_at(new Date().getTime());

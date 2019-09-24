@@ -182,7 +182,7 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         checkIsNotLogged(headers);
-        UserSubscription userSubscription = subscriptionManagerService.getSubscription(id, Optional.ofNullable(deleted).orElse(Boolean.TRUE))
+        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.empty(), Optional.ofNullable(deleted).orElse(Boolean.TRUE))
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found"));
 
         return ResponseFormatter.getResultResponse(halService.subscriptionWithLinks(userSubscription, uriInfo));
@@ -223,7 +223,7 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     ) throws ArlasSubscriptionsException {
 
         checkIsNotLogged(headers);
-        UserSubscription userSubscription = subscriptionManagerService.getSubscription(id, true)
+        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.empty(), true)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found"));
         subscriptionManagerService.deleteUserSubscription(userSubscription);
 
@@ -280,19 +280,20 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     @ApiOperation(
             value = "Update an existing subscription",
             produces = UTF8JSON,
-            notes = "Update an existing subscription. " +
-                    "Only creator can update their own subscriptions.",
+            notes = "Update an existing subscription. ",
             consumes = UTF8JSON,
             response = UserSubscriptionWithLinks.class
     )
     @ApiResponses(value = {@ApiResponse(code = 201, message = "Successful operation", response = UserSubscriptionWithLinks.class),
             @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
             @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
-            @ApiResponse(code = 403, message = "Forbidden.", response = Error.class),
             @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
             @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
     public Response put(@Context UriInfo uriInfo,
                         @Context HttpHeaders headers,
+                        // --------------------------------------------------------
+                        // ----------------------- FORM -----------------------
+                        // --------------------------------------------------------
                         @ApiParam(
                                 name = "id",
                                 value = "ID of subscription to return",
@@ -303,10 +304,6 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
                                 value = "Subscription description",
                                 required = true)
                         @NotNull @Valid UserSubscription updUserSubscription,
-
-                        // --------------------------------------------------------
-                        // ----------------------- FORM -----------------------
-                        // --------------------------------------------------------
                         @ApiParam(name = "pretty", value = "Pretty print",
                                 allowMultiple = false,
                                 defaultValue = "false",
@@ -314,20 +311,14 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
                         @QueryParam(value = "pretty") Boolean pretty
 
     ) throws ArlasSubscriptionsException {
-//        String user = getUser(headers);
-//        UserSubscription oldUserSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
-//                .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
-//
-//        // we must ensure that:
-//        // - either identity control if OFF and both existing and updated subscription have the same creator
-//        // - or identity control is ON and the updated subscription has not changed the creator (if found, the existing sub has the good creator)
-//        if ( (user == null && !oldUserSubscription.created_by.equals(updUserSubscription.created_by)) ||
-//                (user != null && !user.equals(updUserSubscription.created_by)) ) {
-//            throw new ForbiddenException("Existing or updated subscription does not belong to authenticated user " + user);
-//        }
-//        return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
-//                subscriptionWithLinks(subscriptionManagerService.putUserSubscription(user, oldUserSubscription, updUserSubscription), uriInfo));
-        return null;
+
+        checkIsNotLogged(headers);
+
+        UserSubscription oldUserSubscription = subscriptionManagerService.getUserSubscription(id, Optional.empty(), false)
+                .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found"));
+
+        return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
+                halService.subscriptionWithLinks(subscriptionManagerService.putUserSubscription(oldUserSubscription, updUserSubscription, Optional.empty()), uriInfo));
     }
 
     private void checkIsNotLogged(HttpHeaders headers) throws UnauthorizedException {

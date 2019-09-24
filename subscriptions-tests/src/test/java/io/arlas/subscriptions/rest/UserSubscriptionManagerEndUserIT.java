@@ -208,4 +208,13 @@ public class UserSubscriptionManagerEndUserIT extends AbstractTestWithData {
                 .contentType(ContentType.JSON)
                 .body("total", equalTo(0));
     }
+
+    @Test
+    public void test15PutUserSubscriptionWithUnkownSubscription() throws Exception {
+        given().contentType("application/json")
+                .when().body(generateTestSubscription())
+                .put(arlasSubManagerPath + "subscriptions/foo")
+                .then().statusCode(404);
+    }
+
 }
