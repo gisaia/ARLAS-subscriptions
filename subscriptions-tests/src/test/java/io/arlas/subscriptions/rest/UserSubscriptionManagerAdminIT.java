@@ -24,14 +24,13 @@ import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.DataSetTool;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.restassured.http.ContentType;
+import org.bson.Document;
 import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.equalTo;
@@ -41,12 +40,22 @@ import static org.junit.Assert.assertThat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
 
-    //_id to use to create temporary subscriptions from single tests, deleted after each test
-    public static final String TEMP_SUBSCRIPTION_ID = "9876";
+    //marks subscriptions created by given tests, to be removed after each test
+    public static final String TEMP_SUBS_CREATED_BY = "junit";
 
     @After
     public void after() {
-        DataSetTool.mongoCollection.deleteOne(Filters.eq("_id", TEMP_SUBSCRIPTION_ID));
+        DataSetTool.mongoCollection.deleteOne(new Document("created_by", TEMP_SUBS_CREATED_BY));
+    }
+
+    protected UserSubscription insertTestSubscription(Boolean deleted, Long createdAt) {
+        UserSubscription subscription = new UserSubscription();
+        subscription.setDeleted(deleted);
+        subscription.created_by = TEMP_SUBS_CREATED_BY;
+        subscription.setId("9876");
+        subscription.setCreated_at(createdAt);
+        DataSetTool.mongoCollection.insertOne(subscription);
+        return subscription;
     }
 
     @Test
@@ -178,10 +187,7 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
     @Test
     public void testGetAllUserSubscriptions_ByNotDeleted_shouldReturnNotDeletedSubscription() {
 
-        UserSubscription deleteSubscription = new UserSubscription();
-        deleteSubscription.setDeleted(true);
-        deleteSubscription.setId(TEMP_SUBSCRIPTION_ID);
-        DataSetTool.mongoCollection.insertOne(deleteSubscription);
+        insertTestSubscription(true, null);
 
         when()
                 .get(arlasSubManagerPath + "admin/subscriptions")
@@ -217,33 +223,33 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
     @Test
     public void testGetAllUserSubscriptions_shouldSortSubscriptions() {
 
-        UserSubscription subscription = new UserSubscription();
-        subscription.setId(TEMP_SUBSCRIPTION_ID);
-        subscription.setCreated_at(1564578987l);
-        DataSetTool.mongoCollection.insertOne(subscription);
+        UserSubscription subscription = insertTestSubscription(null, 1564578987l);
 
         when()
                 .get(arlasSubManagerPath + "admin/subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
                 .body("subscriptions[0].id", equalTo("1234"))
-                .body("subscriptions[1].id", equalTo(TEMP_SUBSCRIPTION_ID));
+                .body("subscriptions[1].id", equalTo(subscription.getId()));
 
         subscription.setCreated_at(1564578989l);
-        DataSetTool.mongoCollection.replaceOne(Filters.eq("_id", TEMP_SUBSCRIPTION_ID), subscription);
+        DataSetTool.mongoCollection.replaceOne(Filters.eq("created_by", TEMP_SUBS_CREATED_BY), subscription);
 
         when()
                 .get(arlasSubManagerPath + "admin/subscriptions/")
                 .then().statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("subscriptions[0].id", equalTo(TEMP_SUBSCRIPTION_ID))
+                .body("subscriptions[0].id", equalTo(subscription.getId()))
                 .body("subscriptions[1].id", equalTo("1234"));
     }
 
     @Test
     public void testPostUserSubscription_withCorrectSubscription_shouldCreateSubscription() throws Exception {
+        Map<String, Object> jsonAsMap = generateTestSubscription();
+        jsonAsMap.put("created_by", TEMP_SUBS_CREATED_BY);
+
         String id = given().contentType("application/json")
-                .body(generateTestSubscription())
+                .body(jsonAsMap)
                 .post(arlasSubManagerPath + "admin/subscriptions/")
                 .then().statusCode(201)
                 .body("title", equalTo("title"))
@@ -255,7 +261,7 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
     }
 
     @Test
-    public void testPostInvalidUserSubscription_withMissingFields_shouldFail() {
+    public void testPostUserSubscription_withMissingFields_shouldFail() {
         Map<String, Object> jsonAsMap = new HashMap<>();
         jsonAsMap.put("created_by","John Doe");
         given().contentType("application/json")
@@ -270,13 +276,52 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
     }
 
     @Test
-    public void testPostInvalidUserSubscription_withBadTrigger_shouldFail() {
+    public void testPostUserSubscription_withBadTrigger_shouldFail() {
+
+
         Map<String,Object> jsonAsMap = generateTestSubscription();
+        jsonAsMap.put("created_by", TEMP_SUBS_CREATED_BY);
         ((UserSubscription.Subscription )jsonAsMap.get("subscription")).trigger.put("job","Aviator");
         given().contentType("application/json")
                 .when().body(jsonAsMap)
                 .post(arlasSubManagerPath + "admin/subscriptions/")
                 .then().statusCode(503);
+    }
+
+    @Test
+    public void testGetUserSubscription_WithNonExistingSubscription_shouldReturnNotFound()  {
+        when().get(arlasSubManagerPath + "admin/subscriptions/foo")
+                .then().statusCode(404);
+    }
+
+    @Test
+    public void testGetUserSubscription_withExistingSubscription_shouldReturnIt() {
+        when().get(arlasSubManagerPath + "admin/subscriptions/1234")
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("id", equalTo("1234"));
+    }
+
+    @Test
+    public void testGetUserSubscription_withNoAdditionalParam_shouldReturnDeletedSubscrption() {
+
+        UserSubscription deletedSubscription = insertTestSubscription(true, null);
+
+        when().get(arlasSubManagerPath + "admin/subscriptions/" + deletedSubscription.getId())
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("id", equalTo(deletedSubscription.getId()));
+    }
+
+    @Test
+    public void testGetUserSubscription_withDeleteParamFalse_shouldNotReturnDeletedSubscription() {
+
+        UserSubscription deletedSubscription = insertTestSubscription(true, null);
+
+        when().get(arlasSubManagerPath + "admin/subscriptions/" + deletedSubscription.getId() + "?deleted=false")
+                .then().statusCode(404);
     }
 
 }

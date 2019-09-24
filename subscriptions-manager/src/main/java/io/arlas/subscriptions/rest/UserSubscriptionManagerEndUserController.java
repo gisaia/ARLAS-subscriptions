@@ -39,7 +39,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Path("/subscriptions")
 @Api(value = "/subscriptions", tags = {"end-user"})
@@ -150,7 +150,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
+        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.ofNullable(user), false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 
         return ResponseFormatter.getResultResponse(halService.subscriptionWithLinks(userSubscription, uriInfo));
@@ -192,7 +192,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
                         @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
+        UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.ofNullable(user), false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
         subscriptionManagerService.deleteUserSubscription(userSubscription);
 
@@ -283,7 +283,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
 
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
-        UserSubscription oldUserSubscription = subscriptionManagerService.getUserSubscription(user, id, false)
+        UserSubscription oldUserSubscription = subscriptionManagerService.getUserSubscription(id, Optional.ofNullable(user), false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 
         // we must ensure that:

@@ -24,6 +24,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UserSubscriptionManagerAdminAuthIT extends AbstractTestWithData {
@@ -46,5 +47,12 @@ public class UserSubscriptionManagerAdminAuthIT extends AbstractTestWithData {
                 .when().post(arlasSubManagerPath + "admin/subscriptions/")
                 .then().statusCode(401);
     }
+
+    @Test
+    public void test03GetASubscriptionsWithIdentityHeader() {
+        given().header(identityHeader, "admin")
+                .when().get(arlasSubManagerPath + "admin/subscriptions/1234")
+                .then().statusCode(401);
+        }
 
     }

@@ -104,7 +104,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     }
 
     @Override
-    public Optional<UserSubscription> getUserSubscription(String user, String id, boolean deleted) {
+    public Optional<UserSubscription> getSubscription(String id, Optional<String> user, boolean deleted) {
         return Optional.empty();
     }
 
