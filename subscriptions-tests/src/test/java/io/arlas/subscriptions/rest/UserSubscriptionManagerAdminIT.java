@@ -273,9 +273,7 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
     @Test
     public void testPostUserSubscription_withBadTrigger_shouldFail() {
 
-
         Map<String,Object> jsonAsMap = generateTestSubscription();
-        jsonAsMap.put("created_by", TEMP_SUBS_CREATED_BY);
         ((UserSubscription.Subscription )jsonAsMap.get("subscription")).trigger.put("job","Aviator");
         given().contentType("application/json")
                 .when().body(jsonAsMap)
@@ -341,6 +339,48 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
 
         assertTrue(DataSetTool.getUserSubscriptionFromMongo(subscriptionId).get().getDeleted());
         assertTrue(DataSetTool.getUserSubscriptionFromES(subscriptionId).getDeleted());
+    }
+
+    @Test
+    public void testPutUserSubscription_withValidSubscription_shouldUpdateIt() throws Exception {
+        given().contentType("application/json")
+                .when().body(generateTestSubscription())
+                .put(arlasSubManagerPath + "admin/subscriptions/1234")
+                .then().statusCode(201)
+                .body("title", equalTo("title"));
+
+        assertThat(DataSetTool.getUserSubscriptionFromMongo("1234").get().title, is("title"));
+        assertThat(DataSetTool.getUserSubscriptionFromES("1234").title, is("title"));
+    }
+
+    @Test
+    public void testPutUserSubscription_withUnknownId_shouldFail() throws Exception {
+        given().contentType("application/json")
+                .when().body(generateTestSubscription())
+                .put(arlasSubManagerPath + "admin/subscriptions/foo")
+                .then().statusCode(404);
+    }
+
+    @Test
+    public void testPutUserSubscription_withMissingFields_shouldFail() throws Exception {
+        Map<String, Object> jsonAsMap = new HashMap<>();
+        jsonAsMap.put("created_by","John Doe");
+
+        given().contentType("application/json")
+                .when().body(jsonAsMap)
+                .put(arlasSubManagerPath + "admin/subscriptions/foo")
+                .then().statusCode(400);
+    }
+
+    @Test
+    public void testPutUserSubscription_withBadTrigger_shouldFail() {
+
+        Map<String,Object> jsonAsMap = generateTestSubscription();
+        ((UserSubscription.Subscription )jsonAsMap.get("subscription")).trigger.put("job","Aviator");
+        given().contentType("application/json")
+                .when().body(jsonAsMap)
+                .put(arlasSubManagerPath + "admin/subscriptions/1234")
+                .then().statusCode(503);
     }
 
     private UserSubscription insertTestSubscriptionInMongo(Boolean deleted, Long createdAt) {

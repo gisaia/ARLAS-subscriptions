@@ -20,13 +20,9 @@
 package io.arlas.subscriptions.rest;
 
 import io.arlas.subscriptions.AbstractTestWithData;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UserSubscriptionManagerAdminAuthIT extends AbstractTestWithData {
 
     //
@@ -53,6 +49,22 @@ public class UserSubscriptionManagerAdminAuthIT extends AbstractTestWithData {
         given().header(identityHeader, "admin")
                 .when().get(arlasSubManagerPath + "admin/subscriptions/1234")
                 .then().statusCode(401);
-        }
-
     }
+
+    @Test
+    public void test04DeleteASubscriptionsWithIdentityHeader() {
+        given().header(identityHeader, "admin")
+                .when().delete(arlasSubManagerPath + "admin/subscriptions/1234")
+                .then().statusCode(401);
+    }
+
+    @Test
+    public void test05PutASubscriptionsWithIdentityHeader() {
+        given().header(identityHeader, "admin")
+                .contentType("application/json")
+                .body(generateTestSubscription())
+                .when().put(arlasSubManagerPath + "admin/subscriptions/foo")
+                .then().statusCode(401);
+    }
+
+}
