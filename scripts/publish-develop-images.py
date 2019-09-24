@@ -82,5 +82,5 @@ subprocess.run(
     check=True,
 )
 
-publish_image('Dockerfile-manager', 'gisaia/arlas-subscription-manager')
-publish_image('Dockerfile-matcher', 'gisaia/arlas-subscription-matcher')
+publish_image('Dockerfile-manager', 'eu.gcr.io/arlas-ci/arlas-subscriptions-manager')
+publish_image('Dockerfile-matcher', 'eu.gcr.io/arlas-ci/arlas-subscriptions-matcher')
