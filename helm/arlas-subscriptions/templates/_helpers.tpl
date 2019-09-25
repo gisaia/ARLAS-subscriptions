@@ -45,5 +45,5 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{- define "arlas-subscriptions.server.service.name" -}}
-{{ include "arlas-subscriptions.fullname" . }}-server
+{{ include "arlas-subscriptions.fullname" . }}-arlas-sub-server
 {{- end -}}

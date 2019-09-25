@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "arlas-subscriptions.fullname" . }}-manager
+  name: {{ include "arlas-subscriptions.fullname" . }}-arlas-sub-manager
   labels:
 {{ include "arlas-subscriptions.labels" . | indent 4 }}
 spec:
@@ -42,19 +42,21 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              # TODO: switch to /admin/healthcheck when implemented
-              path: /arlas-subscriptions-manager/subscriptions
+              path: /admin/healthcheck
               port: http
           readinessProbe:
             httpGet:
-              # TODO: same as liveness
-              path: /arlas-subscriptions-manager/subscriptions
+              path: /admin/healthcheck
               port: http
           resources:
             {{- toYaml .Values.manager.resources | nindent 12 }}
           volumeMounts:
             - name: trigger-schema
               mountPath: {{ dir .Values.manager.triggerSchema.path }}
+    {{- if .Values.manager.imagePullSecrets }}
+      imagePullSecrets:
+      {{- include "arlas-subscriptions.manager.imagePullSecrets" . | nindent 8 }}
+    {{- end }}
     {{- if .Values.manager.init.elasticsearchIndex.enabled }}
       initContainers:
         - name: elasticsearch-index

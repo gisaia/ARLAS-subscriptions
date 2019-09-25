@@ -1,3 +1,7 @@
+{{- define "arlas-subscriptions.server.basePath" -}}
+{{ include "arlas-subscriptions.server.endpoint" . }}/{{ trimAll "/" .Values.server.environmentVariables.ARLAS_PREFIX }}
+{{- end -}}
+
 {{- define "arlas-subscriptions.server.environmentVariables" -}}
     {{- range $key,$value := .Values.server.environmentVariables }}
 - name: {{ $key | quote }}
@@ -9,6 +13,8 @@
 http://{{ include "arlas-subscriptions.server.service.name" . }}:{{ .Values.server.service.port }}
 {{- end -}}
 
-{{- define "arlas-subscriptions.server.basePath" -}}
-{{ include "arlas-subscriptions.server.endpoint" . }}/{{ trimAll "/" .Values.server.environmentVariables.ARLAS_PREFIX }}
+{{- define "arlas-subscriptions.server.imagePullSecrets" -}}
+    {{- range $imagePullSecret := .Values.server.imagePullSecrets }}
+- name: {{ $imagePullSecret }}
+    {{- end -}}
 {{- end -}}

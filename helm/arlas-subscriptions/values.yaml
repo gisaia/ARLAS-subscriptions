@@ -12,7 +12,7 @@ manager:
     MONGO_PORT: 27017
   image:
     repository: gisaia/arlas-subscriptions-manager
-    tag: 0.0.1-SNAPSHOT
+    tag: 11.6.0-alpha
     pullPolicy: IfNotPresent
   init:
     elasticsearchIndex:
@@ -55,15 +55,15 @@ manager:
 
 matcher:
   affinity: {}
-  containerPort: 9998
   # See here for available variables: https://github.com/gisaia/ARLAS-subscriptions#matcher-configuration
   # Beware, some environment variables are not managed in this dictionary, but directly in the deployment (see deployment)
   environmentVariables:
     ARLAS_SERVER_BASE_PATH: http://catalog
+    ARLAS_SUB_MATCHER_PORT: 9997
     KAFKA_BROKERS: kafka:9092
   image:
     repository: gisaia/arlas-subscriptions-matcher
-    tag: 0.0.1-SNAPSHOT
+    tag: 11.6.0-alpha
     pullPolicy: IfNotPresent
   init:
     serverCollection:
@@ -115,7 +115,7 @@ server:
     ARLAS_PREFIX: /arlas/
   image:
     repository: gisaia/arlas-server
-    tag: 11.6.0
+    tag: 11.6.1
     pullPolicy: IfNotPresent
   nodeSelector: {}
   replicaCount: 1

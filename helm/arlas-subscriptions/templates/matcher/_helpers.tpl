@@ -5,6 +5,12 @@
     {{- end -}}
 {{- end -}}
 
+{{- define "arlas-subscriptions.matcher.imagePullSecrets" -}}
+    {{- range $imagePullSecret := .Values.matcher.imagePullSecrets }}
+- name: {{ $imagePullSecret }}
+    {{- end -}}
+{{- end -}}
+
 {{- define "arlas-subscriptions.matcher.init.serverCollection.container.environmentVariables" -}}
     {{- range $key,$value := .Values.matcher.init.serverCollection.container.environmentVariables }}
 - name: {{ $key | quote }}
