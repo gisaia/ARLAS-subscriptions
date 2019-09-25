@@ -17,27 +17,28 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.model.mongo;
+package io.arlas.subscriptions.configuration.elastic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
+public class ElasticDBConfiguration {
 
-public class MongoDBConnection {
+    @JsonProperty("nodes")
+    public String elasticnodes;
 
-    @JsonProperty("seeds")
+    @JsonProperty("sniffing")
+    public Boolean elasticsniffing;
 
-    public List<Seed> seeds;
+    @JsonProperty("cluster")
+    public String elasticcluster;
 
-    @JsonProperty("database")
-    public String database;
+    @JsonProperty("index")
+    public String elasticsubindex;
 
-    public List<Seed> getSeeds() {
-        return seeds;
-    }
+    @JsonProperty("type")
+    public String elasticsubtype;
 
-    public String getDatabase() {
-        return database;
-    }
+    @JsonProperty(value = "bulk", required = true)
+    public BulkConfiguration bulkConfiguration;
 
 }

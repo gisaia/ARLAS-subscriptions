@@ -17,13 +17,14 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.app;
+package io.arlas.subscriptions.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
-import io.arlas.subscriptions.model.elastic.ElasticDBConnection;
-import io.arlas.subscriptions.model.mongo.MongoDBConnection;
+import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
+import io.arlas.subscriptions.configuration.elastic.ElasticDBConfiguration;
+import io.arlas.subscriptions.configuration.mongo.MongoDBConfiguration;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
 @JsonIgnoreProperties(ignoreUnknown = false)
@@ -33,10 +34,10 @@ public class ArlasSubscriptionManagerConfiguration extends ArlasSubscriptionsCon
     public TriggerConfiguration triggerConfiguration;
 
     @JsonProperty(value = "mongo", required = true)
-    public MongoDBConnection mongoDBConnection;
+    public MongoDBConfiguration mongoDBConfiguration;
 
     @JsonProperty(value = "elastic", required = true)
-    public ElasticDBConnection elasticDBConnection;
+    public ElasticDBConfiguration elasticDBConfiguration;
 
     @JsonProperty(value = "zipkin", required = true)
     public ZipkinFactory zipkinConfiguration;

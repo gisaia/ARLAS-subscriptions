@@ -17,21 +17,16 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.model.mongo;
+package io.arlas.subscriptions.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Seed {
-    @JsonProperty("host")
-    public String host;
-    @JsonProperty("port")
-    public int port;
+public class TriggerConfiguration {
 
-    public String getHost() {
-        return host;
-    }
+    @JsonProperty(value = "trigger-geometry-key", required = true)
+    public String triggerGeometryKey;
 
-    public int getPort() {
-        return port;
-    }
+    @JsonProperty(value = "trigger-centroid-key", required = true)
+    public String triggerCentroidKey;
+
 }

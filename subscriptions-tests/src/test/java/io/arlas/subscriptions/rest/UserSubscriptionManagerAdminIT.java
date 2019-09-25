@@ -28,7 +28,6 @@ import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.restassured.http.ContentType;
 import org.bson.Document;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.junit.After;
 import org.junit.Test;

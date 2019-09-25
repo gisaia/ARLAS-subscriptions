@@ -83,3 +83,11 @@ elastic:
   cluster: ${ARLAS_SUB_ELASTIC_CLUSTER:-elasticsearch}
   index:  ${ARLAS_SUB_ELASTIC_INDEX:-subscription}
   type: ${ARLAS_SUB_ELASTIC_TYPE:-sub_type}
+  bulk:
+    concurrent-requests: ${ARLAS_SUB_ELASTIC_CONCURRENT_REQUESTS:-0}
+    bulk-actions: ${ARLAS_SUB_ELASTIC_BULK_ACTIONS:-10000}
+    bulk-size: ${ARLAS_SUB_ELASTIC_BULK_SIZE:-5} # in MB
+    flush-interval: ${ARLAS_SUB_ELASTIC_FLUSH_INTERVAL:-5000} # in ms
+    backoff-delay: ${ARLAS_SUB_ELASTIC_BACKOFF_DELAY:-100} # in ms
+    backoff-retries: ${ARLAS_SUB_ELASTIC_BACKOFF_UNIT:-3}
+

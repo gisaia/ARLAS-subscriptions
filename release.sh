@@ -213,6 +213,7 @@ if [ "$RELEASE" == "YES" ]; then
         --enhancement-labels  type:enhancement \
         --breaking-labels type:breaking \
         --enhancement-label "**New stuff:**" --issues-label "**Miscellaneous:**" --since-tag v0.0.1
+    git add CHANGELOG.md
     git tag -d v${ARLAS_SUBSCRIPTIONS_VERSION}
     git push origin :v${ARLAS_SUBSCRIPTIONS_VERSION}
     echo "=> Commit release version"

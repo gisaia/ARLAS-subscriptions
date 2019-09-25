@@ -77,7 +77,7 @@ function test_manager() {
             -e ARLAS_SUB_ELASTIC_CLUSTER="elasticsearch" \
             --net arlas-subscriptions_default \
             maven:3.5.0-jdk-8 \
-            mvn -Dit.test=UserSubscriptionManagerEndUserIT,UserSubscriptionManagerAdminIT verify -DskipTests=false  -DfailIfNoTests=false
+            mvn -Dit.test=UserSubscriptionManagerEndUserIT,UserSubscriptionManagerAdminIT,UserSubscriptionManagerSyncIT verify -DskipTests=false  -DfailIfNoTests=false
 }
 
 function test_manager_auth() {
