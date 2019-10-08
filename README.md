@@ -79,6 +79,7 @@ Environment variable name | Description | Example
 --- | --- | ---
 KAFKA_BROKERS | Server name:port of the kafka broker to use | kafka:9092
 KAFKA_CONSUMER_POLL_TIMEOUT | Kafka consumer poll timeout (ms) | 10
+KAFKA_COMMIT_MAX_RETRIES | Number of commit retries in case of failure before exiting | 3
 KAFKA_BATCH_SIZE | Kafka consumer batch size | 10
 KAFKA_CONSUMER_GROUP_ID | Kafka consumer group id | subscription_events_consumer_group
 KAFKA_TOPIC_SUBSCRIPTION_EVENTS | Kafka consumer topic for new events | subscription_events

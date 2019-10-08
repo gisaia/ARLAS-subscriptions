@@ -22,6 +22,9 @@ package io.arlas.subscriptions.app;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class KafkaConfiguration {
+    @JsonProperty("kafka_commit_max_retries")
+    public Integer commitMaxRetries;
+
     @JsonProperty("kafka-batch-size")
     public Integer batchSize;
 

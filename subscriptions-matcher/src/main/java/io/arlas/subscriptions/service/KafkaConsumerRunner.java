@@ -27,6 +27,7 @@ import io.arlas.subscriptions.kafka.SubscriptionEventKafkaConsumer;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.model.SubscriptionEvent;
+import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -58,35 +59,57 @@ public class KafkaConsumerRunner implements Runnable {
     @Override
     public void run() {
         try {
-            logger.info("Starting consumer of topic '" + kafkaConfiguration.subscriptionEventsTopic + "'");
+            logger.info("["+kafkaConfiguration.subscriptionEventsTopic+"] Starting consumer");
             consumer = SubscriptionEventKafkaConsumer.build(kafkaConfiguration);
+            long start = System.currentTimeMillis();
+            long duration = System.currentTimeMillis();
+            int nbFailure = 0;
 
             while (true) {
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(kafkaConfiguration.consumerPollTimeout));
-                for (ConsumerRecord<String, String> record : records) {
+                try {
+                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(kafkaConfiguration.consumerPollTimeout));
+                    if (records.count() > 0) {
+                        logger.debug("[" + kafkaConfiguration.subscriptionEventsTopic + "] Nb records polled=" + records.count());
+                        start = System.currentTimeMillis();
+                        for (ConsumerRecord<String, String> record : records) {
+                            try {
+                                final SubscriptionEvent event = objectMapper.readValue(record.value(), SubscriptionEvent.class);
+                                logger.debug("Received subscription event:" + event.toString());
 
-                    try {
-                        final SubscriptionEvent event = objectMapper.readValue(record.value(), SubscriptionEvent.class);
-                        logger.debug("Received subscription event:" + event.toString());
+                                long t0 = System.currentTimeMillis();
+                                List<Hit> hits = subscriptionsService.searchMatchingSubscriptions(event);
+                                duration = System.currentTimeMillis() - t0;
+                                logger.debug("Nb subscription matching (took " + duration + "ms)=" + hits.toString());
 
-                        List<Hit> hits = subscriptionsService.searchMatchingSubscriptions(event);
-                        logger.debug("Subscription matcher result=" + hits.toString());
+                                t0 = System.currentTimeMillis();
+                                productService.processMatchingProducts(event, hits);
+                                duration = System.currentTimeMillis() - t0;
+                                logger.debug("Product matching result (in " + duration + "ms)");
 
-                        productService.processMatchingProducts(event, hits);
-
-                    } catch (IOException|ParseException e) {
-                        logger.warn("Could not parse record " + record.value(), e);
+                            } catch (IOException | ParseException e) {
+                                logger.warn("Could not parse record " + record.value(), e);
+                            }
+                        }
+                        consumer.commitSync();
+                        nbFailure = 0;
+                    }
+                } catch(CommitFailedException e) {
+                    nbFailure++;
+                    duration = System.currentTimeMillis() - start;
+                    logger.warn("[" + kafkaConfiguration.subscriptionEventsTopic + "] Commit failed (attempt nb " + nbFailure + "): process time=" + duration + "ms (compare to max.poll.interval.ms value) / exception=" + e.getMessage());
+                    if (nbFailure > kafkaConfiguration.commitMaxRetries) {
+                        logger.error("[" + kafkaConfiguration.subscriptionEventsTopic + "] Too many attempts, exiting.");
+                        try { consumer.close(); } catch (RuntimeException r) {}
+                        System.exit(1);
                     }
                 }
-                consumer.commitSync();
             }
-
         } catch (WakeupException e) {
             // Ignore exception if closing
             if (!closed.get()) throw e;
         } finally {
-            logger.error("Closing consumer of topic '" + kafkaConfiguration.subscriptionEventsTopic + "'");
-            consumer.close();
+            logger.error("["+kafkaConfiguration.subscriptionEventsTopic+"] Closing consumer");
+            try { consumer.close(); } catch (RuntimeException r) {}
             System.exit(1);
         }
     }

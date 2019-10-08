@@ -10,6 +10,7 @@ identity:
 ############ KAFKA                ###############
 #################################################
 kafka:
+  kafka_commit_max_retries: ${KAFKA_COMMIT_MAX_RETRIES:-3}
   kafka-consumer-poll-timeout: ${KAFKA_CONSUMER_POLL_TIMEOUT:-100}
   kafka-batch-size: ${KAFKA_BATCH_SIZE:-10}
   kafka-bootstrap-servers: ${KAFKA_BROKERS:-kafka:9092}
