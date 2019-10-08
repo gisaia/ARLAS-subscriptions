@@ -99,7 +99,7 @@ public class KafkaConsumerRunner implements Runnable {
                     logger.warn("[" + kafkaConfiguration.subscriptionEventsTopic + "] Commit failed (attempt nb " + nbFailure + "): process time=" + duration + "ms (compare to max.poll.interval.ms value) / exception=" + e.getMessage());
                     if (nbFailure > kafkaConfiguration.commitMaxRetries) {
                         logger.error("[" + kafkaConfiguration.subscriptionEventsTopic + "] Too many attempts, exiting.");
-                        consumer.close();
+                        try { consumer.close(); } catch (RuntimeException r) {}
                         System.exit(1);
                     }
                 }
@@ -109,7 +109,7 @@ public class KafkaConsumerRunner implements Runnable {
             if (!closed.get()) throw e;
         } finally {
             logger.error("["+kafkaConfiguration.subscriptionEventsTopic+"] Closing consumer");
-            consumer.close();
+            try { consumer.close(); } catch (RuntimeException r) {}
             System.exit(1);
         }
     }
