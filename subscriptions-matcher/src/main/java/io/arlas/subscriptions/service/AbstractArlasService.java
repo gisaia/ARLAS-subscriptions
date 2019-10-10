@@ -60,7 +60,7 @@ public class AbstractArlasService {
         logger.debug("Calling '" + apiClient.getBasePath() + searchEndpoint + "' with query params: '" + searchFilter + "'");
         return Arrays.stream(searchFilter.split("&"))
                 .map(s -> s.split("="))
-                .map(p -> new Pair(p[0], p[1]))
+                .map(p -> new Pair(p[0], p.length == 1 ? "" : p[1]))
                 .collect(Collectors.toList());
     }
 
@@ -76,7 +76,7 @@ public class AbstractArlasService {
                 emptyListParams, null, headerParams, emptyMapParams, emptyArrayParams, null);
         Response searchResponse = searchCall.execute();
         String body = searchResponse.body().string();
-        logger.debug("body="+body);
+        logger.trace("body="+body);
         if (searchResponse.isSuccessful()) {
             return objectMapper.readValue(body, Hits.class);
         } else {

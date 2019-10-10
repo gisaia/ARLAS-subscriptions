@@ -48,9 +48,9 @@ public class JSONHelperTest {
     public void readJSONValueTest() {
         try {
             SubscriptionEvent event = objectMapper.readValue(jsonString, SubscriptionEvent.class);
-            assertThat(JSONHelper.readJSONValue("geo_event.id",event), equalTo(1));
-            assertThat(JSONHelper.readJSONValue("geo_event.value.name",event), equalTo("Object 1"));
-            assertThat(JSONHelper.readJSONValue("geo_event.value.latitude",event), equalTo(37.33774833333334d));
+            assertThat(JSONHelper.readJSONValue("geo_event.id",event).get(), equalTo(1));
+            assertThat(JSONHelper.readJSONValue("geo_event.value.name",event).get(), equalTo("Object 1"));
+            assertThat(JSONHelper.readJSONValue("geo_event.value.latitude",event).get(), equalTo(37.33774833333334d));
         } catch (IOException e) {
         }
     }

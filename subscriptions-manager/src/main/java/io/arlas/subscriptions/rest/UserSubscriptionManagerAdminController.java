@@ -21,7 +21,9 @@ package io.arlas.subscriptions.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
-import io.arlas.subscriptions.exception.UnauthorizedException;
+import io.arlas.subscriptions.exception.NotFoundException;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.model.SubscriptionListResource;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.model.UserSubscriptionWithLinks;
@@ -30,19 +32,24 @@ import io.arlas.subscriptions.service.UserSubscriptionHALService;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.ResponseFormatter;
 import io.swagger.annotations.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Optional;
+
+import static io.arlas.subscriptions.app.ArlasSubscriptionsManager.MANAGER;
 
 @Path("/admin/subscriptions")
 @Api(value = "/admin/subscriptions", tags = {"admin"})
 public class UserSubscriptionManagerAdminController extends UserSubscriptionManagerAbstractController {
+    public final ArlasLogger logger = ArlasLoggerFactory.getLogger(UserSubscriptionManagerAbstractController.class, MANAGER);
 
     public UserSubscriptionManagerAdminController(
             UserSubscriptionManagerService subscriptionManagerService,
@@ -125,7 +132,9 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
             @DefaultValue("10")
             @QueryParam(value = "size") Integer size
     ) throws ArlasSubscriptionsException {
-        checkIsNotLogged(headers);
+
+        logger.debug(String.format("Admin requests all subscriptions (before %d, after %d, active %s, started %b, expired %s, deleted %b, created-by-admin %b, page %d, size %d)",
+                before, after, active, started, expired, deleted, createdByAdmin, page, size));
         Pair<Integer, List<UserSubscription>> subscriptionList = subscriptionManagerService.getAllUserSubscriptions(
                 createdBy,
                 before,
@@ -181,7 +190,8 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
                     required = false)
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
-        checkIsNotLogged(headers);
+
+        logger.debug(String.format("Admin requests subscription %s (deleted %b)", id, Optional.ofNullable(deleted).orElse(Boolean.TRUE)));
         UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.empty(), Optional.ofNullable(deleted).orElse(Boolean.TRUE))
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found"));
 
@@ -222,7 +232,7 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
 
-        checkIsNotLogged(headers);
+        logger.debug(String.format("Admin requests deletion of subscription %s", id));
         UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.empty(), true)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found"));
         subscriptionManagerService.deleteUserSubscription(userSubscription);
@@ -262,7 +272,8 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
             @QueryParam(value = "pretty") Boolean pretty
 
     ) throws ArlasSubscriptionsException {
-        checkIsNotLogged(headers);
+
+        logger.debug(String.format("Admin creates a new subscription for user %s", subscription.created_by));
 
         return ResponseFormatter.getCreatedResponse(
                 uriInfo.getRequestUriBuilder().build(),
@@ -312,19 +323,11 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
 
     ) throws ArlasSubscriptionsException {
 
-        checkIsNotLogged(headers);
-
+        logger.debug(String.format("Admin requests update of subscription %s", id));
         UserSubscription oldUserSubscription = subscriptionManagerService.getUserSubscription(id, Optional.empty(), false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found"));
 
         return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
                 halService.subscriptionWithLinks(subscriptionManagerService.putUserSubscription(oldUserSubscription, updUserSubscription, Optional.empty()), uriInfo));
     }
-
-    private void checkIsNotLogged(HttpHeaders headers) throws UnauthorizedException {
-        if (StringUtils.isNotBlank(identityHeader) && StringUtils.isNotBlank(headers.getHeaderString(identityHeader))) {
-            throw new UnauthorizedException("Admin should not have set a user identity: " + headers.getHeaderString(identityHeader));
-        }
-    }
-
 }

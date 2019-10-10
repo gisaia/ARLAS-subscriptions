@@ -68,6 +68,15 @@ public class UserSubscription {
         @NotNull
         @JsonProperty(required = true)
         public Hits hits;
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "trigger=" + trigger +
+                    ", callback='" + callback + '\'' +
+                    ", hits=" + hits +
+                    '}';
+        }
     }
 
     static public class Hits {
@@ -77,6 +86,14 @@ public class UserSubscription {
         @NotEmpty
         @JsonProperty(required = true)
         public String projection;
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "filter='" + filter + '\'' +
+                    ", projection='" + projection + '\'' +
+                    '}';
+        }
     }
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

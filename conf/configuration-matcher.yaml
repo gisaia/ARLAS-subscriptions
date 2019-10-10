@@ -64,6 +64,8 @@ server:
 # Configuration console and file LOGGING
 logging:
   level: ${ARLAS_SUB_MATCHER_LOGGING_LEVEL:-INFO}
+  loggers:
+    "org.apache.kafka": ${ARLAS_SUB_MATCHER_LOGGING_KAFKA_LEVEL:-INFO}
   appenders:
     - type: console
       threshold:  ${ARLAS_SUB_MATCHER_LOGGING_CONSOLE_LEVEL:-INFO}

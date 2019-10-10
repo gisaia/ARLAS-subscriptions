@@ -19,6 +19,7 @@
 
 package io.arlas.subscriptions.utils;
 
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.SubscriptionEvent;
 import org.geojson.LngLatAlt;
 import org.geojson.Polygon;
@@ -72,6 +73,8 @@ public class JSONValueInjectorTest {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (ArlasSubscriptionsException e) {
             e.printStackTrace();
         }
     }

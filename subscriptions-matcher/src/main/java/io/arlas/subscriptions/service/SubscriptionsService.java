@@ -19,14 +19,13 @@
 
 package io.arlas.subscriptions.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.arlas.server.exceptions.ArlasException;
 import io.arlas.server.client.ApiClient;
 import io.arlas.server.client.ApiException;
 import io.arlas.server.client.Pair;
 import io.arlas.server.client.model.Hit;
 import io.arlas.server.client.model.Hits;
 import io.arlas.server.client.model.Link;
+import io.arlas.server.exceptions.ArlasException;
 import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.logger.ArlasLogger;
@@ -50,13 +49,13 @@ public class SubscriptionsService extends AbstractArlasService {
         this.filterRoot = configuration.subscriptionFilterRoot;
     }
 
-    List<Hit> searchMatchingSubscriptions(SubscriptionEvent event) throws JsonProcessingException, ParseException {
+    List<Hit> searchMatchingSubscriptions(SubscriptionEvent event) throws ParseException {
 
         List<Hit> result = new ArrayList();
 
-        String searchFilter = JSONValueInjector.inject(filterRoot, event);
-
         try {
+            String searchFilter = JSONValueInjector.inject(filterRoot, event);
+
             Hits items;
             Link next = null;
             List<Pair> queryParams = getQueryParams(searchFilter);
@@ -66,7 +65,7 @@ public class SubscriptionsService extends AbstractArlasService {
                     result.addAll(items.getHits());
                     next = items.getLinks() != null ? items.getLinks().get("next") : null;
                     if (next != null) {
-                        queryParams = getQueryParams(next.getHref().split("\\?")[1]);
+                        queryParams = getQueryParams(next.getHref().split("\\?")[1].replace("before=&", ""));
                     }
                 }
             } while (items.getHits() != null && next != null);
