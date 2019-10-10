@@ -19,6 +19,9 @@
 
 package io.arlas.subscriptions.app;
 
+import io.arlas.subscriptions.healthcheck.KafkaHealthCheck;
+import io.arlas.subscriptions.healthcheck.KafkaProducerHealthCheck;
+import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.service.ManagedKafkaConsumers;
@@ -28,6 +31,8 @@ import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.apache.kafka.common.KafkaException;
+
+import java.util.Arrays;
 
 public class ArlasSubscriptionsMatcher extends Application<ArlasSubscriptionsMatcherConfiguration> {
     private final ArlasLogger logger = ArlasLoggerFactory.getLogger(ArlasSubscriptionsMatcher.class, MATCHER);
@@ -48,8 +53,11 @@ public class ArlasSubscriptionsMatcher extends Application<ArlasSubscriptionsMat
     @Override
     public void run(ArlasSubscriptionsMatcherConfiguration configuration, Environment environment) {
         try {
-            ManagedKafkaConsumers consumersManager = new ManagedKafkaConsumers(configuration);
+            NotificationOrderKafkaProducer notificationOrderKafkaProducer = NotificationOrderKafkaProducer.build(configuration);
+            ManagedKafkaConsumers consumersManager = new ManagedKafkaConsumers(configuration, notificationOrderKafkaProducer);
             environment.lifecycle().manage(consumersManager);
+            environment.healthChecks().register("kafka", new KafkaHealthCheck(configuration.kafkaConfiguration, "kafka"));
+            environment.healthChecks().register("kafkaProducer", new KafkaProducerHealthCheck(notificationOrderKafkaProducer, Arrays.asList(configuration.kafkaConfiguration.notificationOrdersTopic)));
         } catch (KafkaException e) {
             logger.fatal("Kafka problem: " + e.getMessage() + "(" + e.getCause().getMessage() + ")");
             System.exit(1);

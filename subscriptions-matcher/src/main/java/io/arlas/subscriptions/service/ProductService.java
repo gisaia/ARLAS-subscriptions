@@ -49,11 +49,11 @@ public class ProductService extends AbstractArlasService {
     private final NotificationOrderKafkaProducer notificationOrderKafkaProducer;
     private final String identityHeader;
 
-    ProductService(ArlasSubscriptionsMatcherConfiguration configuration) {
+    ProductService(ArlasSubscriptionsMatcherConfiguration configuration, NotificationOrderKafkaProducer notificationOrderKafkaProducer) {
         this.apiClient = new ApiClient().setBasePath(configuration.arlasServerBasePath);
         this.searchEndpoint = configuration.arlasServerSearchEndpoint;
         this.filterRoot = configuration.arlasServerFilterRoot;
-        this.notificationOrderKafkaProducer = NotificationOrderKafkaProducer.build(configuration);
+        this.notificationOrderKafkaProducer = notificationOrderKafkaProducer;
         this.identityHeader = configuration.identityConfiguration.identityHeader;
     }
 

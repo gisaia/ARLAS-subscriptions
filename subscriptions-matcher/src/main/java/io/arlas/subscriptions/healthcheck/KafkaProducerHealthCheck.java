@@ -17,26 +17,33 @@
  * under the License.
  */
 
-package io.arlas.subscriptions.service;
+package io.arlas.subscriptions.healthcheck;
 
-import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
-import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
-import io.dropwizard.lifecycle.Managed;
+import com.codahale.metrics.health.HealthCheck;
+import org.apache.kafka.clients.producer.Producer;
 
-public class ManagedKafkaConsumers implements Managed {
-    private KafkaConsumerRunner consumerRunner;
+import java.util.Collection;
 
-    public ManagedKafkaConsumers(ArlasSubscriptionsMatcherConfiguration configuration, NotificationOrderKafkaProducer notificationOrderKafkaProducer) {
-        this.consumerRunner = new KafkaConsumerRunner(configuration, notificationOrderKafkaProducer);
+import static java.util.Objects.requireNonNull;
+
+public class KafkaProducerHealthCheck extends HealthCheck {
+
+    private final Producer producer;
+    private final Collection<String> topics;
+
+    public KafkaProducerHealthCheck(final Producer producer,
+                                    final Collection<String> topics) {
+        this.producer = requireNonNull(producer);
+        this.topics = requireNonNull(topics);
     }
 
     @Override
-    public void start() {
-        new Thread(this.consumerRunner).start();
-    }
-
-    @Override
-    public void stop() {
-        this.consumerRunner.stop();
+    protected Result check() {
+        try {
+            topics.forEach(producer::partitionsFor);
+            return Result.healthy();
+        } catch (final Exception e) {
+            return Result.unhealthy(e);
+        }
     }
 }
