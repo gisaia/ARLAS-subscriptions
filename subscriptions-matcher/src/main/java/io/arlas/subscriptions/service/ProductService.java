@@ -59,26 +59,31 @@ public class ProductService extends AbstractArlasService {
 
     void processMatchingProducts(SubscriptionEvent event, List<Hit> subscriptions) throws JsonProcessingException, ParseException {
 
-        String searchFilter = JSONValueInjector.inject(filterRoot, event);
+        try {
+            String searchFilter = JSONValueInjector.inject(filterRoot, event);
 
-        for (Hit hit : subscriptions) {
-            logger.debug("processing hit: " + hit.toString());
-            try {
-                IndexedUserSubscription userSubscription = objectMapper.convertValue(hit.getData(), IndexedUserSubscription.class);
-                userSubscription.setId((String)((Map<String, Object>) hit.getData()).get("id"));
-                logger.debug("indexedUserSubscription: " + userSubscription.toString());
-                String f = searchFilter
-                        + "&" + userSubscription.subscription.hits.filter
-                        + "&" + userSubscription.subscription.hits.projection;
-                Hits productHits = getItemHits(getQueryParams(f), getHeaderParams(userSubscription));
-                if (productHits.getHits() != null) {
-                    productHits.getHits()
-                            .stream()
-                            .forEach(h -> pushNotificationOrder(h, event, userSubscription));
+            for (Hit hit : subscriptions) {
+                try {
+                    IndexedUserSubscription userSubscription = objectMapper.convertValue(hit.getData(), IndexedUserSubscription.class);
+                    userSubscription.setId((String) ((Map<String, Object>) hit.getData()).get("id"));
+                    logger.trace("indexedUserSubscription: " + userSubscription.toString());
+                    String f = searchFilter
+                            + "&" + userSubscription.subscription.hits.filter
+                            + "&" + userSubscription.subscription.hits.projection;
+                    Hits productHits = getItemHits(getQueryParams(f), getHeaderParams(userSubscription));
+                    if (productHits.getHits() != null && !productHits.getHits().isEmpty()) {
+                        productHits.getHits()
+                                .stream()
+                                .forEach(h -> pushNotificationOrder(h, event, userSubscription));
+                    } else {
+                        logger.warn("Could not find product in catalog: " + f);
+                    }
+                } catch (ApiException | IOException | ArlasSubscriptionsException | ArlasException e) {
+                    logger.warn("Error while fetching matching products: " + e.getMessage());
                 }
-            } catch (ApiException | IOException | ArlasSubscriptionsException | ArlasException e) {
-                logger.warn("Error while fetching matching products: " + e.getMessage());
             }
+        } catch (ArlasSubscriptionsException e) {
+            logger.warn("Error while fetching matching products: " + e.getMessage());
         }
     }
 
@@ -105,7 +110,7 @@ public class ProductService extends AbstractArlasService {
         notificationOrder.put("subscription", subSummary);
         // User metadata fields (provided by subscription creator)
         notificationOrder.put("user_metadata", userSubscription.userMetadatas);
-        logger.debug("notificationOrder: " + notificationOrder.toString());
+        logger.trace("notificationOrder: " + notificationOrder.toString());
         notificationOrderKafkaProducer.send(notificationOrder);
     }
 

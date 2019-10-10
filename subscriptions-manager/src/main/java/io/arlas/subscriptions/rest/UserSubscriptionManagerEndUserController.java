@@ -24,6 +24,8 @@ import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.exception.ForbiddenException;
 import io.arlas.subscriptions.exception.NotFoundException;
 import io.arlas.subscriptions.exception.UnauthorizedException;
+import io.arlas.subscriptions.logger.ArlasLogger;
+import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.model.SubscriptionListResource;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.model.UserSubscriptionWithLinks;
@@ -34,16 +36,24 @@ import io.arlas.subscriptions.utils.ResponseFormatter;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Optional;
+
+import static io.arlas.subscriptions.app.ArlasSubscriptionsManager.MANAGER;
 
 @Path("/subscriptions")
 @Api(value = "/subscriptions", tags = {"end-user"})
 public class UserSubscriptionManagerEndUserController extends UserSubscriptionManagerAbstractController {
+    public final ArlasLogger logger = ArlasLoggerFactory.getLogger(UserSubscriptionManagerEndUserController.class, MANAGER);
+    private static final String UNKNOWN_USER = "unknown";
 
     public UserSubscriptionManagerEndUserController(
             UserSubscriptionManagerService subscriptionManagerService,
@@ -108,6 +118,8 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
             @QueryParam(value = "page") Integer page
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
+        logger.debug(String.format("User %s requests all subscriptions (before %d, after %d, active %s, started %b, expired %s, deleted %b, created-by-admin %b, page %d, size %d)",
+                user, before, null, active, null, expired, false, false, page, size));
         Pair<Integer, List<UserSubscription>> subscriptionList = subscriptionManagerService.getAllUserSubscriptions(user, before, null, active, null, expired, false, null, page, size);
         SubscriptionListResource subscriptionListResource = halService.subscriptionListToResource(subscriptionList, uriInfo, page, size);
         return ResponseFormatter.getResultResponse(subscriptionListResource);
@@ -150,6 +162,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
             @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
+        logger.debug(String.format("User %s requests subscription %s", Optional.ofNullable(user).orElse(UNKNOWN_USER), id));
         UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.ofNullable(user), false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 
@@ -192,6 +205,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
                         @QueryParam(value = "pretty") Boolean pretty
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
+        logger.debug(String.format("User %s deletes subscription %s", Optional.ofNullable(user).orElse(UNKNOWN_USER), id));
         UserSubscription userSubscription = subscriptionManagerService.getUserSubscription(id, Optional.ofNullable(user), true)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
         subscriptionManagerService.deleteUserSubscription(userSubscription);
@@ -234,6 +248,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
 
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
+        logger.debug(String.format("User %s creates a new subscription", Optional.ofNullable(user).orElse(UNKNOWN_USER)));
         if (user != null && !user.equals(subscription.created_by)) {
             throw new ForbiddenException("New subscription does not belong to authenticated user " + user);
         }
@@ -283,6 +298,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
 
     ) throws ArlasSubscriptionsException {
         String user = getUser(headers);
+        logger.debug(String.format("User %s updates subscription %s", Optional.ofNullable(user).orElse(UNKNOWN_USER), id));
         UserSubscription oldUserSubscription = subscriptionManagerService.getUserSubscription(id, Optional.ofNullable(user), false)
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found for user " + user));
 

@@ -40,7 +40,6 @@ import static io.arlas.subscriptions.app.ArlasSubscriptionsManager.MANAGER;
 
 public class UserSubscriptionManagerService {
     public final ArlasLogger logger = ArlasLoggerFactory.getLogger(UserSubscriptionManagerService.class, MANAGER);
-    private static final String UNKNOWN_USER = "unknown";
 
     private UserSubscriptionDAO daoDatabase;
     private UserSubscriptionDAO daoIndexDatabase;
@@ -54,14 +53,11 @@ public class UserSubscriptionManagerService {
 
     public Pair<Integer, List<UserSubscription>> getAllUserSubscriptions(String user, Long before, Long after, Boolean active, Boolean started, Boolean expired, boolean deleted, Boolean createdByAdmin, Integer page,
                                                                          Integer size) throws ArlasSubscriptionsException {
-        logger.debug(String.format("User %s requests all subscriptions (before %d, after %d, active %b, started %b, expired %b, deleted %b, created-by-admin %b, page %d, size %d)",
-                user, before, after, active, started, expired, deleted, createdByAdmin, page, size));
         return  this.daoDatabase.getAllUserSubscriptions(user, before, after, active, started, expired, deleted, createdByAdmin, page, size);
     }
 
     public UserSubscription postUserSubscription(UserSubscription userSubscription, boolean createdByAdmin) throws ArlasSubscriptionsException {
-        logger.debug(String.format("User %s creates a new subscription (created_by_admin %b)", userSubscription.created_by, createdByAdmin));
-            UserSubscription userSubscriptionForIndex = this.daoDatabase.postUserSubscription(userSubscription, createdByAdmin);
+        UserSubscription userSubscriptionForIndex = this.daoDatabase.postUserSubscription(userSubscription, createdByAdmin);
 
         try {
             this.daoIndexDatabase.postUserSubscription(userSubscriptionForIndex, createdByAdmin);
@@ -73,12 +69,10 @@ public class UserSubscriptionManagerService {
     }
 
     public Optional<UserSubscription> getUserSubscription(String id, Optional<String> user, boolean deleted) throws ArlasSubscriptionsException {
-        logger.debug(String.format("User %s requests subscription %s (deleted %b)", user.orElse(UNKNOWN_USER), id, deleted));
         return this.daoDatabase.getSubscription(id, user, deleted);
     }
 
     public void deleteUserSubscription(UserSubscription userSubscription) throws ArlasSubscriptionsException {
-        logger.debug(String.format("User %s deletes subscription %s", userSubscription.created_by, userSubscription.getId()));
         this.daoDatabase.setUserSubscriptionDeletedFlag(userSubscription, true);
 
         try {
@@ -90,7 +84,6 @@ public class UserSubscriptionManagerService {
     }
 
     public UserSubscription putUserSubscription(UserSubscription oldUserSubscription, UserSubscription updUserSubscription, Optional<String> user) throws ArlasSubscriptionsException {
-        logger.debug(String.format("User %s updates subscription %s", user.orElse(UNKNOWN_USER), updUserSubscription.getId()));
         updUserSubscription.setId(oldUserSubscription.getId());
         updUserSubscription.setCreated_at(oldUserSubscription.getCreated_at());
         updUserSubscription.setModified_at(new Date().getTime());

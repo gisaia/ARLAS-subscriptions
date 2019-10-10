@@ -19,33 +19,29 @@
 
 package io.arlas.subscriptions.utils;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
+import java.util.Optional;
 
 public class JSONHelper {
 
+    public static Optional<Object> readJSONValue(String jsonPath, Object jsonObject) {
 
-    public static Object readJSONValue(String jsonPath, Object jsonObject) {
-        return JSONHelper.readJSONValue(jsonPath, jsonObject, false);
-    }
-
-    public static Object readJSONValue(String jsonPath, Object jsonObject, boolean partialFind) {
-        try {
-            String key = jsonPath.contains(".")?jsonPath.substring(0,jsonPath.indexOf(".")):jsonPath;
-            if (!StringUtils.isEmpty(key)
-                    && jsonObject instanceof HashMap
-                    && ((HashMap)jsonObject).containsKey(key)) {
-                return readJSONValue(jsonPath.substring(jsonPath.indexOf(".")+1),((HashMap)jsonObject).get(key), true);
-            } else {
-                if (partialFind) {
-                    return jsonObject;
+        if (!(jsonObject instanceof HashMap)) { return Optional.empty(); }
+        HashMap object = (HashMap) jsonObject;
+        String[] keys = jsonPath.split("\\.");
+        for (int i=0; i<keys.length; i++) {
+            String key = keys[i];
+            if (object.containsKey(key)) {
+                if (i < keys.length - 1) {
+                    object = (HashMap) object.get(key);
                 } else {
-                    return null;
+                    return Optional.of(object.get(key));
                 }
+            } else {
+                return Optional.empty();
             }
-        } catch (IndexOutOfBoundsException e) {
-            return null;
         }
+        return Optional.empty();
     }
+
 }

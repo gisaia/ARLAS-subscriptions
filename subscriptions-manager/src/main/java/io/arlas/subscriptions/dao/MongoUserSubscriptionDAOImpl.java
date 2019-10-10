@@ -146,6 +146,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
             if (!this.mongoCollectionSub.updateOne(eq("_id", userSubscription.getId()), set("deleted", isDeleted)).wasAcknowledged()) {
                 throw new ArlasSubscriptionsException("Update deleted flag in mongoDB not acknowledged");
             }
+            userSubscription.setDeleted(true);
         } catch (MongoException e) {
             throw new ArlasSubscriptionsException("Update deleted flag in mongoDB failed:" + e.getMessage());
         }

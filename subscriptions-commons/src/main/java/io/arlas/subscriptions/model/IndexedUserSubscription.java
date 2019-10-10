@@ -20,7 +20,6 @@
 package io.arlas.subscriptions.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.primitives.Doubles;
@@ -103,6 +102,21 @@ public class IndexedUserSubscription extends UserSubscription {
             throw new ArlasSubscriptionsException(centroidValue != null ? ("Invalid geojson point format in centroid trigger field: " + e.getMessage()) :
                     ("Invalid geojson point format in geometry trigger field: " + e.getMessage()));
         }
+    }
+
+    @Override
+    public String toString() {
+        return "IndexedUserSubscription{" +
+                ", geometry=" + geometry +
+                ", centroid=" + centroid +
+                ", created_by='" + created_by + '\'' +
+                ", active=" + active +
+                ", starts_at=" + starts_at +
+                ", expires_at=" + expires_at +
+                ", title='" + title + '\'' +
+                ", subscription=" + subscription +
+                ", userMetadatas=" + userMetadatas +
+                '}';
     }
 }
 

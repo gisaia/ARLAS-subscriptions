@@ -21,6 +21,7 @@ package io.arlas.subscriptions.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.locationtech.jts.geom.Geometry;
@@ -29,6 +30,8 @@ import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 import static io.arlas.subscriptions.utils.JSONHelper.readJSONValue;
 
@@ -45,22 +48,22 @@ public class JSONValueInjector {
     /*
      * Replace mentions to VAR_START + json.path + VAR_END in String by corresponding value in JSONObject.
      */
-    public static String inject(String s, JSONObject object) throws JsonProcessingException, ParseException {
+    public static String inject(String s, JSONObject object) throws JsonProcessingException, ParseException, ArlasSubscriptionsException {
         String ret = s;
-        String[] jsonPaths = StringUtils.substringsBetween(s,VAR_START, VAR_END);
+        String[] jsonPaths = StringUtils.substringsBetween(s, VAR_START, VAR_END);
         for(String jsonPath : jsonPaths) {
             String searchString = VAR_START + jsonPath + VAR_END;
-            Object value = readJSONValue(jsonPath, object);
-            if (value != null) {
+            Optional<Object> value = readJSONValue(jsonPath, object);
+            if (value.isPresent()) {
                 if (jsonPath.endsWith("geometry") || jsonPath.endsWith("centroid")) {
-                    Geometry geometry = geoJsonReader.read(objectMapper.writeValueAsString(value));
+                    Geometry geometry = geoJsonReader.read(objectMapper.writeValueAsString(value.get()));
                     String replacement = wktWriter.write(geometry);
                     ret = StringUtils.replace(ret, searchString, replacement);
                 } else {
-                    ret = StringUtils.replace(ret, searchString, value.toString());
+                    ret = StringUtils.replace(ret, searchString, value.get().toString());
                 }
             } else {
-                LOGGER.warn("Trying to inject "+VAR_START+jsonPath+VAR_END+" but not found in object:" + object.toJSONString());
+                throw new ArlasSubscriptionsException("Trying to inject "+VAR_START+jsonPath+VAR_END+" but not found in object:" + object.toJSONString());
             }
         }
         return ret;

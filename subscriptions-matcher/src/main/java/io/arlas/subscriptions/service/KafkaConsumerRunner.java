@@ -79,12 +79,14 @@ public class KafkaConsumerRunner implements Runnable {
                                 long t0 = System.currentTimeMillis();
                                 List<Hit> hits = subscriptionsService.searchMatchingSubscriptions(event);
                                 duration = System.currentTimeMillis() - t0;
-                                logger.debug("Nb subscription matching (took " + duration + "ms)=" + hits.toString());
+                                logger.debug("Nb subscription matching (took " + duration + "ms)=" + hits.size());
 
-                                t0 = System.currentTimeMillis();
-                                productService.processMatchingProducts(event, hits);
-                                duration = System.currentTimeMillis() - t0;
-                                logger.debug("Product matching result (in " + duration + "ms)");
+                                if (!hits.isEmpty()) {
+                                    t0 = System.currentTimeMillis();
+                                    productService.processMatchingProducts(event, hits);
+                                    duration = System.currentTimeMillis() - t0;
+                                    logger.debug("Product matching result took " + duration + "ms");
+                                }
 
                             } catch (IOException | ParseException e) {
                                 logger.warn("Could not parse record " + record.value(), e);
