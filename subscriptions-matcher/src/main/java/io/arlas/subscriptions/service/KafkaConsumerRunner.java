@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.arlas.server.client.model.Hit;
 import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
 import io.arlas.subscriptions.app.KafkaConfiguration;
+import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
 import io.arlas.subscriptions.kafka.SubscriptionEventKafkaConsumer;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
@@ -50,10 +51,10 @@ public class KafkaConsumerRunner implements Runnable {
     private final ProductService productService;
     private KafkaConsumer consumer;
 
-    KafkaConsumerRunner(ArlasSubscriptionsMatcherConfiguration configuration) {
+    KafkaConsumerRunner(ArlasSubscriptionsMatcherConfiguration configuration, NotificationOrderKafkaProducer notificationOrderKafkaProducer) {
         this.kafkaConfiguration = configuration.kafkaConfiguration;
         this.subscriptionsService = new SubscriptionsService(configuration);
-        this.productService = new ProductService(configuration);
+        this.productService = new ProductService(configuration, notificationOrderKafkaProducer);
     }
 
     @Override
