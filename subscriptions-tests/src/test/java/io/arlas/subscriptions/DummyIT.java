@@ -23,17 +23,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
 import io.arlas.server.client.model.Hits;
+import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import org.hamcrest.Matchers;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.locationtech.jts.io.ParseException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class DummyIT extends AbstractTestWithData {
+public class DummyIT extends AbstractTestContext {
 
     final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeClass
+    public static void beforeClass() {
+        try {
+            DataSetTool.loadDataSet(true);
+            DataSetTool.loadSubscriptions(true, true);
+        } catch (IOException | ParseException | ArlasSubscriptionsException e) {
+            LOGGER.error("Could not load data in ES", e);
+        }
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        DataSetTool.clearDataSet();
+        DataSetTool.clearSubscriptions(true);
+    }
 
     @Test
     public void testArlasCollection() throws Exception {
