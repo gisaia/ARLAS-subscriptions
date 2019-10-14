@@ -58,7 +58,7 @@ function run_matcher {
 
 function run_dummy {
     echo "===> start dummy stack"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-server
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} mongodb arlas-server
     echo "===> wait for arlas-server up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-server 9999; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 }

@@ -172,6 +172,10 @@ public class DataSetTool {
     }
 
     public static void loadSubscriptions(boolean loadMongo) throws IOException, ParseException, ArlasSubscriptionsException {
+        loadSubscriptions(loadMongo, !loadMongo);
+    }
+
+    public static void loadSubscriptions(boolean loadMongo, boolean createArlas) throws IOException, ParseException, ArlasSubscriptionsException {
         //Create subscription index with one existing subscription
         createIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "arlas.subtest.mapping.json");
         LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " created in Elasticsearch");
@@ -224,23 +228,7 @@ public class DataSetTool {
                 .get();
         LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " populated in Elasticsearch");
 
-        //Create subscription in Mongo
-        if (loadMongo) {
-            String mongoDBname = Optional.ofNullable(System.getenv("MONGO_DATABASE")).orElse("subscription");
-            String mongoHost = Optional.ofNullable(System.getenv("MONGO_HOST")).orElse("mongodb");
-            int mongoPort = Integer.valueOf(Optional.ofNullable(System.getenv("MONGO_PORT")).orElse("27017"));
-            LOGGER.info("Mongo: " + mongoHost + ":" + mongoPort);
-            Seed seed = new Seed();
-            seed.host = mongoHost;
-            seed.port = mongoPort;
-            MongoDBConfiguration configuration = new MongoDBConfiguration();
-            configuration.database = mongoDBname;
-            configuration.seeds = Arrays.asList(seed);
-            MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration);
-            MongoDatabase mongoDatabase = mongoDBFactoryConnection.getClient().getDatabase(mongoDBname);
-            mongoCollection = mongoDatabase.getCollection(MongoUserSubscriptionDAOImpl.ARLAS_SUBSCRIPTION_DB_NAME, UserSubscription.class);;
-            mongoCollection.insertOne(subscription);
-        } else {
+        if (createArlas) {
             //Create collection in ARLAS-server
             CollectionReferenceParameters collection = new CollectionReferenceParameters();
             collection.setIndexName(DataSetTool.SUBSCRIPTIONS_INDEX_NAME);
@@ -263,6 +251,25 @@ public class DataSetTool {
             } catch (ApiException e) {
                 LOGGER.error("Unable to create collection in ARLAS-server", e);
             }
+        }
+        //Create subscription in Mongo
+        if (loadMongo) {
+            String mongoDBname = Optional.ofNullable(System.getenv("MONGO_DATABASE")).orElse("subscription");
+            String mongoHost = Optional.ofNullable(System.getenv("MONGO_HOST")).orElse("mongodb");
+            int mongoPort = Integer.valueOf(Optional.ofNullable(System.getenv("MONGO_PORT")).orElse("27017"));
+            LOGGER.info("Mongo: " + mongoHost + ":" + mongoPort);
+            Seed seed = new Seed();
+            seed.host = mongoHost;
+            seed.port = mongoPort;
+            MongoDBConfiguration configuration = new MongoDBConfiguration();
+            configuration.database = mongoDBname;
+            configuration.seeds = Arrays.asList(seed);
+            MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration);
+            MongoDatabase mongoDatabase = mongoDBFactoryConnection.getClient().getDatabase(mongoDBname);
+            mongoCollection = mongoDatabase.getCollection(MongoUserSubscriptionDAOImpl.ARLAS_SUBSCRIPTION_DB_NAME, UserSubscription.class);;
+            mongoCollection.insertOne(subscription);
+            client.prepareIndex(DataSetTool.SUBSCRIPTIONS_INDEX_NAME, DataSetTool.SUBSCRIPTIONS_TYPE_NAME, subscription.getId())
+                    .setSource(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON).get();
         }
     }
 
