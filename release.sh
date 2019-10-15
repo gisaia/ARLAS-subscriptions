@@ -174,6 +174,10 @@ mkdir -p target/tmp || echo "target/tmp exists"
 i=1; until curl -XGET http://${DOCKER_IP}:9998/arlas-subscriptions-manager/swagger.json -o target/tmp/swagger.json; do if [ $i -lt 60 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
 i=1; until curl -XGET http://${DOCKER_IP}:9998/arlas-subscriptions-manager/swagger.yaml -o target/tmp/swagger.yaml; do if [ $i -lt 60 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
 
+mkdir -p openapi
+cp target/tmp/swagger.yaml openapi
+cp target/tmp/swagger.json openapi
+
 echo "=> Stop arlas-subscriptions-manager stack"
 docker-compose --project-name arlas-subscriptions down -v
 
@@ -217,6 +221,8 @@ if [ "$RELEASE" == "YES" ]; then
     git tag -d v${ARLAS_SUBSCRIPTIONS_VERSION}
     git push origin :v${ARLAS_SUBSCRIPTIONS_VERSION}
     echo "=> Commit release version"
+    git add openapi/swagger.json
+    git add openapi/swagger.yaml
     git commit -a -m "release version ${ARLAS_SUBSCRIPTIONS_VERSION}"
     git tag v${ARLAS_SUBSCRIPTIONS_VERSION}
     git push origin v${ARLAS_SUBSCRIPTIONS_VERSION}
@@ -241,6 +247,10 @@ echo "=> Update REST API version in JAVA source code"
 sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"API_VERSION\"/' subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerController.java
 
 if [ "$RELEASE" == "YES" ]; then
+    sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"'${API_DEV_VERSION}-SNAPSHOT'\"/' openapi/swagger.yaml
+    sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"'${API_DEV_VERSION}-SNAPSHOT'\"/' openapi/swagger.json
+    git add openapi/swagger.json
+    git add openapi/swagger.yaml
     git commit -a -m "development version ${ARLAS_DEV_VERSION}-SNAPSHOT"
     git push origin develop
 else echo "=> Skip git push develop"; fi
