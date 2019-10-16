@@ -1,0 +1,744 @@
+---
+swagger: "2.0"
+info:
+  description: "Manage ARLAS subscriptions on ARLAS collections' events."
+  version: "11.0.0"
+  title: "ARLAS Subscriptions Manager API"
+  contact:
+    name: "ARLAS"
+    url: "https://arlas.io/"
+    email: "contact@gisaia.com"
+  license:
+    name: "Apache 2.0"
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+basePath: "/arlas-subscriptions-manager"
+tags:
+- name: "end-user"
+  description: "Standard endpoints to manage one's subscriptions as an end-user."
+- name: "admin"
+  description: "Optional endpoints to manage all subscriptions as an administrator\
+    \ of the service."
+schemes:
+- "http"
+- "https"
+paths:
+  /admin/subscriptions:
+    get:
+      tags:
+      - "admin"
+      summary: "List all available subscriptions"
+      description: "Return the list of all registered subscriptions from the latest\
+        \ created to the earliest."
+      operationId: "getAll"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "before"
+        in: "query"
+        description: "Retrieve subscriptions created before given timestamp."
+        required: false
+        type: "integer"
+        format: "int64"
+      - name: "after"
+        in: "query"
+        description: "Retrieve subscriptions created after given timestamp."
+        required: false
+        type: "integer"
+        format: "int64"
+      - name: "active"
+        in: "query"
+        description: "Filter subscriptions whether they are active or not (returns\
+          \ all if missing, 'active' if 'true', 'not active' if 'false')."
+        required: false
+        type: "boolean"
+      - name: "started"
+        in: "query"
+        description: "Filter subscriptions whether they are started or not (returns\
+          \ all if missing, 'started' if 'true', 'not started' if 'false')."
+        required: false
+        type: "boolean"
+      - name: "expired"
+        in: "query"
+        description: "Filter subscriptions whether they are expired or not (returns\
+          \ all if missing, 'expired' if 'true', 'not expired' if 'false')."
+        required: false
+        type: "boolean"
+      - name: "created-by"
+        in: "query"
+        description: "Filter subscriptions by creator's identifier"
+        required: false
+        type: "string"
+      - name: "deleted"
+        in: "query"
+        description: "Filter subscriptions whether they are deleted or not."
+        required: false
+        type: "boolean"
+        default: true
+      - name: "created-by-admin"
+        in: "query"
+        description: "Filter subscriptions whether they have been created by admin\
+          \ or not (returns all if missing, 'created_by_admin' if 'true', 'not created_by_admin'\
+          \ if 'false')."
+        required: false
+        type: "boolean"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      - name: "page"
+        in: "query"
+        description: "Page ID"
+        required: false
+        type: "integer"
+        default: 1
+        minimum: 1
+        format: "int32"
+      - name: "size"
+        in: "query"
+        description: "Page Size"
+        required: false
+        type: "integer"
+        default: 10
+        minimum: 1
+        format: "int32"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/SubscriptionListResource"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+      - "admin"
+      summary: "Register a new subscription"
+      description: "Register a subscription for further notification."
+      operationId: "post"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - in: "body"
+        name: "subscription"
+        description: "Subscription description"
+        required: true
+        schema:
+          $ref: "#/definitions/UserSubscription"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        201:
+          description: "Subscription has been registered"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        400:
+          description: "JSON parameter malformed."
+          schema:
+            $ref: "#/definitions/Error"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+  /admin/subscriptions/{id}:
+    get:
+      tags:
+      - "admin"
+      summary: "Find subscription by ID"
+      description: "Return a single subscription. Only creator can access their subscriptions."
+      operationId: "get"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of subscription to return"
+        required: true
+        type: "string"
+      - name: "deleted"
+        in: "query"
+        description: "Filter subscriptions whether they are deleted or not."
+        required: false
+        type: "boolean"
+        default: true
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "Subscription not found."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+      - "admin"
+      summary: "Update an existing subscription"
+      description: "Update an existing subscription. "
+      operationId: "put"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of subscription to return"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "subscription"
+        description: "Subscription description"
+        required: true
+        schema:
+          $ref: "#/definitions/UserSubscription"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        201:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        400:
+          description: "JSON parameter malformed."
+          schema:
+            $ref: "#/definitions/Error"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "Not Found Error."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+      - "admin"
+      summary: "Delete a subscription"
+      description: "Mark a subscription as deleted."
+      operationId: "delete"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Subscription ID to delete"
+        required: true
+        type: "string"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        202:
+          description: "Subscription has been deleted."
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "Subscription not found."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+  /subscriptions:
+    get:
+      tags:
+      - "end-user"
+      summary: "List all available subscriptions"
+      description: "Return the list of all registered subscriptions that are available\
+        \ for current user from the latest created to the earliest.\nOnly current\
+        \ user's subscriptions that are not deleted are listed."
+      operationId: "getAll_1"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "before"
+        in: "query"
+        description: "Retrieve subscriptions created before given timestamp."
+        required: false
+        type: "integer"
+        format: "int64"
+      - name: "active"
+        in: "query"
+        description: "Filter subscriptions whether they are active or not (returns\
+          \ all if missing, 'active' if 'true', 'inactive' if 'false')."
+        required: false
+        type: "boolean"
+      - name: "expired"
+        in: "query"
+        description: "Filter subscriptions whether they are expired or not (returns\
+          \ all if missing, 'expired' if 'true', 'not expired' if 'false')."
+        required: false
+        type: "boolean"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      - name: "size"
+        in: "query"
+        description: "Page Size"
+        required: false
+        type: "integer"
+        default: 10
+        minimum: 1
+        format: "int32"
+      - name: "page"
+        in: "query"
+        description: "Page ID"
+        required: false
+        type: "integer"
+        default: 1
+        minimum: 1
+        format: "int32"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/SubscriptionListResource"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        403:
+          description: "Forbidden."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+      - "end-user"
+      summary: "Register a new subscription"
+      description: "Register a subscription for further notification."
+      operationId: "post_1"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - in: "body"
+        name: "subscription"
+        description: "Subscription description"
+        required: true
+        schema:
+          $ref: "#/definitions/UserSubscription"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        201:
+          description: "Subscription has been registered"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        400:
+          description: "JSON parameter malformed."
+          schema:
+            $ref: "#/definitions/Error"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        403:
+          description: "Forbidden."
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "Not Found Error."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+  /subscriptions/{id}:
+    get:
+      tags:
+      - "end-user"
+      summary: "Find subscription by ID"
+      description: "Return a single subscription. Only creator can access their subscriptions."
+      operationId: "get_1"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of subscription to return"
+        required: true
+        type: "string"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        403:
+          description: "Forbidden."
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "Subscription not found."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+      - "end-user"
+      summary: "Update an existing subscription"
+      description: "Update an existing subscription. Only creator can update their\
+        \ own subscriptions."
+      operationId: "put_1"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of subscription to return"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "subscription"
+        description: "Subscription description"
+        required: true
+        schema:
+          $ref: "#/definitions/UserSubscription"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        201:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        400:
+          description: "JSON parameter malformed."
+          schema:
+            $ref: "#/definitions/Error"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        403:
+          description: "Forbidden."
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "Not Found Error."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+      - "end-user"
+      summary: "Delete a subscription"
+      description: "Mark a subscription as deleted. Only creator can delete their\
+        \ own subscriptions."
+      operationId: "delete_1"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Subscription ID to delete"
+        required: true
+        type: "string"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        202:
+          description: "Subscription has been deleted."
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        401:
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        403:
+          description: "Forbidden."
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: "Subscription not found."
+          schema:
+            $ref: "#/definitions/Error"
+        503:
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+definitions:
+  Hits:
+    type: "object"
+    required:
+    - "filter"
+    - "projection"
+    properties:
+      filter:
+        type: "string"
+      projection:
+        type: "string"
+  Link:
+    type: "object"
+    required:
+    - "href"
+    - "method"
+    - "relation"
+    - "type"
+    properties:
+      relation:
+        type: "string"
+      href:
+        type: "string"
+      type:
+        type: "string"
+      method:
+        type: "string"
+  Subscription:
+    type: "object"
+    required:
+    - "callback"
+    - "hits"
+    - "trigger"
+    properties:
+      trigger:
+        type: "object"
+        additionalProperties:
+          type: "object"
+      callback:
+        type: "string"
+      hits:
+        $ref: "#/definitions/Hits"
+  SubscriptionListResource:
+    type: "object"
+    properties:
+      count:
+        type: "integer"
+        format: "int32"
+      total:
+        type: "integer"
+        format: "int32"
+      _links:
+        type: "object"
+        additionalProperties:
+          $ref: "#/definitions/Link"
+      subscriptions:
+        type: "array"
+        items:
+          $ref: "#/definitions/UserSubscriptionWithLinks"
+  UserSubscriptionWithLinks:
+    type: "object"
+    required:
+    - "active"
+    - "created_by"
+    - "expires_at"
+    - "starts_at"
+    - "subscription"
+    - "title"
+    - "userMetadatas"
+    properties:
+      id:
+        type: "string"
+        readOnly: true
+      created_at:
+        type: "integer"
+        format: "int64"
+        readOnly: true
+      modified_at:
+        type: "integer"
+        format: "int64"
+        readOnly: true
+      created_by_admin:
+        type: "boolean"
+        readOnly: true
+      deleted:
+        type: "boolean"
+        readOnly: true
+      created_by:
+        type: "string"
+      active:
+        type: "boolean"
+      starts_at:
+        type: "integer"
+        format: "int64"
+      expires_at:
+        type: "integer"
+        format: "int64"
+      title:
+        type: "string"
+      subscription:
+        $ref: "#/definitions/Subscription"
+      userMetadatas:
+        type: "object"
+        additionalProperties:
+          type: "object"
+      _links:
+        type: "object"
+        additionalProperties:
+          $ref: "#/definitions/Link"
+  Error:
+    type: "object"
+    properties:
+      status:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
+      error:
+        type: "string"
+  UserSubscription:
+    type: "object"
+    required:
+    - "active"
+    - "created_by"
+    - "expires_at"
+    - "starts_at"
+    - "subscription"
+    - "title"
+    - "userMetadatas"
+    properties:
+      id:
+        type: "string"
+        readOnly: true
+      created_at:
+        type: "integer"
+        format: "int64"
+        readOnly: true
+      modified_at:
+        type: "integer"
+        format: "int64"
+        readOnly: true
+      created_by_admin:
+        type: "boolean"
+        readOnly: true
+      deleted:
+        type: "boolean"
+        readOnly: true
+      created_by:
+        type: "string"
+      active:
+        type: "boolean"
+      starts_at:
+        type: "integer"
+        format: "int64"
+      expires_at:
+        type: "integer"
+        format: "int64"
+      title:
+        type: "string"
+      subscription:
+        $ref: "#/definitions/Subscription"
+      userMetadatas:
+        type: "object"
+        additionalProperties:
+          type: "object"
