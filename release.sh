@@ -31,7 +31,7 @@ function clean_exit {
     else
         echo "=> Skip discard changes";
         git checkout -- pom.xml
-        sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"API_VERSION\"/' subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerController.java
+        sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"API_VERSION\"/' subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerAbstractController.java
     fi
     exit $ARG
 }
@@ -141,7 +141,7 @@ else echo "=> Skip develop checkout"; fi
 echo "=> Update project version"
 mvn clean
 mvn versions:set -DnewVersion=${ARLAS_SUBSCRIPTIONS_VERSION}
-sed -i.bak 's/\"API_VERSION\"/\"'${FULL_API_VERSION}'\"/' subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerController.java
+sed -i.bak 's/\"API_VERSION\"/\"'${FULL_API_VERSION}'\"/' subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerAbstractController.java
 
 echo "=> Build arlas-subscriptions"
 docker run \
@@ -244,7 +244,7 @@ echo "=> Update project version for develop"
 mvn versions:set -DnewVersion=${ARLAS_DEV_VERSION}-SNAPSHOT
 
 echo "=> Update REST API version in JAVA source code"
-sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"API_VERSION\"/' subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerController.java
+sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"API_VERSION\"/' subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerAbstractController.java
 
 if [ "$RELEASE" == "YES" ]; then
     sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"'${API_DEV_VERSION}-SNAPSHOT'\"/' openapi/swagger.yaml
