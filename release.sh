@@ -143,6 +143,41 @@ mvn clean
 mvn versions:set -DnewVersion=${ARLAS_SUBSCRIPTIONS_VERSION}
 sed -i.bak 's/\"API_VERSION\"/\"'${FULL_API_VERSION}'\"/' subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerAbstractController.java
 
+# Helm chart: Update version
+sed -i.bak "s/^appVersion: .*\$/appVersion: \"${ARLAS_SUBSCRIPTIONS_VERSION}\"/" helm/arlas-subscriptions/Chart.yaml
+
+# Helm chart: Update docker images' versions
+# Using `ruamel` to preserve comments & format
+
+mv helm/arlas-subscriptions/values.yaml helm/arlas-subscriptions/values.yaml.old
+
+docker run \
+  --entrypoint ash \
+  --env ARLAS_SUBSCRIPTIONS_VERSION \
+  --mount dst=/mnt/input.yaml,src="$PWD/helm/arlas-subscriptions/values.yaml.old",type=bind,readonly \
+  python:alpine3.7 -c "
+pip install ruamel.yaml==0.16.5 >/dev/null 2>/dev/null
+
+python -c '
+
+import pathlib
+import sys
+
+import ruamel.yaml
+
+yaml = ruamel.yaml.YAML()
+helm_values = yaml.load(pathlib.Path(\"/mnt/input.yaml\"))
+
+helm_values[\"manager\"][\"image\"][\"tag\"] = \"$ARLAS_SUBSCRIPTIONS_VERSION\"
+helm_values[\"matcher\"][\"image\"][\"tag\"] = \"$ARLAS_SUBSCRIPTIONS_VERSION\"
+
+yaml.dump(helm_values, sys.stdout)
+'
+" > helm/arlas-subscriptions/values.yaml
+
+rm -f helm/arlas-subscriptions/values.yaml.old
+
+
 echo "=> Build arlas-subscriptions"
 docker run \
     -e GROUP_ID="$(id -g)" \
