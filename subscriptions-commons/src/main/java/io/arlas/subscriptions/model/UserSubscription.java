@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -55,8 +56,8 @@ public class UserSubscription {
     @JsonProperty(required = true)
     public Subscription subscription = new Subscription();
     @NotNull
-    @JsonProperty(required = true)
-    public Map<String, Object>  userMetadatas;
+    @JsonProperty
+    public Map<String, Object> userMetadatas = new HashMap<>();
 
     static public class Subscription {
         @NotNull
