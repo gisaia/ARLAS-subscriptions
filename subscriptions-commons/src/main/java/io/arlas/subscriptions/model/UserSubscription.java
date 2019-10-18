@@ -85,8 +85,8 @@ public class UserSubscription {
         @JsonProperty(required = true)
         public String filter;
         @NotEmpty
-        @JsonProperty(required = true)
-        public String projection;
+        @JsonProperty
+        public String projection = "";
 
         @Override
         public String toString() {
