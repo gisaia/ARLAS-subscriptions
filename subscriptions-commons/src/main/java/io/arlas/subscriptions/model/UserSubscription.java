@@ -55,7 +55,6 @@ public class UserSubscription {
     @NotNull
     @JsonProperty(required = true)
     public Subscription subscription = new Subscription();
-    @NotNull
     @JsonProperty
     public Map<String, Object> userMetadatas = new HashMap<>();
 
