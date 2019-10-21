@@ -18,7 +18,6 @@ SCRIPT_PATH=`cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd`
 cd ${SCRIPT_PATH}/..
 
 # TESTS SUITE
-./scripts/tests-integration-stage.sh --stage=DUMMY
 ./scripts/tests-integration-stage.sh --stage=MANAGER
 ./scripts/tests-integration-stage.sh --stage=MANAGER_AUTH
 ./scripts/tests-integration-stage.sh --stage=MATCHER
