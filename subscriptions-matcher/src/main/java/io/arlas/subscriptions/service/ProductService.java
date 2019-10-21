@@ -69,8 +69,7 @@ public class ProductService extends AbstractArlasService {
                     logger.trace("indexedUserSubscription: " + userSubscription.toString());
                     String f = searchFilter
                             + "&" + userSubscription.subscription.hits.filter;
-                    if (userSubscription.subscription.hits.projection != null
-                            && !userSubscription.subscription.hits.projection.isEmpty()) {
+                    if (!StringUtils.isBlank(userSubscription.subscription.hits.projection)) {
                         f += "&" + userSubscription.subscription.hits.projection;
                     }
                     Hits productHits = getItemHits(getQueryParams(f), getHeaderParams(userSubscription));
