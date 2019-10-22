@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "Manage ARLAS subscriptions on ARLAS collections' events."
-  version: "-SNAPSHOT"
+  version: "11.0.1"
   title: "ARLAS Subscriptions Manager API"
   contact:
     name: "ARLAS"
@@ -582,7 +582,6 @@ definitions:
     type: "object"
     required:
     - "filter"
-    - "projection"
     properties:
       filter:
         type: "string"
@@ -645,7 +644,6 @@ definitions:
     - "starts_at"
     - "subscription"
     - "title"
-    - "userMetadatas"
     properties:
       id:
         type: "string"
@@ -705,7 +703,6 @@ definitions:
     - "starts_at"
     - "subscription"
     - "title"
-    - "userMetadatas"
     properties:
       id:
         type: "string"

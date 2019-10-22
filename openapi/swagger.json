@@ -2,7 +2,7 @@
   "swagger" : "2.0",
   "info" : {
     "description" : "Manage ARLAS subscriptions on ARLAS collections' events.",
-    "version" : "-SNAPSHOT",
+    "version" : "11.0.1",
     "title" : "ARLAS Subscriptions Manager API",
     "contact" : {
       "name" : "ARLAS",
@@ -709,7 +709,7 @@
   "definitions" : {
     "Hits" : {
       "type" : "object",
-      "required" : [ "filter", "projection" ],
+      "required" : [ "filter" ],
       "properties" : {
         "filter" : {
           "type" : "string"
@@ -782,7 +782,7 @@
     },
     "UserSubscriptionWithLinks" : {
       "type" : "object",
-      "required" : [ "active", "created_by", "expires_at", "starts_at", "subscription", "title", "userMetadatas" ],
+      "required" : [ "active", "created_by", "expires_at", "starts_at", "subscription", "title" ],
       "properties" : {
         "id" : {
           "type" : "string",
@@ -857,7 +857,7 @@
     },
     "UserSubscription" : {
       "type" : "object",
-      "required" : [ "active", "created_by", "expires_at", "starts_at", "subscription", "title", "userMetadatas" ],
+      "required" : [ "active", "created_by", "expires_at", "starts_at", "subscription", "title" ],
       "properties" : {
         "id" : {
           "type" : "string",

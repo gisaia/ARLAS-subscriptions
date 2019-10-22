@@ -1,5 +1,13 @@
 # Change Log
 
+## [v11.6.1](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.1) (2019-10-21)
+
+[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.0...v11.6.1)
+
+**Miscellaneous:**
+
+- Make userMetadatas not required in subscription [\#152](https://github.com/gisaia/ARLAS-subscriptions/issues/152)
+
 ## [v11.6.0](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.0) (2019-10-16)
 
 [Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.0-alpha...v11.6.0)
