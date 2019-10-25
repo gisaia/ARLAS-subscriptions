@@ -86,7 +86,7 @@ public class UserSubscriptionManagerService {
     public UserSubscription putUserSubscription(UserSubscription oldUserSubscription, UserSubscription updUserSubscription, Optional<String> user) throws ArlasSubscriptionsException {
         updUserSubscription.setId(oldUserSubscription.getId());
         updUserSubscription.setCreated_at(oldUserSubscription.getCreated_at());
-        updUserSubscription.setModified_at(new Date().getTime());
+        updUserSubscription.setModified_at(new Date().getTime()/1000l);
         updUserSubscription.setCreated_by_admin(oldUserSubscription.getCreated_by_admin());
         updUserSubscription.setDeleted(oldUserSubscription.getDeleted());
 
