@@ -12,7 +12,7 @@ manager:
     MONGO_PORT: 27017
   image:
     repository: gisaia/arlas-subscriptions-manager
-    tag: 11.6.1
+    tag: 11.6.2
     pullPolicy: IfNotPresent
   init:
     elasticsearchIndex:
@@ -63,7 +63,7 @@ matcher:
     KAFKA_BROKERS: kafka:9092
   image:
     repository: gisaia/arlas-subscriptions-matcher
-    tag: 11.6.1
+    tag: 11.6.2
     pullPolicy: IfNotPresent
   init:
     serverCollection:
