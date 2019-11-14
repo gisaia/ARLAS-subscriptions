@@ -123,6 +123,7 @@ if [ -z ${ARLAS_DEV+x} ]; then usage;          else    echo "Next development ve
 export ARLAS_SUBSCRIPTIONS_VERSION="${API_MAJOR_VERSION}.${ELASTIC_RANGE}.${API_PATCH_VERSION}"
 ARLAS_DEV_VERSION="${API_MAJOR_VERSION}.${ELASTIC_RANGE}.${ARLAS_DEV}"
 FULL_API_VERSION=${API_MAJOR_VERSION}"."${API_MINOR_VERSION}"."${API_PATCH_VERSION}
+API_DEV_VERSION=${API_MAJOR_VERSION}"."${API_MINOR_VERSION}"."${ARLAS_DEV}
 echo "Release : ${ARLAS_SUBSCRIPTIONS_VERSION}"
 echo "API     : ${FULL_API_VERSION}"
 echo "Dev     : ${ARLAS_DEV_VERSION}"
@@ -216,6 +217,11 @@ cp target/tmp/swagger.json openapi
 echo "=> Stop arlas-subscriptions-manager stack"
 docker-compose --project-name arlas-subscriptions down -v
 
+echo "=> Generate API documentation"
+cd subscriptions-manager/
+mvn "-Dswagger.input=../openapi/swagger.json" "-Dswagger.output=../docs/api" swagger2markup:convertSwagger2markup
+cd ..
+
 itests() {
 	echo "=> Run integration tests"
     ./scripts/test-integration.sh
@@ -258,6 +264,7 @@ if [ "$RELEASE" == "YES" ]; then
     echo "=> Commit release version"
     git add openapi/swagger.json
     git add openapi/swagger.yaml
+    git add docs/api
     git commit -a -m "release version ${ARLAS_SUBSCRIPTIONS_VERSION}"
     git tag v${ARLAS_SUBSCRIPTIONS_VERSION}
     git push origin v${ARLAS_SUBSCRIPTIONS_VERSION}
