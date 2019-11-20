@@ -1,8 +1,21 @@
 # Change Log
 
+## [v11.6.3](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.3) (2019-11-20)
+
+[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.2...v11.6.3)
+
+**Miscellaneous:**
+
+- MongoDB credentials [\#160](https://github.com/gisaia/ARLAS-subscriptions/issues/160)
+- Generate API documentation [\#157](https://github.com/gisaia/ARLAS-subscriptions/issues/157) [[documentation](https://github.com/gisaia/ARLAS-subscriptions/labels/documentation)]
+
 ## [v11.6.2](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.2) (2019-10-28)
 
 [Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.1...v11.6.2)
+
+**Miscellaneous:**
+
+- \[Manager\] Update a subscription should set the modified\_at time properly [\#155](https://github.com/gisaia/ARLAS-subscriptions/issues/155)
 
 ## [v11.6.1](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.1) (2019-10-22)
 
