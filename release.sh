@@ -9,6 +9,7 @@ PROJECT_ROOT_DIRECTORY="$SCRIPT_DIRECTORY"
 #########################################
 TEST="YES"
 RELEASE="NO"
+SKIP_API="NO"
 BASEDIR=$PWD
 
 #########################################
@@ -41,14 +42,16 @@ trap clean_exit EXIT
 #### Available arguments ################
 #########################################
 usage(){
-	echo "Usage: ./release.sh -api-major=X -api-minor=Y -api-patch=Z -dev=Z+1 -es=Y [--no-tests]"
+	echo "Usage: ./release.sh -api-major=X -api-minor=Y -api-patch=U -rel=Z -dev=Z+1 -es=Y [--no-tests] [--skip-api]"
   echo " -es |--elastic-range           elasticsearch versions supported"
 	echo " -api-major|--api-version       release arlas-subscriptions API major version"
 	echo " -api-minor|--api-minor-version release arlas-subscriptions API minor version"
 	echo " -api-patch|--api-patch-version release arlas-subscriptions API patch version"
+	echo " -rel|--arlas-release           release arlas-server version"
 	echo " -dev|--arlas-dev               development arlas-subscriptions version (-SNAPSHOT qualifier will be automatically added)"
 	echo " --no-tests                     do not run integration tests"
 	echo " --release                      publish artifacts and git push local branches"
+	echo " --skip-api                     do not generate clients APIs"
 	exit 1
 }
 
@@ -58,6 +61,10 @@ usage(){
 for i in "$@"
 do
 case $i in
+    -rel=*|--arlas-release=*)
+    ARLAS_REL="${i#*=}"
+    shift # past argument=value
+    ;;
     -dev=*|--arlas-dev=*)
     ARLAS_DEV="${i#*=}"
     shift # past argument=value
@@ -86,6 +93,10 @@ case $i in
     RELEASE="YES"
     shift # past argument with no value
     ;;
+    --skip-api)
+    SKIP_API="YES"
+    shift # past argument with no value
+    ;;
     *)
             # unknown option
     ;;
@@ -112,18 +123,32 @@ if [ -z ${ELASTIC_VERSIONS+x} ]; then usage;   else echo "Elasticsearch versions
 if [ -z ${API_MAJOR_VERSION+x} ]; then usage;  else    echo "API MAJOR version           : ${API_MAJOR_VERSION}"; fi
 if [ -z ${API_MINOR_VERSION+x} ]; then usage;  else    echo "API MINOR version           : ${API_MINOR_VERSION}"; fi
 if [ -z ${API_PATCH_VERSION+x} ]; then usage;  else    echo "API PATCH version           : ${API_PATCH_VERSION}"; fi
+if [ -z ${ARLAS_REL+x} ]; then usage;          else    echo "Release version             : ${ARLAS_REL}"; fi
 if [ -z ${ARLAS_DEV+x} ]; then usage;          else    echo "Next development version    : ${ARLAS_DEV}"; fi
                                                        echo "Running tests               : ${TESTS}"
                                                        echo "Release                     : ${RELEASE}"
+
+#########################################
+#### Check if you're logged on to repos ###########
+#########################################
+
+if [ "$RELEASE" == "YES" -a "$SKIP_API" == "NO" ]; then
+    export npmlogin=`npm whoami`
+    if  [ -z "$npmlogin"  ] ; then echo "Your are not logged on to npm"; exit -1; else  echo "logged as "$npmlogin ; fi
+
+    if  [ -z "$PIP_LOGIN"  ] ; then echo "Please set PIP_LOGIN environment variable"; exit -1; fi
+    if  [ -z "$PIP_PASSWORD"  ] ; then echo "Please set PIP_PASSWORD environment variable"; exit -1; fi
+fi
 
 
 #########################################
 #### Setting versions ###################
 #########################################
-export ARLAS_SUBSCRIPTIONS_VERSION="${API_MAJOR_VERSION}.${ELASTIC_RANGE}.${API_PATCH_VERSION}"
+export ARLAS_SUBSCRIPTIONS_VERSION="${API_MAJOR_VERSION}.${ELASTIC_RANGE}.${ARLAS_REL}"
 ARLAS_DEV_VERSION="${API_MAJOR_VERSION}.${ELASTIC_RANGE}.${ARLAS_DEV}"
 FULL_API_VERSION=${API_MAJOR_VERSION}"."${API_MINOR_VERSION}"."${API_PATCH_VERSION}
 API_DEV_VERSION=${API_MAJOR_VERSION}"."${API_MINOR_VERSION}"."${ARLAS_DEV}
+
 echo "Release : ${ARLAS_SUBSCRIPTIONS_VERSION}"
 echo "API     : ${FULL_API_VERSION}"
 echo "Dev     : ${ARLAS_DEV_VERSION}"
@@ -228,7 +253,79 @@ itests() {
 }
 if [ "$TESTS" == "YES" ]; then itests; else echo "=> Skip integration tests"; fi
 
+#########################################
+#### Generate API clients ###############
+#########################################
 
+if [ "$SKIP_API" == "YES" ]; then
+  echo "=> Skipping generation of API clients"
+else
+  echo "=> Generate API clients"
+  ls target/tmp/
+
+  mkdir -p target/tmp/typescript-fetch
+  docker run --rm \
+      -e GROUP_ID="$(id -g)" \
+      -e USER_ID="$(id -u)" \
+      --mount dst=/input/api.json,src="$PWD/target/tmp/swagger.json",type=bind,ro \
+      --mount dst=/output,src="$PWD/target/tmp/typescript-fetch",type=bind \
+    gisaia/swagger-codegen-2.3.1 \
+          -l typescript-fetch --additional-properties modelPropertyNaming=snake_case
+
+  mkdir -p target/tmp/python-api
+  docker run --rm \
+      -e GROUP_ID="$(id -g)" \
+      -e USER_ID="$(id -u)" \
+      --mount dst=/input/api.json,src="$PWD/target/tmp/swagger.json",type=bind,ro \
+      --mount dst=/input/config.json,src="$PROJECT_ROOT_DIRECTORY/conf/swagger/python-config.json",type=bind,ro \
+      --mount dst=/output,src="$PWD/target/tmp/python-api",type=bind \
+    gisaia/swagger-codegen-2.2.3 \
+          -l python --type-mappings GeoJsonObject=object
+
+  echo "=> Build Typescript API "${FULL_API_VERSION}
+  cd ${BASEDIR}/target/tmp/typescript-fetch/
+  cp ${BASEDIR}/conf/npm/package-build.json package.json
+  cp ${BASEDIR}/conf/npm/tsconfig-build.json .
+  npm version --no-git-tag-version ${FULL_API_VERSION}
+  npm install
+  npm run build-release
+  npm run postbuild
+  cd ${BASEDIR}
+
+  echo "=> Publish Typescript API "
+  cp ${BASEDIR}/conf/npm/package-publish.json ${BASEDIR}/target/tmp/typescript-fetch/dist/package.json
+  cd ${BASEDIR}/target/tmp/typescript-fetch/dist
+  npm version --no-git-tag-version ${FULL_API_VERSION}
+
+
+  if [ "$RELEASE" == "YES" ]; then
+      npm publish || echo "Publishing on npm failed ... continue ..."
+  else echo "=> Skip npm api publish"; fi
+
+
+  echo "=> Build Python API "${FULL_API_VERSION}
+  cd ${BASEDIR}/target/tmp/python-api/
+  cp ${BASEDIR}/conf/python/setup.py setup.py
+  sed -i.bak 's/\"api_subscriptions_version\"/\"'${FULL_API_VERSION}'\"/' setup.py
+
+  docker run \
+        -e GROUP_ID="$(id -g)" \
+        -e USER_ID="$(id -u)" \
+        --mount dst=/opt/python,src="$PWD",type=bind \
+        --rm \
+        gisaia/python-3-alpine \
+              setup.py sdist bdist_wheel
+
+  echo "=> Publish Python API "
+  if [ "$RELEASE" == "YES" ]; then
+      docker run --rm \
+          -w /opt/python \
+        -v $PWD:/opt/python \
+        python:3 \
+        /bin/bash -c  "pip install twine ; twine upload dist/* -u ${PIP_LOGIN} -p ${PIP_PASSWORD}"
+       ### At this stage username and password of Pypi repository should be set
+  else echo "=> Skip python api publish"; fi
+fi
 
 cd ${BASEDIR}
 
