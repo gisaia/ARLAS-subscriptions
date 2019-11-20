@@ -31,6 +31,15 @@ public class MongoDBConfiguration {
     @JsonProperty("database")
     public String database;
 
+    @JsonProperty("username")
+    public String username;
+
+    @JsonProperty("password")
+    public String password;
+
+    @JsonProperty("authDatabase")
+    public String authDatabase;
+
     public List<Seed> getSeeds() {
         return seeds;
     }
