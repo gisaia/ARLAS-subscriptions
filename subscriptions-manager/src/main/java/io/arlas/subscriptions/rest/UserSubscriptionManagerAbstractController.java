@@ -30,7 +30,7 @@ import javax.ws.rs.core.MediaType;
                 title = "ARLAS Subscriptions Manager API",
                 description = "Manage ARLAS subscriptions on ARLAS collections' events.",
                 license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html"),
-                version = "11.0.0"),
+                version = "API_VERSION"),
         tags = {@Tag(name="end-user", description = "Standard endpoints to manage one's subscriptions as an end-user."),
                 @Tag(name="admin", description = "Optional endpoints to manage all subscriptions as an administrator of the service.")},
         schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS }
