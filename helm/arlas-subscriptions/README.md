@@ -37,8 +37,11 @@ Value | Type | Required | Default | Description
 `fullnameOverride` | string | | | When the chart gets installed, all created Kubernetes objects are named based on the release name, for example the ARLAS subscription manager's deployment is named `<release name>-arlas-sub-manager`. `fullnameOverride` allows using something else as the base name: `<fullnameOverride>-arlas-sub-manager`.
 `manager.affinity` | [io.k8s.api.core.v1.Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.12/#affinity-v1-core) | | `{}` | Allows assigning the Kubernetes deployment to certain Kubernetes nodes. Official docs [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/)
 `manager.environmentVariables` | [mapping](https://yaml.org/spec/1.2/spec.html#mapping//) | required | | Allows defining environment variables for the container. Available values are documented [here](https://github.com/gisaia/ARLAS-subscriptions#manager-configuration)
+`manager.environmentVariables.MONGO_AUTH_DATABASE` | string | | | MongoDB database against which to authenticate
 `manager.environmentVariables.MONGO_HOST` | string | required | | See definition [here](https://github.com/gisaia/ARLAS-subscriptions#manager-configuration)
+`manager.environmentVariables.MONGO_PASSWORD` | string | | | Password for authentication to MongoDB
 `manager.environmentVariables.MONGO_PORT` | integer | required | | See definition [here](https://github.com/gisaia/ARLAS-subscriptions#manager-configuration)
+`manager.environmentVariables.MONGO_USERNAME` | string | | | Username for authentication to MongoDB
 `manager.image.repository` | string |  | [`gisaia/arlas-subscriptions-manager`](hub.docker.com/r/gisaia/arlas-subscriptions-manager) | Docker image's repository
 `manager.image.tag` | string |  | `0.0.1-SNAPSHOT` | Docker image's tag
 `manager.image.pullPolicy` | string |  | `IfNotPresent` | Docker image's pull policy. See field `imagePullPolicy` in [reference for Kubernetes object `container`](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.12/#container-v1-core)

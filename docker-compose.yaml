@@ -39,6 +39,9 @@ services:
     container_name: "mongodb"
     ports:
       - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: secret
 
   #########
   # ARLAS #
@@ -93,6 +96,9 @@ services:
     environment:
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
+      - MONGO_USERNAME=${MONGO_USERNAME:-mongouser}
+      - MONGO_PASSWORD=${MONGO_PASSWORD:-secret}
+      - MONGO_AUTH_DATABASE=${MONGO_AUTH_DATABASE:-admin}
       - ARLAS_SUB_ELASTIC_NODES=elasticsearch:9300
       - ARLAS_SUB_ELASTIC_INDEX=subs
       - ARLAS_SUB_ELASTIC_TYPE=sub_type

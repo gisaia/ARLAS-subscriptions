@@ -69,6 +69,9 @@ function test_manager() {
             -e MONGO_HOST="mongodb" \
             -e MONGO_PORT="27017" \
             -e MONGO_DATABASE="subscription" \
+            -e MONGO_USERNAME="mongouser" \
+            -e MONGO_PASSWORD="secret" \
+            -e MONGO_AUTH_DATABASE="admin" \
             -e ARLAS_ELASTIC_HOST="elasticsearch" \
             -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9300" \
             -e ARLAS_SUB_ELASTIC_SNIFFING="false" \
@@ -92,6 +95,9 @@ function test_manager_auth() {
             -e MONGO_HOST="mongodb" \
             -e MONGO_PORT="27017" \
             -e MONGO_DATABASE="subscription" \
+            -e MONGO_USERNAME="mongouser" \
+            -e MONGO_PASSWORD="secret" \
+            -e MONGO_AUTH_DATABASE="admin" \
             -e ARLAS_ELASTIC_HOST="elasticsearch" \
             -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9300" \
             -e ARLAS_SUB_ELASTIC_SNIFFING="false" \

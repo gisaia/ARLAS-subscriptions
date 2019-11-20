@@ -21,11 +21,13 @@ package io.arlas.subscriptions.db.mongo;
 
 
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import io.arlas.subscriptions.configuration.mongo.MongoDBConfiguration;
 import io.arlas.subscriptions.configuration.mongo.Seed;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -49,11 +51,14 @@ public class MongoDBFactoryConnection {
         CodecRegistry defaultCodecRegistry = MongoClientSettings.getDefaultCodecRegistry();
         CodecRegistry pojoCodecRegistry = fromRegistries(defaultCodecRegistry, fromProviders(pojoCodecProvider));
 
-        final MongoClient client = MongoClients.create(
-                MongoClientSettings.builder()
-                        .codecRegistry(pojoCodecRegistry)
-                        .applyToClusterSettings(builder -> builder.hosts(getServers())).build()
-        );
+        MongoClientSettings.Builder mongoBuilder = MongoClientSettings.builder()
+                .codecRegistry(pojoCodecRegistry)
+                .applyToClusterSettings(builder -> builder.hosts(getServers()));
+        if (!StringUtils.isEmpty(mongoDBConfiguration.username) &&
+                !StringUtils.isEmpty(mongoDBConfiguration.password)) {
+            mongoBuilder.credential(MongoCredential.createCredential(mongoDBConfiguration.username, mongoDBConfiguration.authDatabase, mongoDBConfiguration.password.toCharArray()));
+        }
+        final MongoClient client = MongoClients.create(mongoBuilder.build());
         return client;
     }
 

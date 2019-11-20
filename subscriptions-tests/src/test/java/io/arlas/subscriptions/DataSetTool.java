@@ -256,6 +256,9 @@ public class DataSetTool {
         if (loadMongo) {
             String mongoDBname = Optional.ofNullable(System.getenv("MONGO_DATABASE")).orElse("subscription");
             String mongoHost = Optional.ofNullable(System.getenv("MONGO_HOST")).orElse("mongodb");
+            String mongoUsername = Optional.ofNullable(System.getenv("MONGO_USERNAME")).orElse("mongouser");
+            String mongoPassword = Optional.ofNullable(System.getenv("MONGO_PASSWORD")).orElse("secret");
+            String mongoAuthDatabase = Optional.ofNullable(System.getenv("MONGO_AUTH_DATABASE")).orElse("admin");
             int mongoPort = Integer.valueOf(Optional.ofNullable(System.getenv("MONGO_PORT")).orElse("27017"));
             LOGGER.info("Mongo: " + mongoHost + ":" + mongoPort);
             Seed seed = new Seed();
@@ -264,6 +267,9 @@ public class DataSetTool {
             MongoDBConfiguration configuration = new MongoDBConfiguration();
             configuration.database = mongoDBname;
             configuration.seeds = Arrays.asList(seed);
+            configuration.username = mongoUsername;
+            configuration.password = mongoPassword;
+            configuration.authDatabase = mongoAuthDatabase;
             MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration);
             MongoDatabase mongoDatabase = mongoDBFactoryConnection.getClient().getDatabase(mongoDBname);
             mongoCollection = mongoDatabase.getCollection(MongoUserSubscriptionDAOImpl.ARLAS_SUBSCRIPTION_DB_NAME, UserSubscription.class);;
