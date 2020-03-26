@@ -25,14 +25,13 @@ services:
       LOG4J_LOGGER_KAFKA: INFO
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.6.0}
     container_name: "elasticsearch"
     environment:
       - discovery.type=single-node
       - cluster.name=elasticsearch
     ports:
       - 9200:9200
-      - 9300:9300
 
   mongodb:
     image: mongo:3.4
@@ -48,15 +47,14 @@ services:
   #########
 
   arlas-server:
-    image: gisaia/arlas-server:11.6.0
+    image: gisaia/arlas-server:${ARLAS_VERSION:-12.7.7}
     container_name: "arlas-server"
     ports:
       - 9999:9999
     depends_on:
       - elasticsearch
     environment:
-      ARLAS_ELASTIC_CLUSTER: elasticsearch
-      ARLAS_ELASTIC_NODES: elasticsearch:9300
+      - ARLAS_ELASTIC_NODES=elasticsearch:9200
     command: ["/opt/app/wait-for-elasticsearch.sh"]
 
   arlas-subscriptions-matcher:
@@ -70,7 +68,7 @@ services:
       - kafka
     environment:
       - KAFKA_BROKERS=kafka:9092
-      - ARLAS_ELASTIC_NODES=elasticsearch:9300
+      - ARLAS_ELASTIC_NODES=elasticsearch:9200
       - ARLAS_SERVER=arlas-server:9999
       - ARLAS_SERVER_BASE_PATH=http://arlas-server:9999/arlas
       - ARLAS_SUBSCRIPTIONS_BASE_PATH=http://arlas-server:9999/arlas
@@ -99,9 +97,8 @@ services:
       - MONGO_USERNAME=${MONGO_USERNAME:-mongouser}
       - MONGO_PASSWORD=${MONGO_PASSWORD:-secret}
       - MONGO_AUTH_DATABASE=${MONGO_AUTH_DATABASE:-admin}
-      - ARLAS_SUB_ELASTIC_NODES=elasticsearch:9300
+      - ARLAS_SUB_ELASTIC_NODES=elasticsearch:9200
       - ARLAS_SUB_ELASTIC_INDEX=subs
-      - ARLAS_SUB_ELASTIC_TYPE=sub_type
       - ARLAS_SUB_TRIG_SCHEM_PATH=${ARLAS_SUB_TRIG_SCHEM_PATH}
       - ARLAS_SUB_IDENTITY_HEADER=${ARLAS_SUB_IDENTITY_HEADER:-}
     volumes:

@@ -20,6 +20,7 @@
 package io.arlas.subscriptions.app;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.smoketurner.dropwizard.zipkin.ZipkinBundle;
 import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
@@ -83,6 +84,10 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
 
     @Override
     public void run(ArlasSubscriptionManagerConfiguration configuration, Environment environment) throws Exception {
+
+        logger.info("Raw configuration: " + (new ObjectMapper()).writer().writeValueAsString(configuration));
+        configuration.check();
+        logger.info("Checked configuration: " + (new ObjectMapper()).writer().writeValueAsString(configuration));
 
         final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.mongoDBConfiguration);
         final ElasticDBFactoryConnection elasticDBFactoryConnection = new ElasticDBFactoryConnection(configuration.elasticDBConfiguration);

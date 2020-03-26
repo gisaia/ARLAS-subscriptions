@@ -21,6 +21,8 @@ package io.arlas.subscriptions.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.arlas.server.exceptions.ArlasException;
+import io.arlas.server.utils.ElasticClient;
 import io.arlas.subscriptions.configuration.TriggerConfiguration;
 import io.arlas.subscriptions.configuration.elastic.BulkConfiguration;
 import io.arlas.subscriptions.configuration.elastic.ElasticDBConfiguration;
@@ -33,8 +35,7 @@ import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JsonSchemaValidator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
-import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.bulk.BackoffPolicy;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -43,7 +44,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
@@ -53,6 +54,7 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
 import org.everit.json.schema.ValidationException;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Optional;
@@ -63,9 +65,8 @@ import static io.arlas.subscriptions.app.ArlasSubscriptionsManager.MANAGER;
 public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     public final ArlasLogger logger = ArlasLoggerFactory.getLogger(ElasticUserSubscriptionDAOImpl.class, MANAGER);
 
-    private Client client;
+    private ElasticClient client;
     private String arlasSubscriptionIndex;
-    private String arlasSubscriptionType;
     private TriggerConfiguration triggerConfiguration;
     private BulkConfiguration bulkConfiguration;
     private JsonSchemaValidator jsonSchemaValidator;
@@ -79,7 +80,6 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
                                           JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
             this.client=elasticDBManaged.esClient;
             this.arlasSubscriptionIndex = elasticDBConfiguration.elasticsubindex;
-            this.arlasSubscriptionType = elasticDBConfiguration.elasticsubtype;
             this.triggerConfiguration=triggerConfiguration;
             this.bulkConfiguration = elasticDBConfiguration.bulkConfiguration;
             this.initSubscriptionIndex();
@@ -98,14 +98,15 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
         try {
             this.jsonSchemaValidator.validJsonObjet(userSubscription.subscription.trigger);
             IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription,this.triggerConfiguration.triggerGeometryKey,this.triggerConfiguration.triggerCentroidKey);
-            response = client.prepareIndex(arlasSubscriptionIndex, arlasSubscriptionType, userSubscription.getId())
-                    .setSource(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON).get();
+            response = client.index(arlasSubscriptionIndex, userSubscription.getId(), mapper.writeValueAsString(indexedUserSubscription));
         } catch (ValidationException e) {
             throw new ArlasSubscriptionsException("Error in validation of trigger json schema: " + e.getErrorMessage());
         } catch (JsonProcessingException e) {
             throw new ArlasSubscriptionsException("Error in writing subscription json: " + e.getMessage());
         } catch (ElasticsearchException e) {
             throw new ArlasSubscriptionsException("Elasticsearch not available: " + e.getMessage());
+        } catch (ArlasException e) {
+            throw new ArlasSubscriptionsException("Error while indexing:" + e.getMessage());
         }
         if (response.status().getStatus() != RestStatus.OK.getStatus()
                 && response.status().getStatus() != RestStatus.CREATED.getStatus()) {
@@ -130,11 +131,11 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
     @Override
     public void setUserSubscriptionDeletedFlag(UserSubscription userSubscription, boolean isDeleted) throws ArlasSubscriptionsException {
-        UpdateRequest updateRequest = new UpdateRequest(arlasSubscriptionIndex, arlasSubscriptionType, userSubscription.getId())
+        UpdateRequest updateRequest = new UpdateRequest(arlasSubscriptionIndex, userSubscription.getId())
                 .script(new Script("ctx._source.deleted = \"" + isDeleted + "\""));
         UpdateResponse response = null;
         try {
-            response = client.update(updateRequest).get();
+            response = client.getClient().update(updateRequest, RequestOptions.DEFAULT);
         } catch (Exception e) {
             throw new ArlasSubscriptionsException("Cannot update subscription index: " + e.getMessage());
         }
@@ -147,52 +148,49 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
     public void initSubscriptionIndex() throws ArlasSubscriptionsException {
         try {
-            IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists().setIndices(arlasSubscriptionIndex).get();
-            if (indicesExistsResponse.isExists()) {
-                TypesExistsResponse typesExistsResponse = client.admin().indices().prepareTypesExists(arlasSubscriptionIndex).setTypes(arlasSubscriptionType).get();
-                if (! typesExistsResponse.isExists()) {
-                    throw new ArlasSubscriptionsException("Type " + arlasSubscriptionType  + " does not exist in " + arlasSubscriptionIndex + " index , create it to run ARLAS-Subscription");
-                }
-            } else {
+            if (!client.indexExists(arlasSubscriptionIndex)) {
                 throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription");
             }
         } catch (IndexNotFoundException e) {
             throw new ArlasSubscriptionsException(arlasSubscriptionIndex  + " elasticsearch index does not exist, create it to run ARLAS-Subscription");
+        } catch (ArlasException e) {
+            throw new ArlasSubscriptionsException("Error: " + e.getMessage());
         }
     }
 
     public void initBulkProcessor(final long total) throws ArlasSubscriptionsException {
         this.initSubscriptionIndex();
 
-        bulkProcessor = BulkProcessor.builder(
-                client,
-                new BulkProcessor.Listener() {
-                    long count = 0;
+        BulkProcessor.Listener listener = new BulkProcessor.Listener() {
+            long count = 0;
 
-                    @Override
-                    public void beforeBulk(long executionId,
-                                           BulkRequest request) {
-                        count += request.numberOfActions();
-                    }
+            @Override
+            public void beforeBulk(long executionId,
+                                   BulkRequest request) {
+                count += request.numberOfActions();
+            }
 
-                    @Override
-                    public void afterBulk(long executionId,
-                                          BulkRequest request,
-                                          BulkResponse response) {
-                        logger.info("Nb of doc synchronised: " + count + "/" + total + " (" + df2.format((double) count/total) + ")");
-                        if (response.hasFailures()) {
-                            logger.warn("-> But some failure in synchronization: " + response.buildFailureMessage());
-                        }
-                    }
+            @Override
+            public void afterBulk(long executionId,
+                                  BulkRequest request,
+                                  BulkResponse response) {
+                logger.info("Nb of doc synchronised: " + count + "/" + total + " (" + df2.format((double) count/total) + ")");
+                if (response.hasFailures()) {
+                    logger.warn("-> But some failure in synchronization: " + response.buildFailureMessage());
+                }
+            }
 
-                    @Override
-                    public void afterBulk(long executionId,
-                                          BulkRequest request,
-                                          Throwable failure) {
-                        logger.info("Nb of doc synchronised: " + count + "/" + total + " (" + df2.format((double) count/total) + ")");
-                        logger.warn("-> Failure in synchronization: " + failure.getMessage());
-                    }
-                })
+            @Override
+            public void afterBulk(long executionId,
+                                  BulkRequest request,
+                                  Throwable failure) {
+                logger.info("Nb of doc synchronised: " + count + "/" + total + " (" + df2.format((double) count/total) + ")");
+                logger.warn("-> Failure in synchronization: " + failure.getMessage());
+            }
+        };
+
+        bulkProcessor = BulkProcessor.builder((request, bulkListener) ->
+                        client.getClient().bulkAsync(request, RequestOptions.DEFAULT, bulkListener), listener)
                 .setConcurrentRequests(bulkConfiguration.concurrentRequests)
                 .setBulkActions(bulkConfiguration.bulkActions)
                 .setBulkSize(new ByteSizeValue(bulkConfiguration.bulkSize, ByteSizeUnit.MB))
@@ -205,7 +203,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     public void addToBulkProcessor(UserSubscription userSubscription) {
         try {
             IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(userSubscription, this.triggerConfiguration.triggerGeometryKey, this.triggerConfiguration.triggerCentroidKey);
-            bulkProcessor.add(new IndexRequest(arlasSubscriptionIndex, arlasSubscriptionType, userSubscription.getId())
+            bulkProcessor.add(new IndexRequest(arlasSubscriptionIndex).id(userSubscription.getId())
                     .source(mapper.writeValueAsString(indexedUserSubscription), XContentType.JSON));
         } catch (ArlasSubscriptionsException e) {
             logger.warn("Impossible to convert UserSubscription to IndexedUserSubscription:" + e.getMessage());
@@ -219,8 +217,8 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
     public void finaliseBulkProcessor() {
         try {
             bulkProcessor.awaitClose(10, TimeUnit.MINUTES);
-            client.admin().indices().prepareRefresh().get();
-        } catch (InterruptedException e) {
+            client.getClient().indices().refresh(new RefreshRequest(), RequestOptions.DEFAULT);
+        } catch (InterruptedException | IOException e) {
             logger.warn("Failure in finalisation: " + e.getMessage());
         }
     }

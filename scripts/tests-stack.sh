@@ -41,8 +41,7 @@ docker run --rm \
     -v $HOME/.m2:/root/.m2 \
     -e ARLAS_HOST="arlas-server" \
     -e ARLAS_PORT="9999" \
-    -e ARLAS_ELASTIC_HOST="elasticsearch" \
-    -e ARLAS_ELASTIC_PORT="9300" \
+    -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9200" \
     --net arlas-subscriptions_default \
     maven:3.5.0-jdk-8 \
     mvn exec:java -Dexec.mainClass="io.arlas.subscriptions.DataSetTool" -Dexec.classpathScope=test -pl subscriptions-tests

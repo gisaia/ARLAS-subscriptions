@@ -19,57 +19,18 @@
 
 package io.arlas.subscriptions.db.elastic;
 
+import io.arlas.server.app.ElasticConfiguration;
+import io.arlas.server.utils.ElasticClient;
 import io.arlas.subscriptions.configuration.elastic.ElasticDBConfiguration;
-import io.netty.util.internal.StringUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.common.Strings;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
-
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ElasticDBFactoryConnection {
-    private ElasticDBConfiguration elasticBConfiguration;
+    private ElasticConfiguration elasticConfiguration;
 
-    public ElasticDBFactoryConnection(final ElasticDBConfiguration elasticBConfiguration) {
-        this.elasticBConfiguration = elasticBConfiguration;
+    public ElasticDBFactoryConnection(final ElasticDBConfiguration elasticConfiguration) {
+        this.elasticConfiguration = elasticConfiguration;
     }
 
-    public Client getClient() throws Exception{
-        Settings.Builder settingsBuilder = Settings.builder();
-        if(elasticBConfiguration.elasticsniffing) {
-            settingsBuilder.put("client.transport.sniff", true);
-        }
-        if(!Strings.isNullOrEmpty(elasticBConfiguration.elasticcluster)) {
-            settingsBuilder.put("cluster.name", elasticBConfiguration.elasticcluster);
-        }
-        Settings settings = settingsBuilder.build();
-
-        PreBuiltTransportClient transportClient = new PreBuiltTransportClient(settings);
-        for(Pair<String,Integer> node : this.getElasticNodes(elasticBConfiguration.elasticnodes)) {
-            transportClient.addTransportAddress(new TransportAddress(InetAddress.getByName(node.getLeft()),
-                    node.getRight()));
-        }
-        return transportClient;
-    }
-
-    private static List<Pair<String,Integer>> getElasticNodes(String esNodes) {
-        List<Pair<String,Integer>> elasticNodes = new ArrayList<>();
-        if(!StringUtil.isNullOrEmpty(esNodes)) {
-            String[] nodes = esNodes.split(",");
-            for(String node : nodes) {
-                String[] hostAndPort = node.split(":");
-                if(hostAndPort.length == 2 && StringUtils.isNumeric(hostAndPort[1])) {
-                    elasticNodes.add(new ImmutablePair<>(hostAndPort[0], Integer.parseInt(hostAndPort[1])));
-                }
-            }
-        }
-        return elasticNodes;
+    public ElasticClient getClient() {
+        return new ElasticClient(this.elasticConfiguration);
     }
 }

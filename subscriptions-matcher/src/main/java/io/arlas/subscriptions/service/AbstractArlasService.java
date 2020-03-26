@@ -101,15 +101,9 @@ public class AbstractArlasService {
                 .findFirst()
                 .orElse(null);
 
-        ParamsParser.getFilter(
+        ParamsParser.getFilter(null,
                 getListOfStringFromQueryParams.apply("f"),
                 getListOfStringFromQueryParams.apply("q"),
-                getListOfStringFromQueryParams.apply("pwithin"),
-                getListOfStringFromQueryParams.apply("gwithin"),
-                getListOfStringFromQueryParams.apply("gintersect"),
-                getListOfStringFromQueryParams.apply("notpwithin"),
-                getListOfStringFromQueryParams.apply("notgwithin"),
-                getListOfStringFromQueryParams.apply("notgintersect"),
                 getStringFromQueryParams.apply("dateformat"));
     }
 

@@ -19,16 +19,16 @@
 
 package io.arlas.subscriptions.db.elastic;
 
+import io.arlas.server.utils.ElasticClient;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.dropwizard.lifecycle.Managed;
-import org.elasticsearch.client.Client;
 
 public class ElasticDBManaged implements Managed {
 
 
-    public Client esClient;
+    public ElasticClient esClient;
 
-    public ElasticDBManaged(final Client esClient) {
+    public ElasticDBManaged(final ElasticClient esClient) {
         this.esClient = esClient;
     }
 

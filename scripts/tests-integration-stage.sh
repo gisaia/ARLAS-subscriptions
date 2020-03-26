@@ -3,8 +3,8 @@ set -e
 export ARLAS_SUB_TRIG_SCHEM_PATH="/opt/app/trigger.schema.json"
 export ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL="./subscriptions-tests/src/test/resources/trigger.schema.json"
 function clean_docker {
-    ./scripts/docker-clean.sh
-    echo "===> clean maven repository"
+  ./scripts/docker-clean.sh
+  echo "===> clean maven repository"
 	docker run --rm \
 		-w /opt/maven \
 		-v $PWD:/opt/maven \
@@ -14,10 +14,10 @@ function clean_docker {
 }
 
 function clean_exit {
-    ARG=$?
+  ARG=$?
 	echo "===> Exit stage ${STAGE} = ${ARG}"
-    clean_docker
-    exit $ARG
+  clean_docker
+  exit $ARG
 }
 trap clean_exit EXIT
 
@@ -72,9 +72,7 @@ function test_manager() {
             -e MONGO_USERNAME="mongouser" \
             -e MONGO_PASSWORD="secret" \
             -e MONGO_AUTH_DATABASE="admin" \
-            -e ARLAS_ELASTIC_HOST="elasticsearch" \
-            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9300" \
-            -e ARLAS_SUB_ELASTIC_SNIFFING="false" \
+            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9200" \
             -e ARLAS_SUB_ELASTIC_INDEX="subs" \
             -e ARLAS_SUB_ELASTIC_TYPE="sub_type"\
             -e ARLAS_SUB_ELASTIC_CLUSTER="elasticsearch" \
@@ -98,9 +96,7 @@ function test_manager_auth() {
             -e MONGO_USERNAME="mongouser" \
             -e MONGO_PASSWORD="secret" \
             -e MONGO_AUTH_DATABASE="admin" \
-            -e ARLAS_ELASTIC_HOST="elasticsearch" \
-            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9300" \
-            -e ARLAS_SUB_ELASTIC_SNIFFING="false" \
+            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9200" \
             -e ARLAS_SUB_ELASTIC_INDEX="subs" \
             -e ARLAS_SUB_ELASTIC_TYPE="sub_type"\
             -e ARLAS_SUB_ELASTIC_CLUSTER="elasticsearch" \
@@ -117,7 +113,7 @@ function test_matcher() {
             -v $PWD:/opt/maven \
             -v $HOME/.m2:/root/.m2 \
             -e ARLAS_HOST="arlas-server" \
-            -e ARLAS_ELASTIC_HOST="elasticsearch" \
+            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9200" \
             -e ARLAS_SERVER_BASE_PATH="http://arlas-server:9999/arlas" \
             -e ARLAS_SUBSCRIPTIONS_BASE_PATH="http://arlas-server:9999/arlas" \
             --net arlas-subscriptions_default \
@@ -134,8 +130,7 @@ function test_dummy() {
             -e ARLAS_SUB_MANAGER_HOST="arlas-subscriptions-manager" \
             -e ARLAS_HOST="arlas-server" \
             -e ARLAS_PORT="9999" \
-            -e ARLAS_ELASTIC_HOST="elasticsearch" \
-            -e ARLAS_ELASTIC_PORT="9300" \
+            -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9200" \
             --net arlas-subscriptions_default \
             maven:3.5.0-jdk-8 \
             mvn -Dit.test=DummyIT verify -DskipTests=false  -DfailIfNoTests=false

@@ -19,6 +19,7 @@
 
 package io.arlas.subscriptions.rest;
 
+import io.arlas.server.exceptions.ArlasException;
 import io.arlas.subscriptions.AbstractTestContext;
 import io.arlas.subscriptions.DataSetTool;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
@@ -27,7 +28,6 @@ import io.arlas.subscriptions.tools.KafkaTool;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.locationtech.jts.io.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +50,7 @@ public class SubscriptionsMatcherIT extends AbstractTestContext {
         try {
             DataSetTool.loadDataSet(true);
             DataSetTool.loadSubscriptions(false);
-        } catch (IOException|ParseException|ArlasSubscriptionsException e) {
+        } catch (IOException | ArlasSubscriptionsException | ArlasException e) {
             LOGGER.error("Could not load data in ES", e);
         }
     }

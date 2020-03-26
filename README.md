@@ -3,7 +3,6 @@
 [![Build Status](https://api.travis-ci.org/gisaia/ARLAS-subscriptions.svg?branch=develop)](https://travis-ci.org/gisaia/ARLAS-subscriptions)
 
 # Overview
-**Warning: Work in Progress**
 
 ARLAS-subscriptions is a service used to generate notification orders (i.e. a message containing information to be
 pushed to a user by a *notification service* \[not provided by ARLAS\]), according to some criteria subscribed by a user
@@ -62,7 +61,7 @@ The `manager` and `matcher` can then be started.
 ## Manager configuration
 Environment variable name | Description | Example
 --- | --- | ---
-ARLAS_SUB_ELASTIC_NODES | Elasticsearch server:port containing the subscriptions index | localhost:9300
+ARLAS_SUB_ELASTIC_NODES | Elasticsearch server:port containing the subscriptions index | localhost:9200
 ARLAS_SUB_ELASTIC_SNIFFING | Elasticsearch client sniffing | false
 ARLAS_SUB_ELASTIC_CLUSTER | Elasticsearch cluster name containing the subscriptions index | elasticsearch
 ARLAS_SUB_ELASTIC_INDEX | Elasticsearch index name for the subscriptions | subscription
@@ -86,7 +85,7 @@ KAFKA_TOPIC_SUBSCRIPTION_EVENTS | Kafka consumer topic for new events | subscrip
 KAFKA_TOPIC_NOTIFICATION_ORDERS | Kafka producer topic for notification order | notification_orders
 ARLAS_SUBSCRIPTIONS_BASE_PATH | ARLAS server for the subscriptions collection | http://localhost:9999/arlas
 ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT | ARLAS server search endpoint for the subscriptions collection | /explore/subscriptions/_search
-ARLAS_SUBSCRIPTIONS_FILTER_ROOT | ARLAS server filter request to be applied to the subscription collection in order to find matching subscriptions | gintersect=(object.geometry)&f=subscription.trigger.event:eq:(event)&f=subscription.trigger.job:eq:(object.job)&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id}
+ARLAS_SUBSCRIPTIONS_FILTER_ROOT | ARLAS server filter request to be applied to the subscription collection in order to find matching subscriptions | f=subscription.trigger.geometry:intersects:(object.geometry)&f=subscription.trigger.event:eq:(event)&f=subscription.trigger.job:eq:(object.job)&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id}
 ARLAS_SERVER_BASE_PATH | ARLAS server for the documents collection | http://localhost:9999/arlas
 ARLAS_SERVER_SEARCH_ENDPOINT | ARLAS server search endpoint for the documents collection | /explore/geodata/_search
 ARLAS_SERVER_FILTER_ROOT | ARLAS server filter request to be applied to the documents collection in order to find matching documents | f=id:eq:(object.id)
