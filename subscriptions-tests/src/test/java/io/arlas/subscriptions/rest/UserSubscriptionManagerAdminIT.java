@@ -22,17 +22,19 @@ package io.arlas.subscriptions.rest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.Filters;
+import io.arlas.server.exceptions.ArlasException;
 import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.DataSetTool;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
 import io.restassured.http.ContentType;
 import org.bson.Document;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.junit.After;
 import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static junit.framework.TestCase.assertTrue;
@@ -392,13 +394,11 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
         return subscription;
     }
 
-    private void insertTestSubscriptionInES(String id) throws JsonProcessingException {
+    private void insertTestSubscriptionInES(String id) throws JsonProcessingException, ArlasException {
         IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription();
         indexedUserSubscription.setId(id);
         indexedUserSubscription.created_by = TEMP_SUBS_CREATED_BY;
-        DataSetTool.client.prepareIndex(DataSetTool.SUBSCRIPTIONS_INDEX_NAME, DataSetTool.SUBSCRIPTIONS_TYPE_NAME, indexedUserSubscription.getId())
-                .setSource(MAPPER.writer().writeValueAsString(indexedUserSubscription), XContentType.JSON)
-                .get();
+        DataSetTool.client.index(DataSetTool.SUBSCRIPTIONS_INDEX_NAME, indexedUserSubscription.getId(), MAPPER.writer().writeValueAsString(indexedUserSubscription));
     }
 
 }

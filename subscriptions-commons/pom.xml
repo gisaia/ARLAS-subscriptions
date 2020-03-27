@@ -13,33 +13,26 @@
         <artifactId>subscriptions-parent</artifactId>
         <version>11.6.4-SNAPSHOT</version>
     </parent>
-    <properties>
-        <jug.version>3.1.5</jug.version>
-    </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>io.arlas</groupId>
+            <artifactId>arlas-admin</artifactId>
+            <version>${arlas.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- UUID generator -->
         <dependency>
             <groupId>com.fasterxml.uuid</groupId>
             <artifactId>java-uuid-generator</artifactId>
             <version>${jug.version}</version>
-        </dependency>
-        <!-- GEO JSON -->
-        <dependency>
-            <groupId>de.grundid.opendatalab</groupId>
-            <artifactId>geojson-jackson</artifactId>
-            <version>${geojson.jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.locationtech.jts.io</groupId>
-            <artifactId>jts-io-common</artifactId>
-            <version>${jts.version}</version>
-            <!-- get rid of junit 4.10 conflicting with 4.12 -->
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 

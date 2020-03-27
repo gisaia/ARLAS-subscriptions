@@ -81,11 +81,12 @@ mongo:
 ########################################################
 # Configuration of the datasource
 elastic:
-  nodes: ${ARLAS_SUB_ELASTIC_NODES:-localhost:9300}
-  sniffing: ${ARLAS_SUB_ELASTIC_SNIFFING:-false}
-  cluster: ${ARLAS_SUB_ELASTIC_CLUSTER:-elasticsearch}
+  elastic-nodes: ${ARLAS_SUB_ELASTIC_NODES:-localhost:9200}
+  elastic-sniffing: ${ARLAS_SUB_ELASTIC_SNIFFING:-false}
+  elastic-enable-ssl: ${ARLAS_SUB_ELASTIC_ENABLE_SSL:-false}
+  elastic-credentials: ${ARLAS_SUB_ELASTIC_CREDENTIALS}
+  elastic-skip-master: ${ARLAS_SUB_ELASTIC_SKIP_MASTER:-true}
   index:  ${ARLAS_SUB_ELASTIC_INDEX:-subscription}
-  type: ${ARLAS_SUB_ELASTIC_TYPE:-sub_type}
   bulk:
     concurrent-requests: ${ARLAS_SUB_ELASTIC_CONCURRENT_REQUESTS:-0}
     bulk-actions: ${ARLAS_SUB_ELASTIC_BULK_ACTIONS:-10000}

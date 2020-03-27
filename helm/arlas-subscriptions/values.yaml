@@ -141,7 +141,7 @@ elasticsearch:
     http:
     - elasticsearch:9200
     transport:
-    - elasticsearch:9300
+    - elasticsearch:9200
   index: subs
   mappingType:
     name: sub

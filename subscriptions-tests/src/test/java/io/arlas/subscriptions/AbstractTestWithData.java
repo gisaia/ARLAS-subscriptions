@@ -19,6 +19,7 @@
 
 package io.arlas.subscriptions;
 
+import io.arlas.server.exceptions.ArlasException;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
 import org.geojson.LngLatAlt;
@@ -27,7 +28,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.locationtech.jts.io.ParseException;
 
 import java.io.IOException;
 import java.util.*;
@@ -39,7 +39,7 @@ public abstract class AbstractTestWithData extends AbstractTestContext {
         try {
             DataSetTool.loadDataSet(false);
             DataSetTool.loadSubscriptions(true);
-        } catch (IOException| ParseException | ArlasSubscriptionsException e) {
+        } catch (IOException | ArlasSubscriptionsException | ArlasException e) {
             e.printStackTrace();
         }
 

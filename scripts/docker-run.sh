@@ -39,8 +39,7 @@ function run_manager {
     echo "===> start arlas-subscriptions-manager stack"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} elasticsearch
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
-    curl -X PUT "localhost:9200/subs" -H 'Content-Type: application/json' -d'{}'
-    curl -X PUT "localhost:9200/subs/_mapping/sub_type" -H 'Content-Type: application/json' -d @"./subscriptions-tests/src/test/resources/arlas.subtest.mapping.json"
+    curl -X PUT "localhost:9200/subs" -H 'Content-Type: application/json' -d @"./subscriptions-tests/src/test/resources/arlas.subs.mapping.json"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-manager
     echo "===> wait for arlas-subscriptions-manager up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
@@ -50,10 +49,10 @@ function run_matcher {
     echo "===> start arlas-subscriptions-matcher stack"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-matcher
     echo "===> wait for arlas-subscriptions-matcher up and running"
-     while [ `docker logs arlas-subscriptions-matcher --tail 10 | grep -c "org.eclipse.jetty.server.Server: Started"` -lt 1 ]
-     do
-        sleep 2
-     done
+    while [ `docker logs arlas-subscriptions-matcher --tail 10 | grep -c "org.eclipse.jetty.server.Server: Started"` -lt 1 ]
+    do
+       sleep 2
+    done
 }
 
 function run_dummy {
@@ -83,11 +82,12 @@ cd ${SCRIPT_PATH}/..
 # PACKAGE
 echo "===> compile arlas-subscriptions"
 docker run --rm \
-    -w /opt/maven \
+  -w /opt/maven \
 	-v $PWD:/opt/maven \
 	-v $HOME/.m2:/root/.m2 \
 	maven:3.5.0-jdk-8 \
 	mvn clean install -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
 echo "arlas-subscriptions:${ARLAS_SUBSCRIPTIONS_VERSION}"
 if [ "$STAGE" == "MANAGER_AUTH" ]; then run_manager;fi
 if [ "$STAGE" == "MANAGER" ]; then run_manager;fi

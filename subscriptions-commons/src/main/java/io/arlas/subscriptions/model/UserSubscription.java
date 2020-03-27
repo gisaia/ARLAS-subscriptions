@@ -121,6 +121,7 @@ public class UserSubscription {
 
     public void setCreated_at(Long created_at) {
         this.created_at = created_at;
+        this.modified_at = created_at;
     }
 
     public void setModified_at(Long modified_at) {

@@ -23,13 +23,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
 import io.arlas.server.client.model.Hits;
+import io.arlas.server.exceptions.ArlasException;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.locationtech.jts.io.ParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class DummyIT extends AbstractTestContext {
         try {
             DataSetTool.loadDataSet(true);
             DataSetTool.loadSubscriptions(true, true);
-        } catch (IOException | ParseException | ArlasSubscriptionsException e) {
+        } catch (IOException | ArlasSubscriptionsException | ArlasException e) {
             LOGGER.error("Could not load data in ES", e);
         }
     }

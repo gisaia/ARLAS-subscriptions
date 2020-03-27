@@ -28,7 +28,6 @@ When [installing](https://v2-14-0.helm.sh/docs/helm/#helm-install) the chart, he
 
 Value | Type | Required | Default | Description
 -|-|-|-|-
-`elasticsearch.cluster` | string | required | | Name of the [Elasticsearch cluster](https://www.elastic.co/guide/en/elasticsearch/reference/6.4/getting-started-concepts.html#_cluster) the components will try to connect to
 `elasticsearch.endpoints.http` | [sequence](https://yaml.org/spec/1.2/spec.html#sequence//) | required if either `manager.init.elasticsearchIndex.enabled` or `matcher.init.serverCollection.enabled` | | [HTTP endpoints](https://www.elastic.co/guide/en/elasticsearch/reference/6.4/modules-http.html) for the Elasticsearch cluster the components are going to connect to, under the form `<host>:<port>`
 `elasticsearch.endpoints.transport` | [sequence](https://yaml.org/spec/1.2/spec.html#sequence//) | required | | [Transport endpoints](https://www.elastic.co/guide/en/elasticsearch/reference/6.4/modules-transport.html) for the Elasticsearch cluster the components are going to connect to, under the form `<host>:<port>`
 `elasticsearch.index` | string |  | `subs` | [Elasticsearch index](https://www.elastic.co/guide/en/elasticsearch/reference/6.4/getting-started-concepts.html#_index) for subscriptions

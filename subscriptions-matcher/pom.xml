@@ -28,23 +28,10 @@
         </dependency>
 
         <dependency>
-            <groupId>io.arlas</groupId>
-            <artifactId>arlas-core</artifactId>
-            <version>${arlas.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <version>${kafka.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.oath.cyclops</groupId>
-            <artifactId>cyclops</artifactId>
-            <version>${cyclops.version}</version>
-        </dependency>
-
     </dependencies>
 
     <build>

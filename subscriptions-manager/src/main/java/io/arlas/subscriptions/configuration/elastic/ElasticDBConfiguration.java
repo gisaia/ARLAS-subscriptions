@@ -20,23 +20,12 @@
 package io.arlas.subscriptions.configuration.elastic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.arlas.server.app.ElasticConfiguration;
 
-public class ElasticDBConfiguration {
-
-    @JsonProperty("nodes")
-    public String elasticnodes;
-
-    @JsonProperty("sniffing")
-    public Boolean elasticsniffing;
-
-    @JsonProperty("cluster")
-    public String elasticcluster;
+public class ElasticDBConfiguration extends ElasticConfiguration {
 
     @JsonProperty("index")
     public String elasticsubindex;
-
-    @JsonProperty("type")
-    public String elasticsubtype;
 
     @JsonProperty(value = "bulk", required = true)
     public BulkConfiguration bulkConfiguration;

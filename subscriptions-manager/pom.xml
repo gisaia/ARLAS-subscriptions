@@ -3,21 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>subscriptions-manager</artifactId>
+    <packaging>jar</packaging>
+    <name>ARLAS subscriptions manager</name>
+
     <parent>
         <groupId>io.arlas</groupId>
         <artifactId>subscriptions-parent</artifactId>
         <version>11.6.4-SNAPSHOT</version>
     </parent>
-    <artifactId>subscriptions-manager</artifactId>
-    <packaging>jar</packaging>
-    <name>ARLAS subscriptions manager</name>
 
     <properties>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
         <mongodb.version>3.10.2</mongodb.version>
-        <dropwizard.swagger.version>1.3.9-1</dropwizard.swagger.version>
-        <zipkin.dropwizard.version>1.3.9-1</zipkin.dropwizard.version>
-        <elastic.version>6.5.4</elastic.version>
         <everit.json.schema.version>1.5.1</everit.json.schema.version>
 
         <!-- DOCUMENTATION GENERATION-->
@@ -36,40 +35,6 @@
             <version>${project.parent.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>io.arlas</groupId>
-            <artifactId>arlas-admin</artifactId>
-            <version>${arlas.version}</version>
-        </dependency>
-
-        <!-- ____________________________________________________ -->
-        <!-- SWAGGER -->
-        <!-- ____________________________________________________ -->
-        <dependency>
-            <groupId>com.smoketurner</groupId>
-            <artifactId>dropwizard-swagger</artifactId>
-            <version>${dropwizard.swagger.version}</version>
-            <exclusions>
-                <exclusion><groupId>org.glassfish.jersey.containers</groupId><artifactId>jersey-container-servlet-core</artifactId></exclusion>
-                <exclusion><groupId>org.reflections</groupId><artifactId>reflections</artifactId></exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.9.10</version>
-            <exclusions>
-                <exclusion><groupId>com.google.guava</groupId><artifactId>guava</artifactId></exclusion>
-            </exclusions>
-        </dependency>
-        <!-- ____________________________________________________ -->
-        <!-- MONITORING -->
-        <!-- ____________________________________________________ -->
-        <dependency>
-            <groupId>com.smoketurner.dropwizard</groupId>
-            <artifactId>zipkin-core</artifactId>
-            <version>${zipkin.dropwizard.version}</version>
-        </dependency>
         <!-- ____________________________________________________ -->
         <!-- Persistance -->
         <!-- ____________________________________________________ -->
@@ -78,14 +43,7 @@
             <artifactId>mongodb-driver-sync</artifactId>
             <version>${mongodb.version}</version>
         </dependency>
-        <!-- ____________________________________________________ -->
-        <!-- Indexation -->
-        <!-- ____________________________________________________ -->
-        <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>transport</artifactId>
-            <version>${elastic.version}</version>
-        </dependency>
+
         <!-- ____________________________________________________ -->
         <!-- Json schema validation -->
         <!-- ____________________________________________________ -->
