@@ -10,7 +10,7 @@
     <parent>
         <artifactId>subscriptions-parent</artifactId>
         <groupId>io.arlas</groupId>
-        <version>11.6.4-SNAPSHOT</version>
+        <version>12.7.0</version>
     </parent>
 
     <properties>
