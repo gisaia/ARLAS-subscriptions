@@ -1,5 +1,9 @@
 # Change Log
 
+## [v19.7.5](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.5) (2021-10-07)
+
+[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v12.7.0...v19.7.5)
+
 ## [v12.7.0](https://github.com/gisaia/ARLAS-subscriptions/tree/v12.7.0) (2020-03-27)
 
 [Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.3...v12.7.0)

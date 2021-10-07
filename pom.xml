@@ -4,7 +4,7 @@
 
     <groupId>io.arlas</groupId>
     <artifactId>subscriptions-parent</artifactId>
-    <version>12.7.1-SNAPSHOT</version>
+    <version>19.7.5</version>
     <packaging>pom</packaging>
     <name>ARLAS subscriptions parent</name>
 

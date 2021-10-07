@@ -182,6 +182,7 @@ docker run \
   --env ARLAS_SUBSCRIPTIONS_VERSION \
   --mount dst=/mnt/input.yaml,src="$PWD/helm/arlas-subscriptions/values.yaml.old",type=bind,readonly \
   python:alpine3.7 -c "
+pip install --upgrade pip >/dev/null 2>/dev/null
 pip install ruamel.yaml==0.16.5 >/dev/null 2>/dev/null
 
 python -c '
@@ -348,7 +349,7 @@ if [ "$RELEASE" == "YES" ]; then
     git push origin v${ARLAS_SUBSCRIPTIONS_VERSION}
     #@see scripts/build-github-changelog-generator.sh in ARLAS-server project if you need a fresher version of this tool
     docker run -it --rm -v "$(pwd)":/usr/local/src/your-app gisaia/github-changelog-generator:latest github_changelog_generator \
-        -u gisaia -p ARLAS-subscriptions --token 479b4f9b9390acca5c931dd34e3b7efb21cbf6d0 \
+        -u gisaia -p ARLAS-subscriptions --token ${GITHUB_CHANGELOG_TOKEN} \
         --no-pr-wo-labels --no-issues-wo-labels --no-unreleased --issue-line-labels API,conf,security,documentation \
         --exclude-labels type:duplicate,type:question,type:wontfix,type:invalid \
         --bug-labels type:bug \
