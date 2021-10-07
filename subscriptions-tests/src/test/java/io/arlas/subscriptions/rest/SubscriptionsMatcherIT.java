@@ -19,7 +19,7 @@
 
 package io.arlas.subscriptions.rest;
 
-import io.arlas.server.exceptions.ArlasException;
+import io.arlas.server.core.exceptions.ArlasException;
 import io.arlas.subscriptions.AbstractTestContext;
 import io.arlas.subscriptions.DataSetTool;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;

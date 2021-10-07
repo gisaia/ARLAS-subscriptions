@@ -25,13 +25,13 @@
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
 
         <!-- LIBRARIES -->
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <org.hamcrest.version>1.3</org.hamcrest.version>
         <io.rest-assured.version>3.3.0</io.rest-assured.version>
         <jug.version>3.1.5</jug.version>
 
         <!-- BACKENDS -->
-        <arlas.version>12.7.7</arlas.version>
+        <arlas.version>19.7.5</arlas.version>
         <kafka.version>2.1.1</kafka.version>
     </properties>
 

@@ -20,7 +20,7 @@
 package io.arlas.subscriptions.configuration.elastic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.arlas.server.app.ElasticConfiguration;
+import io.arlas.server.core.app.ElasticConfiguration;
 
 public class ElasticDBConfiguration extends ElasticConfiguration {
 

@@ -19,8 +19,8 @@
 
 package io.arlas.subscriptions.db.elastic;
 
-import io.arlas.server.app.ElasticConfiguration;
-import io.arlas.server.utils.ElasticClient;
+import io.arlas.server.core.app.ElasticConfiguration;
+import io.arlas.server.core.impl.elastic.utils.ElasticClient;
 import io.arlas.subscriptions.configuration.elastic.ElasticDBConfiguration;
 
 public class ElasticDBFactoryConnection {

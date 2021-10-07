@@ -19,7 +19,7 @@
 
 package io.arlas.subscriptions;
 
-import io.arlas.server.exceptions.ArlasException;
+import io.arlas.server.core.exceptions.ArlasException;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.UserSubscription;
 import org.geojson.LngLatAlt;

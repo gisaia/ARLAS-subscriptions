@@ -22,7 +22,7 @@ package io.arlas.subscriptions.rest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.Filters;
-import io.arlas.server.exceptions.ArlasException;
+import io.arlas.server.core.exceptions.ArlasException;
 import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.DataSetTool;
 import io.arlas.subscriptions.model.IndexedUserSubscription;

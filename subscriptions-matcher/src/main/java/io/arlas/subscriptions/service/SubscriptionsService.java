@@ -25,7 +25,7 @@ import io.arlas.server.client.Pair;
 import io.arlas.server.client.model.Hit;
 import io.arlas.server.client.model.Hits;
 import io.arlas.server.client.model.Link;
-import io.arlas.server.exceptions.ArlasException;
+import io.arlas.server.core.exceptions.ArlasException;
 import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.logger.ArlasLogger;

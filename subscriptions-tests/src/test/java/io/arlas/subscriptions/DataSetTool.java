@@ -25,14 +25,14 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
-import io.arlas.server.app.ElasticConfiguration;
+import io.arlas.server.core.app.ElasticConfiguration;
 import io.arlas.server.client.ApiClient;
 import io.arlas.server.client.ApiException;
 import io.arlas.server.client.Pair;
 import io.arlas.server.client.model.CollectionReferenceParameters;
-import io.arlas.server.exceptions.ArlasException;
-import io.arlas.server.utils.ElasticClient;
-import io.arlas.server.utils.ElasticTool;
+import io.arlas.server.core.exceptions.ArlasException;
+import io.arlas.server.core.impl.elastic.utils.ElasticClient;
+import io.arlas.server.core.impl.elastic.utils.ElasticTool;
 import io.arlas.subscriptions.configuration.mongo.MongoDBConfiguration;
 import io.arlas.subscriptions.configuration.mongo.Seed;
 import io.arlas.subscriptions.dao.MongoUserSubscriptionDAOImpl;
@@ -138,7 +138,6 @@ public class DataSetTool {
             //Create collection in ARLAS-server
             CollectionReferenceParameters collection = new CollectionReferenceParameters();
             collection.setIndexName(DataSetTool.DATASET_INDEX_NAME);
-            collection.setTypeName(DataSetTool.DATASET_TYPE_NAME);
             collection.setIdPath(DataSetTool.DATASET_ID_PATH);
             collection.setGeometryPath(DataSetTool.DATASET_GEOMETRY_PATH);
             collection.setCentroidPath(DataSetTool.DATASET_CENTROID_PATH);
@@ -218,7 +217,6 @@ public class DataSetTool {
             //Create collection in ARLAS-server
             CollectionReferenceParameters collection = new CollectionReferenceParameters();
             collection.setIndexName(DataSetTool.SUBSCRIPTIONS_INDEX_NAME);
-            collection.setTypeName(DataSetTool.SUBSCRIPTIONS_TYPE_NAME);
             collection.setIdPath(DataSetTool.SUBSCRIPTIONS_ID_PATH);
             collection.setGeometryPath(DataSetTool.SUBSCRIPTIONS_GEOMETRY_PATH);
             collection.setCentroidPath(DataSetTool.SUBSCRIPTIONS_CENTROID_PATH);

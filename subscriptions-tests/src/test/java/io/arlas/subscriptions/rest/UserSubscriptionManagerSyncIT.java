@@ -19,7 +19,6 @@
 
 package io.arlas.subscriptions.rest;
 
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import io.arlas.subscriptions.AbstractTestWithData;
 import io.arlas.subscriptions.DataSetTool;

@@ -21,8 +21,8 @@ package io.arlas.subscriptions.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.arlas.server.exceptions.ArlasException;
-import io.arlas.server.utils.ElasticClient;
+import io.arlas.server.core.exceptions.ArlasException;
+import io.arlas.server.core.impl.elastic.utils.ElasticClient;
 import io.arlas.subscriptions.configuration.TriggerConfiguration;
 import io.arlas.subscriptions.configuration.elastic.BulkConfiguration;
 import io.arlas.subscriptions.configuration.elastic.ElasticDBConfiguration;
@@ -78,7 +78,7 @@ public class ElasticUserSubscriptionDAOImpl implements UserSubscriptionDAO  {
 
     public ElasticUserSubscriptionDAOImpl(ElasticDBConfiguration elasticDBConfiguration, TriggerConfiguration triggerConfiguration, ElasticDBManaged elasticDBManaged,
                                           JsonSchemaValidator jsonSchemaValidator) throws ArlasSubscriptionsException {
-            this.client=elasticDBManaged.esClient;
+            this.client = elasticDBManaged.esClient;
             this.arlasSubscriptionIndex = elasticDBConfiguration.elasticsubindex;
             this.triggerConfiguration=triggerConfiguration;
             this.bulkConfiguration = elasticDBConfiguration.bulkConfiguration;
