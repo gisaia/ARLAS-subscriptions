@@ -20,7 +20,7 @@
 package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.arlas.server.exceptions.ArlasException;
+import io.arlas.server.core.exceptions.ArlasException;
 import io.arlas.server.client.ApiClient;
 import io.arlas.server.client.ApiException;
 import io.arlas.server.client.model.Hit;

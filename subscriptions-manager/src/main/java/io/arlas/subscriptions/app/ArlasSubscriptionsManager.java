@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.smoketurner.dropwizard.zipkin.ZipkinBundle;
 import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
-import io.arlas.server.health.ElasticsearchHealthCheck;
+import io.arlas.server.admin.health.ElasticsearchHealthCheck;
 import io.arlas.subscriptions.db.elastic.ElasticDBFactoryConnection;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
