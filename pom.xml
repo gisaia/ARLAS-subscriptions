@@ -31,7 +31,7 @@
         <jug.version>3.1.5</jug.version>
 
         <!-- BACKENDS -->
-        <arlas.version>19.7.5</arlas.version>
+        <arlas.version>19.7.6</arlas.version>
         <kafka.version>2.1.1</kafka.version>
     </properties>
 
