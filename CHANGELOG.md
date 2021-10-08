@@ -1,5 +1,13 @@
 # Change Log
 
+## [v19.7.6](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.6) (2021-10-08)
+
+[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v19.7.5...v19.7.6)
+
+**Miscellaneous:**
+
+- Upgrade code to be compatible with latest version of ARLAS stack [\#168](https://github.com/gisaia/ARLAS-subscriptions/issues/168)
+
 ## [v19.7.5](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.5) (2021-10-07)
 
 [Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v12.7.0...v19.7.5)
