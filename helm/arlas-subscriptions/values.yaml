@@ -42,6 +42,18 @@ manager:
     requests:
       cpu: 1
       memory: 4G
+  livenessProbe:
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
   service:
     type: ClusterIP
     port: 80
@@ -93,6 +105,18 @@ matcher:
     requests:
       cpu: 1
       memory: 4G
+  livenessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
   tolerations: []
 
 ################################################################################
@@ -115,7 +139,7 @@ server:
     ARLAS_PREFIX: /arlas/
   image:
     repository: gisaia/arlas-server
-    tag: 11.6.1
+    tag: 19.7.7
     pullPolicy: IfNotPresent
   nodeSelector: {}
   replicaCount: 1
@@ -126,6 +150,18 @@ server:
     requests:
       cpu: 1
       memory: 4G
+  livenessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
   service:
     type: ClusterIP
     port: 9999
@@ -139,8 +175,6 @@ elasticsearch:
   cluster: elasticsearch
   endpoints:
     http:
-    - elasticsearch:9200
-    transport:
     - elasticsearch:9200
   index: subs
   mappingType:

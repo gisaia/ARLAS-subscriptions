@@ -34,10 +34,20 @@ spec:
             httpGet:
               path: /admin/healthcheck
               port: {{ .Values.matcher.environmentVariables.ARLAS_SUB_MATCHER_PORT }}
+            initialDelaySeconds: {{ .Values.matcher.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.matcher.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.matcher.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.matcher.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.matcher.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
               path: /admin/healthcheck
               port: {{ .Values.matcher.environmentVariables.ARLAS_SUB_MATCHER_PORT }}
+            initialDelaySeconds: {{ .Values.matcher.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.matcher.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.matcher.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.matcher.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.matcher.readinessProbe.failureThreshold }}
           resources:
             {{- toYaml .Values.matcher.resources | nindent 12 }}
     {{- if .Values.matcher.imagePullSecrets }}
