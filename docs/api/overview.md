@@ -7,7 +7,7 @@ Manage ARLAS subscriptions on ARLAS collections' events.
 
 
 ### Version information
-*Version* : 19.0.6
+*Version* : 19.0.7
 
 
 ### Contact information

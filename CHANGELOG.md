@@ -1,5 +1,13 @@
 # Change Log
 
+## [v19.7.7](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.7) (2021-10-20)
+
+[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v19.7.6...v19.7.7)
+
+**Miscellaneous:**
+
+- livenessProbe & readinessProbe full configuration is not accessible through HELM/Kubernetes package [\#174](https://github.com/gisaia/ARLAS-subscriptions/issues/174)
+
 ## [v19.7.6](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.6) (2021-10-08)
 
 [Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v19.7.5...v19.7.6)
