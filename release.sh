@@ -171,6 +171,7 @@ sed -i.bak 's/\"API_VERSION\"/\"'${FULL_API_VERSION}'\"/' subscriptions-manager/
 
 # Helm chart: Update version
 sed -i.bak "s/^appVersion: .*\$/appVersion: \"${ARLAS_SUBSCRIPTIONS_VERSION}\"/" helm/arlas-subscriptions/Chart.yaml
+sed -i.bak 's/^version: .*$/version: '${ARLAS_SUBSCRIPTIONS_VERSION}'/' helm/arlas-subscriptions/Chart.yaml
 
 # Helm chart: Update docker images' versions
 # Using `ruamel` to preserve comments & format
