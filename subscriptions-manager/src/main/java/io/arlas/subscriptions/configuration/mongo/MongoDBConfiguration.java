@@ -19,6 +19,7 @@
 
 package io.arlas.subscriptions.configuration.mongo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -31,10 +32,10 @@ public class MongoDBConfiguration {
     @JsonProperty("database")
     public String database;
 
-    @JsonProperty("username")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String username;
 
-    @JsonProperty("password")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String password;
 
     @JsonProperty("authDatabase")
