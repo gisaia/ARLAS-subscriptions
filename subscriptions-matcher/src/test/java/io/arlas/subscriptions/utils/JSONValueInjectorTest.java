@@ -40,7 +40,7 @@ import static io.arlas.subscriptions.utils.JSONValueInjector.VAR_END;
 
 public class JSONValueInjectorTest {
 
-    private final static String filter = "gintersect="+VAR_START+"object.geometry"+VAR_END
+    private final static String filter = "f=subscription.trigger.geometry:intersects:"+VAR_START+"object.geometry"+VAR_END
             +"&f=subscription.trigger.event:eq:"+VAR_START+"event"+VAR_END
             +"&f=subscription.trigger.job:eq:"+VAR_START+"object.job"+VAR_END
             +"&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id";
@@ -62,7 +62,7 @@ public class JSONValueInjectorTest {
             event.put("object", object);
             event.put("event","UPDATE");
 
-            String expected = "gintersect=POLYGON ((-11 -29, -9 -29, -9 -31, -11 -31, -11 -29))"
+            String expected = "f=subscription.trigger.geometry:intersects:POLYGON ((-11 -29, -9 -29, -9 -31, -11 -31, -11 -29))"
                     +"&f=subscription.trigger.event:eq:UPDATE"
                     +"&f=subscription.trigger.job:eq:Brain Scientist"
                     +"&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id";
