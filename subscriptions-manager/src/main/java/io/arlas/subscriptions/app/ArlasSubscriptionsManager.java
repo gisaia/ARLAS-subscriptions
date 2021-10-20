@@ -109,7 +109,7 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
             environment.lifecycle().manage(elasticDBManaged);
             registerControllers(configuration, environment, subscriptionManagerService);
             environment.healthChecks().register("elasticsearch", new ElasticsearchHealthCheck(elasticDBManaged.esClient));
-    	    environment.healthChecks().register("mongo", new MongoHealthCheck(mongoDBManaged.mongoClient));
+    	    environment.healthChecks().register("mongo", new MongoHealthCheck(mongoDBManaged.mongoClient, configuration.mongoDBConfiguration.database));
 
             //tasks
             environment.admin().addTask(new MongoDBToESSync(subscriptionManagerService));

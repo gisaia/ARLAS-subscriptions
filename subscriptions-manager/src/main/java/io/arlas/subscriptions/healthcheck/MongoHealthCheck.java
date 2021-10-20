@@ -27,14 +27,16 @@ import org.bson.Document;
 public class MongoHealthCheck extends HealthCheck {
 
     private final MongoClient mongoClient;
+    private final String database;
 
-    public MongoHealthCheck(MongoClient mongoClient) {
+    public MongoHealthCheck(MongoClient mongoClient, String database) {
         super();
         this.mongoClient = mongoClient;
+        this.database = database;
     }
 
     /**
-     * Checks if the system database, which exists in all MongoDB instances can be reached.
+     * Checks if the subscription database can be reached.
      * This is a mix from
      * https://github.com/eeb/dropwizard-mongo/blob/master/dropwizard-mongo/src/main/java/com/eeb/dropwizardmongo/health/MongoHealthCheck.java
      * https://jira.mongodb.org/browse/JAVA-1762?focusedCommentId=881556&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-881556
@@ -45,7 +47,7 @@ public class MongoHealthCheck extends HealthCheck {
     protected Result check() throws Exception {
 
         try {
-            mongoClient.getDatabase("system").runCommand(Document.parse("{ dbStats: 1, scale: 1 }"));
+            mongoClient.getDatabase(database).runCommand(Document.parse("{ dbStats: 1, scale: 1 }"));
         }catch(MongoClientException ex) {
             return Result.unhealthy(ex.getMessage());
         }
