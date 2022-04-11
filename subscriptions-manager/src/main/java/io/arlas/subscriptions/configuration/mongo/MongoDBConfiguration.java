@@ -19,15 +19,12 @@
 
 package io.arlas.subscriptions.configuration.mongo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.List;
 
 public class MongoDBConfiguration {
 
     @JsonProperty("seeds")
-    public List<Seed> seeds;
+    public String seeds;
 
     @JsonProperty("database")
     public String database;
@@ -40,13 +37,5 @@ public class MongoDBConfiguration {
 
     @JsonProperty("authDatabase")
     public String authDatabase;
-
-    public List<Seed> getSeeds() {
-        return seeds;
-    }
-
-    public String getDatabase() {
-        return database;
-    }
 
 }

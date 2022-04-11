@@ -37,7 +37,10 @@ function clean_exit {
 
 function run_manager {
     echo "===> start arlas-subscriptions-manager stack"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} elasticsearch
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} elasticsearch mongodb mongo2 mongo3
+    sleep 10
+    echo "===> configure replica set on mongodb"
+    docker exec mongodb /scripts/rs-init.sh
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
     curl -X PUT "localhost:9200/subs" -H 'Content-Type: application/json' -d @"./subscriptions-tests/src/test/resources/arlas.subs.mapping.json"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-manager
@@ -64,6 +67,12 @@ function run_dummy {
 
 function run_all {
     echo "===> start all stack"
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} elasticsearch mongodb mongo2 mongo3
+    sleep 10
+    echo "===> configure replica set on mongodb"
+    docker exec mongodb /scripts/rs-init.sh
+    docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+    curl -X PUT "localhost:9200/subs" -H 'Content-Type: application/json' -d @"./subscriptions-tests/src/test/resources/arlas.subs.mapping.json"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS}
     echo "===> wait for arlas-server up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-server 9999; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'

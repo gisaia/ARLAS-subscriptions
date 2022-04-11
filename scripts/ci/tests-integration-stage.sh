@@ -68,8 +68,7 @@ function test_manager() {
             -v $HOME/.m2:/root/.m2 \
             -e ARLAS_SUB_MANAGER_HOST="arlas-subscriptions-manager" \
             -e ARLAS_SUB_MANAGER_PORT="9998" \
-            -e MONGO_HOST="mongodb" \
-            -e MONGO_PORT="27017" \
+            -e MONGO_HOST="mongodb:27017,mongo2:27017,mongo3:27017" \
             -e MONGO_DATABASE="subscription" \
             -e MONGO_USERNAME="mongouser" \
             -e MONGO_PASSWORD="secret" \
@@ -92,8 +91,7 @@ function test_manager_auth() {
             -v $HOME/.m2:/root/.m2 \
             -e ARLAS_SUB_MANAGER_HOST="arlas-subscriptions-manager" \
             -e ARLAS_SUB_MANAGER_PORT="9998" \
-            -e MONGO_HOST="mongodb" \
-            -e MONGO_PORT="27017" \
+            -e MONGO_HOST="mongodb:27017,mongo2:27017,mongo3:27017" \
             -e MONGO_DATABASE="subscription" \
             -e MONGO_USERNAME="mongouser" \
             -e MONGO_PASSWORD="secret" \

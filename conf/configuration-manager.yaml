@@ -67,9 +67,7 @@ logging:
       archivedFileCount: ${ARLAS_SUB_MANAGER_LOGGING_FILE_ARCHIVE_FILE_COUNT:-5}
 
 mongo:
-  seeds:
-    - host: ${MONGO_HOST:-mongodb}
-      port: ${MONGO_PORT:-27017}
+  seeds: ${MONGO_HOST:-mongodb:27017}
   database: ${MONGO_DATABASE:-subscription}
   username: ${MONGO_USERNAME:-}
   password: ${MONGO_PASSWORD:-}

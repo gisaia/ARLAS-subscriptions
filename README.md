@@ -61,6 +61,11 @@ The `manager` and `matcher` can then be started.
 ## Manager configuration
 Environment variable name | Description | Example
 --- | --- | ---
+MONGO_HOST | Mongo list of host:port | mongo1:27017,mongo2:27017
+MONGO_USERNAME | Mongo user | mongouser
+MONGO_PASSWORD | Mongo password | secret
+MONGO_AUTH_DATABASE | Mongo database used for authentication | admin
+MONGO_DATABASE | Mongo database where the subscription manager data is stored | subscription
 ARLAS_SUB_ELASTIC_NODES | Elasticsearch server:port containing the subscriptions index | localhost:9200
 ARLAS_SUB_ELASTIC_SNIFFING | Elasticsearch client sniffing | false
 ARLAS_SUB_ELASTIC_CLUSTER | Elasticsearch cluster name containing the subscriptions index | elasticsearch

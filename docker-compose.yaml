@@ -39,9 +39,46 @@ services:
     container_name: "mongodb"
     ports:
       - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: mongouser
-      MONGO_INITDB_ROOT_PASSWORD: secret
+    volumes:
+      - ./scripts/file.key:/data/file.key
+      - ./scripts/rs-init.sh:/scripts/rs-init.sh
+    links:
+      - mongo2
+      - mongo3
+    command:
+      - /bin/sh
+      - -c
+      - |
+        chmod 400 /data/file.key
+        mongod --auth --keyFile /data/file.key --replSet dbrs
+
+  mongo2:
+    image: mongo:3.4
+    container_name: mongo2
+    ports:
+      - 27019:27017
+    volumes:
+      - ./scripts/file.key:/data/file.key
+    command:
+      - /bin/sh
+      - -c
+      - |
+        chmod 400 /data/file.key
+        mongod --auth --keyFile /data/file.key --replSet dbrs
+
+  mongo3:
+    image: mongo:3.4
+    container_name: mongo3
+    ports:
+      - 27022:27017
+    volumes:
+      - ./scripts/file.key:/data/file.key
+    command:
+      - /bin/sh
+      - -c
+      - |
+        chmod 400 /data/file.key
+        mongod --auth --keyFile /data/file.key --replSet dbrs
 
   #########
   # ARLAS #
@@ -93,8 +130,7 @@ services:
       - mongodb
       - elasticsearch
     environment:
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
+      - MONGO_HOST=mongodb:27017,mongo2:27017,mongo3:27017
       - MONGO_USERNAME=${MONGO_USERNAME:-mongouser}
       - MONGO_PASSWORD=${MONGO_PASSWORD:-secret}
       - MONGO_AUTH_DATABASE=${MONGO_AUTH_DATABASE:-admin}
@@ -106,7 +142,7 @@ services:
       - ${ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL}:${ARLAS_SUB_TRIG_SCHEM_PATH}
     ports:
       - 9998:9998
-    command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST:$$MONGO_PORT $$ARLAS_SUB_ELASTIC_NODES "]
+    command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST $$ARLAS_SUB_ELASTIC_NODES "]
     healthcheck:
       test: curl http://localhost:9998/admin/healthcheck | grep -v "\"healthy\":false" || exit 1
       interval: 30s
