@@ -179,12 +179,12 @@ sed -i.bak 's/^version: .*$/version: '${ARLAS_SUBSCRIPTIONS_VERSION}'/' helm/arl
 mv helm/arlas-subscriptions/values.yaml helm/arlas-subscriptions/values.yaml.old
 
 docker run \
-  --entrypoint ash \
+  --entrypoint bash \
   --env ARLAS_SUBSCRIPTIONS_VERSION \
   --mount dst=/mnt/input.yaml,src="$PWD/helm/arlas-subscriptions/values.yaml.old",type=bind,readonly \
-  python:alpine3.7 -c "
+  python:3.7-slim-buster -c "
 pip install --upgrade pip >/dev/null 2>/dev/null
-pip install ruamel.yaml==0.16.5 >/dev/null 2>/dev/null
+pip install ruamel.yaml==0.17.21 >/dev/null 2>/dev/null
 
 python -c '
 
