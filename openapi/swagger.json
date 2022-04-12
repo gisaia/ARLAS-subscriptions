@@ -2,7 +2,7 @@
   "swagger" : "2.0",
   "info" : {
     "description" : "Manage ARLAS subscriptions on ARLAS collections' events.",
-    "version" : "19.0.8",
+    "version" : "19.0.9-SNAPSHOT",
     "title" : "ARLAS Subscriptions Manager API",
     "contact" : {
       "name" : "ARLAS",
