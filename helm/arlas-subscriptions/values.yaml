@@ -8,8 +8,7 @@ manager:
   # See here for available variables: https://github.com/gisaia/ARLAS-subscriptions#manager-configuration
   # Beware, some environment variables are not managed in this dictionary, but directly in the deployment (see deployment)
   environmentVariables:
-    MONGO_HOST: mongodb
-    MONGO_PORT: 27017
+    MONGO_HOST: mongodb:27017
   image:
     repository: gisaia/arlas-subscriptions-manager
     tag: 19.7.7

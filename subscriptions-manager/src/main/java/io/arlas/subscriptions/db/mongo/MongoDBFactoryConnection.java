@@ -26,12 +26,12 @@ import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import io.arlas.subscriptions.configuration.mongo.MongoDBConfiguration;
-import io.arlas.subscriptions.configuration.mongo.Seed;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,10 +64,11 @@ public class MongoDBFactoryConnection {
 
 
     private List<ServerAddress> getServers() {
-        final List<Seed> seeds = mongoDBConfiguration.getSeeds();
-        return seeds.stream()
+        final String seeds = mongoDBConfiguration.seeds;
+        return Arrays.stream(seeds.trim().split(","))
                 .map(seed -> {
-                    final ServerAddress serverAddress = new ServerAddress(seed.getHost(), seed.getPort());
+                    final ServerAddress serverAddress = new ServerAddress(seed.trim().split(":")[0],
+                            Integer.parseInt(seed.trim().split(":")[1]));
                     return serverAddress;
                 })
                 .collect(Collectors.toList());

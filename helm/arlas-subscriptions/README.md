@@ -39,7 +39,6 @@ Value | Type | Required | Default | Description
 `manager.environmentVariables.MONGO_AUTH_DATABASE` | string | | | MongoDB database against which to authenticate
 `manager.environmentVariables.MONGO_HOST` | string | required | | See definition [here](https://github.com/gisaia/ARLAS-subscriptions#manager-configuration)
 `manager.environmentVariables.MONGO_PASSWORD` | string | | | Password for authentication to MongoDB
-`manager.environmentVariables.MONGO_PORT` | integer | required | | See definition [here](https://github.com/gisaia/ARLAS-subscriptions#manager-configuration)
 `manager.environmentVariables.MONGO_USERNAME` | string | | | Username for authentication to MongoDB
 `manager.image.repository` | string |  | [`gisaia/arlas-subscriptions-manager`](hub.docker.com/r/gisaia/arlas-subscriptions-manager) | Docker image's repository
 `manager.image.tag` | string |  | `0.0.1-SNAPSHOT` | Docker image's tag
