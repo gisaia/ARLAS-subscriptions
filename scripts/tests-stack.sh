@@ -8,7 +8,7 @@ function clean_docker {
 		-w /opt/maven \
 		-v $PWD:/opt/maven \
 		-v $HOME/.m2:/root/.m2 \
-		maven:3.5.0-jdk-8 \
+		maven:3.8.5-openjdk-17 \
 		mvn clean
 }
 
@@ -43,7 +43,7 @@ docker run --rm \
     -e ARLAS_PORT="9999" \
     -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9200" \
     --net arlas-subscriptions_default \
-    maven:3.5.0-jdk-8 \
+    maven:3.8.5-openjdk-17 \
     mvn exec:java -Dexec.mainClass="io.arlas.subscriptions.DataSetTool" -Dexec.classpathScope=test -pl subscriptions-tests
 
 echo "===> Enjoy arlas-server API on http://localhost:9999/arlas/swagger"

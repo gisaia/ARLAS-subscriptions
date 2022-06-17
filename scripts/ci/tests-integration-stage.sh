@@ -11,7 +11,7 @@ function clean_docker {
 		-w /opt/maven \
 		-v $PWD:/opt/maven \
 		-v $HOME/.m2:/root/.m2 \
-		maven:3.5.0-jdk-8 \
+		maven:3.8.5-openjdk-17 \
 		mvn clean
 }
 
@@ -78,7 +78,7 @@ function test_manager() {
             -e ARLAS_SUB_ELASTIC_TYPE="sub_type"\
             -e ARLAS_SUB_ELASTIC_CLUSTER="elasticsearch" \
             --net arlas-subscriptions_default \
-            maven:3.5.0-jdk-8 \
+            maven:3.8.5-openjdk-17 \
             mvn -Dit.test=UserSubscriptionManagerEndUserIT,UserSubscriptionManagerAdminIT,UserSubscriptionManagerSyncIT verify -DskipTests=false  -DfailIfNoTests=false
 }
 
@@ -102,7 +102,7 @@ function test_manager_auth() {
             -e ARLAS_SUB_ELASTIC_CLUSTER="elasticsearch" \
             -e ARLAS_SUB_IDENTITY_HEADER="x-identity" \
             --net arlas-subscriptions_default \
-            maven:3.5.0-jdk-8 \
+            maven:3.8.5-openjdk-17 \
             mvn -Dit.test=UserSubscriptionManagerEndUserAuthIT verify -DskipTests=false  -DfailIfNoTests=false
 }
 
@@ -117,7 +117,7 @@ function test_matcher() {
             -e ARLAS_SERVER_BASE_PATH="http://arlas-server:9999/arlas" \
             -e ARLAS_SUBSCRIPTIONS_BASE_PATH="http://arlas-server:9999/arlas" \
             --net arlas-subscriptions_default \
-            maven:3.5.0-jdk-8 \
+            maven:3.8.5-openjdk-17 \
             mvn -Dit.test=SubscriptionsMatcherIT verify -DskipTests=false  -DfailIfNoTests=false
 }
 
@@ -132,7 +132,7 @@ function test_dummy() {
             -e ARLAS_PORT="9999" \
             -e ARLAS_SUB_ELASTIC_NODES="elasticsearch:9200" \
             --net arlas-subscriptions_default \
-            maven:3.5.0-jdk-8 \
+            maven:3.8.5-openjdk-17 \
             mvn -Dit.test=DummyIT verify -DskipTests=false  -DfailIfNoTests=false
 }
 

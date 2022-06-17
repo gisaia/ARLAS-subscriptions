@@ -19,11 +19,12 @@
 
 package io.arlas.subscriptions.task;
 
-import com.google.common.collect.ImmutableMultimap;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.dropwizard.servlets.tasks.Task;
 
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 
 public class MongoDBToESSync extends Task {
     final UserSubscriptionManagerService subscriptionManagerService;
@@ -34,7 +35,7 @@ public class MongoDBToESSync extends Task {
     }
 
     @Override
-    public void execute(ImmutableMultimap<String, String> immutableMultimap, PrintWriter printWriter) throws Exception {
+    public void execute(Map<String, List<String>> map, PrintWriter printWriter) throws Exception {
         subscriptionManagerService.syncDBtoIndex();
     }
 }
