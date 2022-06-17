@@ -21,7 +21,7 @@ package io.arlas.subscriptions.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.arlas.server.core.exceptions.ArlasException;
+import io.arlas.commons.exceptions.ArlasException;
 import io.arlas.server.core.impl.elastic.utils.ElasticClient;
 import io.arlas.subscriptions.configuration.TriggerConfiguration;
 import io.arlas.subscriptions.configuration.elastic.BulkConfiguration;

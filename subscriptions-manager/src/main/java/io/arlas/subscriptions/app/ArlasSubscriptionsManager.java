@@ -70,13 +70,13 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
         bootstrap.getObjectMapper().enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
                 bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
-        bootstrap.addBundle(new SwaggerBundle<ArlasSubscriptionManagerConfiguration>() {
+        bootstrap.addBundle(new SwaggerBundle<>() {
             @Override
             protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(ArlasSubscriptionManagerConfiguration configuration) {
                 return configuration.swaggerBundleConfiguration;
             }
         });
-        bootstrap.addBundle(new ZipkinBundle<ArlasSubscriptionManagerConfiguration>(getName()) {
+        bootstrap.addBundle(new ZipkinBundle<>(getName()) {
             @Override
             public ZipkinFactory getZipkinFactory(ArlasSubscriptionManagerConfiguration configuration) {
                 return configuration.zipkinConfiguration;

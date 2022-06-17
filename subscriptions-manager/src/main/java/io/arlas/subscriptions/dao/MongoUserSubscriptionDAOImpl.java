@@ -99,7 +99,7 @@ public class MongoUserSubscriptionDAOImpl implements UserSubscriptionDAO {
 
             Document aggResult = this.mongoCollectionDoc.aggregate(aggregate).first();
 
-            Integer total = ((List<Document>) aggResult.get("totalCount")).size() == 1 ? (Integer)((List<Document>) aggResult.get("totalCount")).get(0).get("count") : new Integer(0);
+            Integer total = ((List<Document>) aggResult.get("totalCount")).size() == 1 ? (Integer)((List<Document>) aggResult.get("totalCount")).get(0).get("count") : Integer.valueOf(0);
             List<UserSubscription> subList = ((List<Document>) aggResult.get("subList")).stream().map(d -> convertDocument(d)).collect(Collectors.toList());
             return Pair.of(total, subList);
         } catch (MongoException e) {

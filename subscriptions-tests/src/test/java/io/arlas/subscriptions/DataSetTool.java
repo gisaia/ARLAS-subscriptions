@@ -30,7 +30,7 @@ import io.arlas.server.client.ApiException;
 import io.arlas.server.client.Pair;
 import io.arlas.server.client.model.CollectionReferenceParameters;
 import io.arlas.server.core.app.ElasticConfiguration;
-import io.arlas.server.core.exceptions.ArlasException;
+import io.arlas.commons.exceptions.ArlasException;
 import io.arlas.server.core.impl.elastic.utils.ElasticClient;
 import io.arlas.server.core.impl.elastic.utils.ElasticTool;
 import io.arlas.subscriptions.configuration.mongo.MongoDBConfiguration;

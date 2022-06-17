@@ -22,7 +22,7 @@ package io.arlas.subscriptions.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
-import io.arlas.server.core.exceptions.ArlasException;
+import io.arlas.commons.exceptions.ArlasException;
 import io.arlas.server.client.ApiClient;
 import io.arlas.server.client.ApiException;
 import io.arlas.server.client.Pair;

@@ -94,7 +94,7 @@ services:
   #########
 
   arlas-server:
-    image: gisaia/arlas-server:${ARLAS_VERSION:-21.0.0}
+    image: gisaia/arlas-server:${ARLAS_VERSION:-22.0.1}
     container_name: "arlas-server"
     ports:
       - 9999:9999

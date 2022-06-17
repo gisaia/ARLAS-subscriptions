@@ -69,7 +69,7 @@ public class UserSubscriptionHALService {
         if ((page-1)*size + count < total)
             links.put("next", new UserSubscriptionWithLinks.Link("next", getUri(uri, size, page+1), "GET"));
         if ((page-1)*size + count != total)
-            links.put("last", new UserSubscriptionWithLinks.Link("last", getUri(uri, size, new Double(Math.ceil((double)total/(double)size)).intValue()), "GET"));
+            links.put("last", new UserSubscriptionWithLinks.Link("last", getUri(uri, size, Double.valueOf(Math.ceil((double)total/(double)size)).intValue()), "GET"));
         return links;
     }
 
