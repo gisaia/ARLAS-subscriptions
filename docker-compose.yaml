@@ -7,25 +7,34 @@ services:
   ########################
 
   zookeeper:
-    image: wurstmeister/zookeeper
+    image: confluentinc/cp-zookeeper:7.0.1
     container_name: "zookeeper"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     ports:
-      - 2181:2181
+    - 22181:2181
 
   kafka:
-    image: wurstmeister/kafka:2.11-1.1.1
+    # Kafka 3.0
+    image: confluentinc/cp-kafka:7.0.1
     container_name: "kafka"
     depends_on:
       - zookeeper
     ports:
-      - 9092:9092
+      - 29092:9092
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_HOST_NAME: kafka
       LOG4J_LOGGER_KAFKA: INFO
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.14.2}
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.15.2}
     container_name: "elasticsearch"
     environment:
       - discovery.type=single-node
@@ -85,14 +94,17 @@ services:
   #########
 
   arlas-server:
-    image: gisaia/arlas-server:${ARLAS_VERSION:-19.7.6}
+    image: gisaia/arlas-server:${ARLAS_VERSION:-21.0.0}
     container_name: "arlas-server"
     ports:
       - 9999:9999
     depends_on:
       - elasticsearch
     environment:
-      - ARLAS_ELASTIC_NODES=elasticsearch:9200
+      - ARLAS_ELASTIC_NODES=${ARLAS_ELASTIC_NODES:-elasticsearch:9200}
+      - ARLAS_ELASTIC_ENABLE_SSL="${ARLAS_ELASTIC_ENABLE_SSL:-false}"
+      - ARLAS_ELASTIC_CREDENTIALS="${ARLAS_ELASTIC_CREDENTIALS}"
+      - ARLAS_ELASTIC_SKIP_MASTER="${ARLAS_ELASTIC_SKIP_MASTER:-true}"
     command: ["/opt/app/wait-for-elasticsearch.sh"]
 
   arlas-subscriptions-matcher:

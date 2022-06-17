@@ -104,7 +104,7 @@ public class AbstractArlasService {
         ParamsParser.getFilter(null,
                 getListOfStringFromQueryParams.apply("f"),
                 getListOfStringFromQueryParams.apply("q"),
-                getStringFromQueryParams.apply("dateformat"));
+                getStringFromQueryParams.apply("dateformat"), null);
     }
 
 }

@@ -103,7 +103,20 @@ case $i in
 esac
 done
 
-ELASTIC_VERSIONS_7=("7.0.1","7.1.0","7.2.1","7.3.2","7.4.2","7.5.2","7.6.2","7.7.1","7.8.1","7.9.2","7.12.1","7.14.2")
+ELASTIC_VERSIONS_7=(
+  7.2.1
+  7.3.2
+  7.4.2
+  7.5.2
+  7.6.2
+  7.7.1
+  7.8.1
+  7.9.2
+  7.12.1
+  7.14.2
+  7.15.2
+)
+
 case $ELASTIC_RANGE in
     "7")
         ELASTIC_VERSIONS=( "${ELASTIC_VERSIONS_7[@]}" )
@@ -213,7 +226,7 @@ docker run \
     --mount dst=/mnt/.m2,src="$HOME/.m2/",type=bind \
     --mount dst=/opt/maven,src="$PWD",type=bind \
     --rm \
-    gisaia/maven-3.5-jdk8-alpine \
+    maven:3.8.5-openjdk-17 \
         clean install
 
 ##################################################
@@ -274,7 +287,7 @@ else
       -e USER_ID="$(id -u)" \
       --mount dst=/input/api.json,src="$PWD/target/tmp/swagger.json",type=bind,ro \
       --mount dst=/output,src="$PWD/target/tmp/typescript-fetch",type=bind \
-    gisaia/swagger-codegen-2.3.1 \
+    gisaia/swagger-codegen-2.4.14 \
           -l typescript-fetch --additional-properties modelPropertyNaming=snake_case
 
   mkdir -p target/tmp/python-api
@@ -284,7 +297,7 @@ else
       --mount dst=/input/api.json,src="$PWD/target/tmp/swagger.json",type=bind,ro \
       --mount dst=/input/config.json,src="$PROJECT_ROOT_DIRECTORY/conf/swagger/python-config.json",type=bind,ro \
       --mount dst=/output,src="$PWD/target/tmp/python-api",type=bind \
-    gisaia/swagger-codegen-2.2.3 \
+    gisaia/swagger-codegen-2.4.14 \
           -l python --type-mappings GeoJsonObject=object
 
   echo "=> Build Typescript API "${FULL_API_VERSION}

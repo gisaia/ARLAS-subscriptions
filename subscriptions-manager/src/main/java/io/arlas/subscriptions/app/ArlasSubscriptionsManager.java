@@ -20,6 +20,7 @@
 package io.arlas.subscriptions.app;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.smoketurner.dropwizard.zipkin.ZipkinBundle;
@@ -66,6 +67,7 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
     @Override
     public void initialize(Bootstrap<ArlasSubscriptionManagerConfiguration> bootstrap) {
         bootstrap.registerMetrics();
+        bootstrap.getObjectMapper().enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
                 bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
         bootstrap.addBundle(new SwaggerBundle<ArlasSubscriptionManagerConfiguration>() {
