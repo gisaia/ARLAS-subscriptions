@@ -1,13 +1,8 @@
-FROM gisaia/arlas-openjdk:17
-
-# install script dependencies
-RUN apt-get update && apt-get install -y bash netcat-openbsd curl
+FROM gisaia/arlas-openjdk:17-distroless
 
 # application placed into /opt/app
 WORKDIR /opt/app
 ADD subscriptions-manager/target/subscriptions-manager*.jar /opt/app/subscriptions-manager.jar
 ADD conf/configuration-manager.yaml /opt/app/configuration-manager.yaml
-ADD subscriptions-manager/scripts/wait-for-deps.sh /opt/app/wait-for-deps.sh
 
-ENTRYPOINT ["bash", "-c"]
-CMD ["java -jar /opt/app/subscriptions-manager.jar server /opt/app/configuration-manager.yaml"]
+CMD ["subscriptions-manager.jar", "server", "/opt/app/configuration-manager.yaml"]

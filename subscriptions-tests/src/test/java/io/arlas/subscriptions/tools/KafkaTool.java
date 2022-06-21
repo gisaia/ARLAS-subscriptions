@@ -105,7 +105,12 @@ public class KafkaTool implements Runnable {
     }
 
     public void produce(String event) {
-        producer.send(new ProducerRecord<>(subscriptionEventsTopic, event));
+        try {
+            //synchronous call
+            producer.send(new ProducerRecord<>(subscriptionEventsTopic, event)).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public NotificationOrder consume(int timeout, TimeUnit seconds) throws InterruptedException {

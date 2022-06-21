@@ -64,6 +64,7 @@ public class SubscriptionsMatcherIT extends AbstractTestContext {
 
     @Test
     public void testMatchingSubscriptionEventWithExistingProductIndex() throws Exception {
+        Thread.sleep(30000); // wait for ES indexing to be finished
 
         String  event =
                 "{\"object\": {\"id\": \"ID__10__30DI\",\"geometry\": {\"type\" : \"Polygon\",\"coordinates\" : [[[-11,-29],[-9,-29],[-9,-31],[-11,-31],[-11,-29]]]},\"job\": \"Brain Scientist\",\"event\": \"UPDATE\"}}";
