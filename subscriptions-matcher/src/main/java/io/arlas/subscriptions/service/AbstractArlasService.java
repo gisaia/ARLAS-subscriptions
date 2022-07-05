@@ -76,7 +76,7 @@ public class AbstractArlasService {
                 emptyListParams, null, headerParams, emptyMapParams, emptyArrayParams, null);
         Response searchResponse = searchCall.execute();
         String body = searchResponse.body().string();
-        logger.trace("body="+body);
+        logger.debug("body="+body);
         if (searchResponse.isSuccessful()) {
             return objectMapper.readValue(body, Hits.class);
         } else {

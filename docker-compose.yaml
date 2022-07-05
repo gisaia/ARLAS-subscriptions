@@ -105,7 +105,6 @@ services:
       - ARLAS_ELASTIC_ENABLE_SSL="${ARLAS_ELASTIC_ENABLE_SSL:-false}"
       - ARLAS_ELASTIC_CREDENTIALS="${ARLAS_ELASTIC_CREDENTIALS}"
       - ARLAS_ELASTIC_SKIP_MASTER="${ARLAS_ELASTIC_SKIP_MASTER:-true}"
-    command: ["/opt/app/wait-for-elasticsearch.sh"]
 
   arlas-subscriptions-matcher:
     build:
@@ -125,7 +124,6 @@ services:
       - ARLAS_SUB_IDENTITY_HEADER=${ARLAS_SUB_IDENTITY_HEADER:-}
     ports:
       - 9997:9998    
-    command: ["/opt/app/wait-for-deps.sh $$KAFKA_BROKERS $$ARLAS_ELASTIC_NODES $$ARLAS_SERVER"]
     healthcheck:
       test: curl http://localhost:9998/admin/healthcheck | grep -v "\"healthy\":false" || exit 1
       interval: 30s
@@ -154,7 +152,6 @@ services:
       - ${ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL}:${ARLAS_SUB_TRIG_SCHEM_PATH}
     ports:
       - 9998:9998
-    command: ["/opt/app/wait-for-deps.sh $$MONGO_HOST $$ARLAS_SUB_ELASTIC_NODES "]
     healthcheck:
       test: curl http://localhost:9998/admin/healthcheck | grep -v "\"healthy\":false" || exit 1
       interval: 30s

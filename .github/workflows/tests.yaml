@@ -27,6 +27,12 @@ jobs:
       run: |
         sudo sysctl -w vm.max_map_count=262144
         sudo mkdir -p /opt/app
+    - name: Run tests [MATCHER]
+      env:
+        # secrets are defined here : https://github.com/organizations/gisaia/settings/secrets/actions
+        DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      run: scripts/ci/tests-integration-stage.sh --stage=MATCHER
     - name: Run tests [MANAGER]
       env:
         # secrets are defined here : https://github.com/organizations/gisaia/settings/secrets/actions
@@ -39,9 +45,3 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USER }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
       run: scripts/ci/tests-integration-stage.sh --stage=MANAGER_AUTH
-    - name: Run tests [MATCHER]
-      env:
-        # secrets are defined here : https://github.com/organizations/gisaia/settings/secrets/actions
-        DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USER }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      run: scripts/ci/tests-integration-stage.sh --stage=MATCHER

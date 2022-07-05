@@ -1,13 +1,8 @@
-FROM gisaia/arlas-openjdk:17
-
-# install script dependencies
-RUN apt-get update && apt-get install -y bash netcat-openbsd curl
+FROM gisaia/arlas-openjdk:17-distroless
 
 # application placed into /opt/app
 WORKDIR /opt/app
 ADD subscriptions-matcher/target/subscriptions-matcher*.jar /opt/app/subscriptions-matcher.jar
 ADD conf/configuration-matcher.yaml /opt/app/configuration-matcher.yaml
-ADD subscriptions-matcher/scripts/wait-for-deps.sh /opt/app/wait-for-deps.sh
 
-ENTRYPOINT ["bash", "-c"]
-CMD ["java -jar /opt/app/subscriptions-matcher.jar server /opt/app/configuration-matcher.yaml"]
+CMD ["subscriptions-matcher.jar", "server", "/opt/app/configuration-matcher.yaml"]
