@@ -34,7 +34,7 @@ services:
       LOG4J_LOGGER_KAFKA: INFO
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.15.2}
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-7.17.6}
     container_name: "elasticsearch"
     environment:
       - discovery.type=single-node
@@ -94,7 +94,7 @@ services:
   #########
 
   arlas-server:
-    image: gisaia/arlas-server:${ARLAS_VERSION:-22.0.1}
+    image: gisaia/arlas-server:${ARLAS_VERSION:-23.0.4}
     container_name: "arlas-server"
     ports:
       - 9999:9999

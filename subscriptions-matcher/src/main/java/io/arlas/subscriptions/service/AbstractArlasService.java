@@ -56,7 +56,7 @@ public class AbstractArlasService {
     final static  String GET = "GET";
 
     List<Pair> getQueryParams(String encodedSearchFilter) throws UnsupportedEncodingException {
-        String searchFilter = URLDecoder.decode(encodedSearchFilter, StandardCharsets.UTF_8.toString());
+        String searchFilter = URLDecoder.decode(encodedSearchFilter, StandardCharsets.UTF_8);
         logger.debug("Calling '" + apiClient.getBasePath() + searchEndpoint + "' with query params: '" + searchFilter + "'");
         return Arrays.stream(searchFilter.split("&"))
                 .map(s -> s.split("="))
@@ -65,7 +65,7 @@ public class AbstractArlasService {
     }
 
     Hits getItemHits(List<Pair> queryParams) throws ApiException, IOException, ArlasSubscriptionsException, ArlasException {
-        return getItemHits(queryParams, emptyMapParams);
+        return getItemHits(queryParams, Collections.emptyMap());
     }
 
     Hits getItemHits(List<Pair> queryParams, Map<String, String> headerParams) throws ApiException, IOException, ArlasException, ArlasSubscriptionsException {

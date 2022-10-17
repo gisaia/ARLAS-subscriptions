@@ -51,7 +51,7 @@ public class SubscriptionsService extends AbstractArlasService {
 
     List<Hit> searchMatchingSubscriptions(SubscriptionEvent event) throws ParseException {
 
-        List<Hit> result = new ArrayList();
+        List<Hit> result = new ArrayList<>();
 
         try {
             String searchFilter = JSONValueInjector.inject(filterRoot, event);

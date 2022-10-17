@@ -22,17 +22,17 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipTests>true</skipTests>
         <surefire.version>2.22.2</surefire.version>
-        <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+        <maven-shade-plugin.version>3.4.0</maven-shade-plugin.version>
 
         <!-- LIBRARIES -->
         <junit.version>4.13.2</junit.version>
         <org.hamcrest.version>2.2</org.hamcrest.version>
-        <io.rest-assured.version>5.1.1</io.rest-assured.version>
+        <io.rest-assured.version>5.2.0</io.rest-assured.version>
         <jug.version>4.0.1</jug.version>
 
         <!-- BACKENDS -->
-        <arlas.version>22.0.1</arlas.version>
-        <kafka.version>3.2.0</kafka.version>
+        <arlas.version>23.0.4</arlas.version>
+        <kafka.version>3.3.1</kafka.version>
     </properties>
 
     <dependencies>
