@@ -43,7 +43,6 @@ trap clean_exit EXIT
 #########################################
 usage(){
 	echo "Usage: ./release.sh -api-major=X -api-minor=Y -api-patch=U -rel=Z -dev=Z+1 -es=Y [--no-tests] [--skip-api]"
-  echo " -es |--elastic-range           elasticsearch versions supported"
 	echo " -api-major|--api-version       release arlas-subscriptions API major version"
 	echo " -api-minor|--api-minor-version release arlas-subscriptions API minor version"
 	echo " -api-patch|--api-patch-version release arlas-subscriptions API patch version"
@@ -81,10 +80,6 @@ case $i in
     API_PATCH_VERSION="${i#*=}"
     shift # past argument=value
     ;;
-    -es=*|--elastic-range=*)
-    ELASTIC_RANGE="${i#*=}"
-    shift # past argument=value
-    ;;
     --no-tests)
     TESTS="NO"
     shift # past argument with no value
@@ -103,36 +98,10 @@ case $i in
 esac
 done
 
-ELASTIC_VERSIONS_7=(
-  7.2.1
-  7.3.2
-  7.4.2
-  7.5.2
-  7.6.2
-  7.7.1
-  7.8.1
-  7.9.2
-  7.12.1
-  7.14.2
-  7.15.2
-)
-
-case $ELASTIC_RANGE in
-    "7")
-        ELASTIC_VERSIONS=( "${ELASTIC_VERSIONS_7[@]}" )
-        ;;
-    *)
-        echo "Unknown --elasticsearch-range value"
-        echo "Possible values : "
-        echo "   -es=7 for versions ${ELASTIC_VERSIONS_7[*]}"
-        usage
-esac
-
 #########################################
 #### Recap of chosen arguments ##########
 #########################################
 
-if [ -z ${ELASTIC_VERSIONS+x} ]; then usage;   else echo "Elasticsearch versions support : ${ELASTIC_VERSIONS[*]}"; fi
 if [ -z ${API_MAJOR_VERSION+x} ]; then usage;  else    echo "API MAJOR version           : ${API_MAJOR_VERSION}"; fi
 if [ -z ${API_MINOR_VERSION+x} ]; then usage;  else    echo "API MINOR version           : ${API_MINOR_VERSION}"; fi
 if [ -z ${API_PATCH_VERSION+x} ]; then usage;  else    echo "API PATCH version           : ${API_PATCH_VERSION}"; fi
@@ -157,8 +126,8 @@ fi
 #########################################
 #### Setting versions ###################
 #########################################
-export ARLAS_SUBSCRIPTIONS_VERSION="${API_MAJOR_VERSION}.${ELASTIC_RANGE}.${ARLAS_REL}"
-ARLAS_DEV_VERSION="${API_MAJOR_VERSION}.${ELASTIC_RANGE}.${ARLAS_DEV}"
+export ARLAS_SUBSCRIPTIONS_VERSION="${API_MAJOR_VERSION}.${API_MINOR_VERSION}.${ARLAS_REL}"
+ARLAS_DEV_VERSION="${API_MAJOR_VERSION}.${API_MINOR_VERSION}.${ARLAS_DEV}"
 FULL_API_VERSION=${API_MAJOR_VERSION}"."${API_MINOR_VERSION}"."${API_PATCH_VERSION}
 API_DEV_VERSION=${API_MAJOR_VERSION}"."${API_MINOR_VERSION}"."${ARLAS_DEV}
 
