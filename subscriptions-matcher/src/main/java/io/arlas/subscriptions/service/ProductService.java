@@ -66,7 +66,7 @@ public class ProductService extends AbstractArlasService {
                 try {
                     IndexedUserSubscription userSubscription = objectMapper.convertValue(hit.getData(), IndexedUserSubscription.class);
                     userSubscription.setId((String) ((Map<String, Object>) hit.getData()).get("id"));
-                    logger.trace("indexedUserSubscription: " + userSubscription.toString());
+                    logger.trace("indexedUserSubscription: " + userSubscription);
                     String f = searchFilter
                             + "&" + userSubscription.subscription.hits.filter;
                     if (!StringUtils.isBlank(userSubscription.subscription.hits.projection)) {
@@ -75,7 +75,6 @@ public class ProductService extends AbstractArlasService {
                     Hits productHits = getItemHits(getQueryParams(f), getHeaderParams(userSubscription));
                     if (productHits.getHits() != null && !productHits.getHits().isEmpty()) {
                         productHits.getHits()
-                                .stream()
                                 .forEach(h -> pushNotificationOrder(h, event, userSubscription));
                     } else {
                         logger.warn("Could not find product in catalog: " + f);
@@ -90,7 +89,7 @@ public class ProductService extends AbstractArlasService {
     }
 
     private Map<String, String> getHeaderParams(UserSubscription userSubscription) {
-        Map headerParams = new HashMap<>();
+        Map<String, String> headerParams = new HashMap<>();
         if (!StringUtils.isEmpty(identityHeader)) {
             headerParams.put(identityHeader, userSubscription.created_by);
         }
@@ -112,7 +111,7 @@ public class ProductService extends AbstractArlasService {
         notificationOrder.put("subscription", subSummary);
         // User metadata fields (provided by subscription creator)
         notificationOrder.put("user_metadata", userSubscription.userMetadatas);
-        logger.trace("notificationOrder: " + notificationOrder.toString());
+        logger.trace("notificationOrder: " + notificationOrder);
         notificationOrderKafkaProducer.send(notificationOrder);
     }
 

@@ -51,8 +51,9 @@ function run_manager {
 
 function run_matcher {
     echo "===> start arlas-subscriptions-matcher dependency stack (es+kafka+arlas server)"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} zookeeper elasticsearch kafka arlas-server
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} zookeeper elasticsearch kafka
     sleep 10
+    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-server
     echo "===> start arlas-subscriptions-matcher stack"
     docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-matcher
     echo "===> wait for arlas-subscriptions-matcher up and running"

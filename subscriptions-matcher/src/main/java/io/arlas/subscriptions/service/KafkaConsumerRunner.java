@@ -63,7 +63,7 @@ public class KafkaConsumerRunner implements Runnable {
             logger.info("["+kafkaConfiguration.subscriptionEventsTopic+"] Starting consumer");
             consumer = SubscriptionEventKafkaConsumer.build(kafkaConfiguration);
             long start = System.currentTimeMillis();
-            long duration = System.currentTimeMillis();
+            long duration;
             int nbFailure = 0;
 
             while (true) {

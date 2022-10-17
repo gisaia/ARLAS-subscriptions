@@ -98,7 +98,7 @@ public class DataSetTool {
     public static ApiClient apiClient;
     public static ElasticClient client;
     public static MongoCollection<UserSubscription> mongoCollection;
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
 
     public static ApiClient getApiClient() {
@@ -108,7 +108,7 @@ public class DataSetTool {
     static {
         // ARLAS Client
         String arlasHost = Optional.ofNullable(System.getenv("ARLAS_HOST")).orElse("localhost");
-        int arlasPort = Integer.valueOf(Optional.ofNullable(System.getenv("ARLAS_PORT")).orElse("9999"));
+        int arlasPort = Integer.parseInt(Optional.ofNullable(System.getenv("ARLAS_PORT")).orElse("9999"));
         String arlasPrefix = Optional.ofNullable(System.getenv("ARLAS_PREFIX")).orElse("/arlas");
         apiClient = new ApiClient().setBasePath("http://"+arlasHost+":"+arlasPort+arlasPrefix);
 
@@ -170,10 +170,10 @@ public class DataSetTool {
         UserSubscription subscription = new UserSubscription();
         subscription.active = true;
         subscription.created_by = "gisaia";
-        subscription.starts_at = 1564578988l;
-        subscription.expires_at = 2145913200l;
+        subscription.starts_at = 1564578988L;
+        subscription.expires_at = 2145913200L;
         subscription.title = "Test Subscription";
-        subscription.setCreated_at(1564578988l);
+        subscription.setCreated_at(1564578988L);
         subscription.setCreated_by_admin(false);
         subscription.setDeleted(false);
         subscription.setId("1234");
@@ -200,7 +200,7 @@ public class DataSetTool {
         coverage.put("coordinates", jsonArray);
         subscription.subscription.trigger.put("geometry", coverage);
         subscription.subscription.trigger.put("job", Arrays.asList(jobs).subList(0,5));
-        subscription.subscription.trigger.put("event", Arrays.asList("UPDATE"));
+        subscription.subscription.trigger.put("event", List.of("UPDATE"));
         subscription.subscription.hits = new UserSubscription.Hits();
         subscription.subscription.hits.filter = "f=params.city:eq:Toulouse";
         subscription.subscription.hits.projection = "exclude=params.country";

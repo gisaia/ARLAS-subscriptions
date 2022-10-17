@@ -18,7 +18,7 @@
         <gson-version>2.9.0</gson-version>
         <gson-fire-version>1.8.5</gson-fire-version>
         <threetenbp-version>1.6.0</threetenbp-version>
-        <jackson.version>2.13.3</jackson.version>
+        <jackson.version>2.13.4</jackson.version>
         <geojson.jackson.version>1.14</geojson.jackson.version>
         <oauth2.client.version>1.0.2</oauth2.client.version>
         <oauth2.common.version>1.0.2</oauth2.common.version>

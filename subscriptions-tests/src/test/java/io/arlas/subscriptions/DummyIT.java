@@ -70,10 +70,10 @@ public class DummyIT extends AbstractTestContext {
                 Matchers.equalTo(200));
         Assert.assertThat("Search response returns 10 hits",
                 hits.getNbhits(),
-                Matchers.equalTo(10l));
+                Matchers.equalTo(10L));
         Assert.assertThat("Search response has 595 hits",
                 hits.getTotalnb(),
-                Matchers.equalTo(595l));
+                Matchers.equalTo(595L));
 
         //SUBSCRIPTIONS SEARCH REQUEST
         Call subscriptionsCall = DataSetTool.getApiClient().buildCall("/explore/"+DataSetTool.COLLECTION_SUBSCRIPTIONS_NAME +"/_search", "GET", new ArrayList<>(),
@@ -86,9 +86,9 @@ public class DummyIT extends AbstractTestContext {
                 Matchers.equalTo(200));
         Assert.assertThat("Subscriptions search returns 1 hits",
                 subscriptionsHits.getNbhits(),
-                Matchers.equalTo(1l));
+                Matchers.equalTo(1L));
         Assert.assertThat("Subscriptions search has 1 hits",
                 subscriptionsHits.getTotalnb(),
-                Matchers.equalTo(1l));
+                Matchers.equalTo(1L));
     }
 }

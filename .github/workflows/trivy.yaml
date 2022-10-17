@@ -41,6 +41,7 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          trivyignores: .github/workflows/.trivyignore
 
       - name: Run Trivy vulnerability scanner on Matcher
         uses: aquasecurity/trivy-action@master
@@ -51,3 +52,4 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          trivyignores: .github/workflows/.trivyignore
