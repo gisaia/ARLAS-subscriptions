@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "Manage ARLAS subscriptions on ARLAS collections' events."
-  version: "19.0.9-SNAPSHOT"
+  version: "23.0.0"
   title: "ARLAS Subscriptions Manager API"
   contact:
     name: "ARLAS"
@@ -22,6 +22,148 @@ schemes:
 - "http"
 - "https"
 paths:
+  /admin/subscriptions/{id}:
+    get:
+      tags:
+      - "admin"
+      summary: "Find subscription by ID"
+      description: "Return a single subscription. Only creator can access their subscriptions."
+      operationId: "get"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of subscription to return"
+        required: true
+        type: "string"
+      - name: "deleted"
+        in: "query"
+        description: "Filter subscriptions whether they are deleted or not."
+        required: false
+        type: "boolean"
+        default: true
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        "200":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        "401":
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: "Subscription not found."
+          schema:
+            $ref: "#/definitions/Error"
+        "503":
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+      - "admin"
+      summary: "Update an existing subscription"
+      description: "Update an existing subscription. "
+      operationId: "put"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of subscription to return"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "subscription"
+        description: "Subscription description"
+        required: true
+        schema:
+          $ref: "#/definitions/UserSubscription"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        "201":
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        "400":
+          description: "JSON parameter malformed."
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: "Not Found Error."
+          schema:
+            $ref: "#/definitions/Error"
+        "503":
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+      - "admin"
+      summary: "Delete a subscription"
+      description: "Mark a subscription as deleted."
+      operationId: "delete"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Subscription ID to delete"
+        required: true
+        type: "string"
+      - name: "pretty"
+        in: "query"
+        description: "Pretty print"
+        required: false
+        type: "boolean"
+        default: false
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        "202":
+          description: "Subscription has been deleted."
+          schema:
+            $ref: "#/definitions/UserSubscriptionWithLinks"
+        "401":
+          description: "Unauthorized."
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: "Subscription not found."
+          schema:
+            $ref: "#/definitions/Error"
+        "503":
+          description: "Arlas Subscriptions Manager Error."
+          schema:
+            $ref: "#/definitions/Error"
   /admin/subscriptions:
     get:
       tags:
@@ -106,15 +248,15 @@ paths:
         minimum: 1
         format: "int32"
       responses:
-        200:
+        "200":
           description: "Successful operation"
           schema:
             $ref: "#/definitions/SubscriptionListResource"
-        401:
+        "401":
           description: "Unauthorized."
           schema:
             $ref: "#/definitions/Error"
-        503:
+        "503":
           description: "Arlas Subscriptions Manager Error."
           schema:
             $ref: "#/definitions/Error"
@@ -142,33 +284,33 @@ paths:
         type: "boolean"
         default: false
       responses:
-        200:
+        "200":
           description: "successful operation"
           schema:
             $ref: "#/definitions/UserSubscriptionWithLinks"
-        201:
+        "201":
           description: "Subscription has been registered"
           schema:
             $ref: "#/definitions/UserSubscriptionWithLinks"
-        400:
+        "400":
           description: "JSON parameter malformed."
           schema:
             $ref: "#/definitions/Error"
-        401:
+        "401":
           description: "Unauthorized."
           schema:
             $ref: "#/definitions/Error"
-        503:
+        "503":
           description: "Arlas Subscriptions Manager Error."
           schema:
             $ref: "#/definitions/Error"
-  /admin/subscriptions/{id}:
+  /subscriptions/{id}:
     get:
       tags:
-      - "admin"
+      - "end-user"
       summary: "Find subscription by ID"
       description: "Return a single subscription. Only creator can access their subscriptions."
-      operationId: "get"
+      operationId: "get_1"
       consumes:
       - "application/json;charset=utf-8"
       produces:
@@ -179,12 +321,6 @@ paths:
         description: "ID of subscription to return"
         required: true
         type: "string"
-      - name: "deleted"
-        in: "query"
-        description: "Filter subscriptions whether they are deleted or not."
-        required: false
-        type: "boolean"
-        default: true
       - name: "pretty"
         in: "query"
         description: "Pretty print"
@@ -192,28 +328,33 @@ paths:
         type: "boolean"
         default: false
       responses:
-        200:
+        "200":
           description: "Successful operation"
           schema:
             $ref: "#/definitions/UserSubscriptionWithLinks"
-        401:
+        "401":
           description: "Unauthorized."
           schema:
             $ref: "#/definitions/Error"
-        404:
+        "403":
+          description: "Forbidden."
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
           description: "Subscription not found."
           schema:
             $ref: "#/definitions/Error"
-        503:
+        "503":
           description: "Arlas Subscriptions Manager Error."
           schema:
             $ref: "#/definitions/Error"
     put:
       tags:
-      - "admin"
+      - "end-user"
       summary: "Update an existing subscription"
-      description: "Update an existing subscription. "
-      operationId: "put"
+      description: "Update an existing subscription. Only creator can update their\
+        \ own subscriptions."
+      operationId: "put_1"
       consumes:
       - "application/json;charset=utf-8"
       produces:
@@ -237,36 +378,41 @@ paths:
         type: "boolean"
         default: false
       responses:
-        200:
+        "200":
           description: "successful operation"
           schema:
             $ref: "#/definitions/UserSubscriptionWithLinks"
-        201:
+        "201":
           description: "Successful operation"
           schema:
             $ref: "#/definitions/UserSubscriptionWithLinks"
-        400:
+        "400":
           description: "JSON parameter malformed."
           schema:
             $ref: "#/definitions/Error"
-        401:
+        "401":
           description: "Unauthorized."
           schema:
             $ref: "#/definitions/Error"
-        404:
+        "403":
+          description: "Forbidden."
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
           description: "Not Found Error."
           schema:
             $ref: "#/definitions/Error"
-        503:
+        "503":
           description: "Arlas Subscriptions Manager Error."
           schema:
             $ref: "#/definitions/Error"
     delete:
       tags:
-      - "admin"
+      - "end-user"
       summary: "Delete a subscription"
-      description: "Mark a subscription as deleted."
-      operationId: "delete"
+      description: "Mark a subscription as deleted. Only creator can delete their\
+        \ own subscriptions."
+      operationId: "delete_1"
       consumes:
       - "application/json;charset=utf-8"
       produces:
@@ -284,23 +430,27 @@ paths:
         type: "boolean"
         default: false
       responses:
-        200:
+        "200":
           description: "successful operation"
           schema:
             $ref: "#/definitions/UserSubscriptionWithLinks"
-        202:
+        "202":
           description: "Subscription has been deleted."
           schema:
             $ref: "#/definitions/UserSubscriptionWithLinks"
-        401:
+        "401":
           description: "Unauthorized."
           schema:
             $ref: "#/definitions/Error"
-        404:
+        "403":
+          description: "Forbidden."
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
           description: "Subscription not found."
           schema:
             $ref: "#/definitions/Error"
-        503:
+        "503":
           description: "Arlas Subscriptions Manager Error."
           schema:
             $ref: "#/definitions/Error"
@@ -359,19 +509,19 @@ paths:
         minimum: 1
         format: "int32"
       responses:
-        200:
+        "200":
           description: "Successful operation"
           schema:
             $ref: "#/definitions/SubscriptionListResource"
-        401:
+        "401":
           description: "Unauthorized."
           schema:
             $ref: "#/definitions/Error"
-        403:
+        "403":
           description: "Forbidden."
           schema:
             $ref: "#/definitions/Error"
-        503:
+        "503":
           description: "Arlas Subscriptions Manager Error."
           schema:
             $ref: "#/definitions/Error"
@@ -399,181 +549,31 @@ paths:
         type: "boolean"
         default: false
       responses:
-        200:
+        "200":
           description: "successful operation"
           schema:
             $ref: "#/definitions/UserSubscriptionWithLinks"
-        201:
+        "201":
           description: "Subscription has been registered"
           schema:
             $ref: "#/definitions/UserSubscriptionWithLinks"
-        400:
+        "400":
           description: "JSON parameter malformed."
           schema:
             $ref: "#/definitions/Error"
-        401:
+        "401":
           description: "Unauthorized."
           schema:
             $ref: "#/definitions/Error"
-        403:
+        "403":
           description: "Forbidden."
           schema:
             $ref: "#/definitions/Error"
-        404:
+        "404":
           description: "Not Found Error."
           schema:
             $ref: "#/definitions/Error"
-        503:
-          description: "Arlas Subscriptions Manager Error."
-          schema:
-            $ref: "#/definitions/Error"
-  /subscriptions/{id}:
-    get:
-      tags:
-      - "end-user"
-      summary: "Find subscription by ID"
-      description: "Return a single subscription. Only creator can access their subscriptions."
-      operationId: "get_1"
-      consumes:
-      - "application/json;charset=utf-8"
-      produces:
-      - "application/json;charset=utf-8"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "ID of subscription to return"
-        required: true
-        type: "string"
-      - name: "pretty"
-        in: "query"
-        description: "Pretty print"
-        required: false
-        type: "boolean"
-        default: false
-      responses:
-        200:
-          description: "Successful operation"
-          schema:
-            $ref: "#/definitions/UserSubscriptionWithLinks"
-        401:
-          description: "Unauthorized."
-          schema:
-            $ref: "#/definitions/Error"
-        403:
-          description: "Forbidden."
-          schema:
-            $ref: "#/definitions/Error"
-        404:
-          description: "Subscription not found."
-          schema:
-            $ref: "#/definitions/Error"
-        503:
-          description: "Arlas Subscriptions Manager Error."
-          schema:
-            $ref: "#/definitions/Error"
-    put:
-      tags:
-      - "end-user"
-      summary: "Update an existing subscription"
-      description: "Update an existing subscription. Only creator can update their\
-        \ own subscriptions."
-      operationId: "put_1"
-      consumes:
-      - "application/json;charset=utf-8"
-      produces:
-      - "application/json;charset=utf-8"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "ID of subscription to return"
-        required: true
-        type: "string"
-      - in: "body"
-        name: "subscription"
-        description: "Subscription description"
-        required: true
-        schema:
-          $ref: "#/definitions/UserSubscription"
-      - name: "pretty"
-        in: "query"
-        description: "Pretty print"
-        required: false
-        type: "boolean"
-        default: false
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/UserSubscriptionWithLinks"
-        201:
-          description: "Successful operation"
-          schema:
-            $ref: "#/definitions/UserSubscriptionWithLinks"
-        400:
-          description: "JSON parameter malformed."
-          schema:
-            $ref: "#/definitions/Error"
-        401:
-          description: "Unauthorized."
-          schema:
-            $ref: "#/definitions/Error"
-        403:
-          description: "Forbidden."
-          schema:
-            $ref: "#/definitions/Error"
-        404:
-          description: "Not Found Error."
-          schema:
-            $ref: "#/definitions/Error"
-        503:
-          description: "Arlas Subscriptions Manager Error."
-          schema:
-            $ref: "#/definitions/Error"
-    delete:
-      tags:
-      - "end-user"
-      summary: "Delete a subscription"
-      description: "Mark a subscription as deleted. Only creator can delete their\
-        \ own subscriptions."
-      operationId: "delete_1"
-      consumes:
-      - "application/json;charset=utf-8"
-      produces:
-      - "application/json;charset=utf-8"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "Subscription ID to delete"
-        required: true
-        type: "string"
-      - name: "pretty"
-        in: "query"
-        description: "Pretty print"
-        required: false
-        type: "boolean"
-        default: false
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/UserSubscriptionWithLinks"
-        202:
-          description: "Subscription has been deleted."
-          schema:
-            $ref: "#/definitions/UserSubscriptionWithLinks"
-        401:
-          description: "Unauthorized."
-          schema:
-            $ref: "#/definitions/Error"
-        403:
-          description: "Forbidden."
-          schema:
-            $ref: "#/definitions/Error"
-        404:
-          description: "Subscription not found."
-          schema:
-            $ref: "#/definitions/Error"
-        503:
+        "503":
           description: "Arlas Subscriptions Manager Error."
           schema:
             $ref: "#/definitions/Error"
@@ -618,23 +618,6 @@ definitions:
         type: "string"
       hits:
         $ref: "#/definitions/Hits"
-  SubscriptionListResource:
-    type: "object"
-    properties:
-      count:
-        type: "integer"
-        format: "int32"
-      total:
-        type: "integer"
-        format: "int32"
-      _links:
-        type: "object"
-        additionalProperties:
-          $ref: "#/definitions/Link"
-      subscriptions:
-        type: "array"
-        items:
-          $ref: "#/definitions/UserSubscriptionWithLinks"
   UserSubscriptionWithLinks:
     type: "object"
     required:
@@ -739,3 +722,20 @@ definitions:
         type: "object"
         additionalProperties:
           type: "object"
+  SubscriptionListResource:
+    type: "object"
+    properties:
+      count:
+        type: "integer"
+        format: "int32"
+      total:
+        type: "integer"
+        format: "int32"
+      _links:
+        type: "object"
+        additionalProperties:
+          $ref: "#/definitions/Link"
+      subscriptions:
+        type: "array"
+        items:
+          $ref: "#/definitions/UserSubscriptionWithLinks"

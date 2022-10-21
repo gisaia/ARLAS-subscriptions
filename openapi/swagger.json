@@ -2,7 +2,7 @@
   "swagger" : "2.0",
   "info" : {
     "description" : "Manage ARLAS subscriptions on ARLAS collections' events.",
-    "version" : "19.0.9-SNAPSHOT",
+    "version" : "23.0.0",
     "title" : "ARLAS Subscriptions Manager API",
     "contact" : {
       "name" : "ARLAS",
@@ -24,169 +24,6 @@
   } ],
   "schemes" : [ "http", "https" ],
   "paths" : {
-    "/admin/subscriptions" : {
-      "get" : {
-        "tags" : [ "admin" ],
-        "summary" : "List all available subscriptions",
-        "description" : "Return the list of all registered subscriptions from the latest created to the earliest.",
-        "operationId" : "getAll",
-        "consumes" : [ "application/json;charset=utf-8" ],
-        "produces" : [ "application/json;charset=utf-8" ],
-        "parameters" : [ {
-          "name" : "before",
-          "in" : "query",
-          "description" : "Retrieve subscriptions created before given timestamp.",
-          "required" : false,
-          "type" : "integer",
-          "format" : "int64"
-        }, {
-          "name" : "after",
-          "in" : "query",
-          "description" : "Retrieve subscriptions created after given timestamp.",
-          "required" : false,
-          "type" : "integer",
-          "format" : "int64"
-        }, {
-          "name" : "active",
-          "in" : "query",
-          "description" : "Filter subscriptions whether they are active or not (returns all if missing, 'active' if 'true', 'not active' if 'false').",
-          "required" : false,
-          "type" : "boolean"
-        }, {
-          "name" : "started",
-          "in" : "query",
-          "description" : "Filter subscriptions whether they are started or not (returns all if missing, 'started' if 'true', 'not started' if 'false').",
-          "required" : false,
-          "type" : "boolean"
-        }, {
-          "name" : "expired",
-          "in" : "query",
-          "description" : "Filter subscriptions whether they are expired or not (returns all if missing, 'expired' if 'true', 'not expired' if 'false').",
-          "required" : false,
-          "type" : "boolean"
-        }, {
-          "name" : "created-by",
-          "in" : "query",
-          "description" : "Filter subscriptions by creator's identifier",
-          "required" : false,
-          "type" : "string"
-        }, {
-          "name" : "deleted",
-          "in" : "query",
-          "description" : "Filter subscriptions whether they are deleted or not.",
-          "required" : false,
-          "type" : "boolean",
-          "default" : true
-        }, {
-          "name" : "created-by-admin",
-          "in" : "query",
-          "description" : "Filter subscriptions whether they have been created by admin or not (returns all if missing, 'created_by_admin' if 'true', 'not created_by_admin' if 'false').",
-          "required" : false,
-          "type" : "boolean"
-        }, {
-          "name" : "pretty",
-          "in" : "query",
-          "description" : "Pretty print",
-          "required" : false,
-          "type" : "boolean",
-          "default" : false
-        }, {
-          "name" : "page",
-          "in" : "query",
-          "description" : "Page ID",
-          "required" : false,
-          "type" : "integer",
-          "default" : 1,
-          "minimum" : 1,
-          "format" : "int32"
-        }, {
-          "name" : "size",
-          "in" : "query",
-          "description" : "Page Size",
-          "required" : false,
-          "type" : "integer",
-          "default" : 10,
-          "minimum" : 1,
-          "format" : "int32"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Successful operation",
-            "schema" : {
-              "$ref" : "#/definitions/SubscriptionListResource"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized.",
-            "schema" : {
-              "$ref" : "#/definitions/Error"
-            }
-          },
-          "503" : {
-            "description" : "Arlas Subscriptions Manager Error.",
-            "schema" : {
-              "$ref" : "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "post" : {
-        "tags" : [ "admin" ],
-        "summary" : "Register a new subscription",
-        "description" : "Register a subscription for further notification.",
-        "operationId" : "post",
-        "consumes" : [ "application/json;charset=utf-8" ],
-        "produces" : [ "application/json;charset=utf-8" ],
-        "parameters" : [ {
-          "in" : "body",
-          "name" : "subscription",
-          "description" : "Subscription description",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/definitions/UserSubscription"
-          }
-        }, {
-          "name" : "pretty",
-          "in" : "query",
-          "description" : "Pretty print",
-          "required" : false,
-          "type" : "boolean",
-          "default" : false
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "successful operation",
-            "schema" : {
-              "$ref" : "#/definitions/UserSubscriptionWithLinks"
-            }
-          },
-          "201" : {
-            "description" : "Subscription has been registered",
-            "schema" : {
-              "$ref" : "#/definitions/UserSubscriptionWithLinks"
-            }
-          },
-          "400" : {
-            "description" : "JSON parameter malformed.",
-            "schema" : {
-              "$ref" : "#/definitions/Error"
-            }
-          },
-          "401" : {
-            "description" : "Unauthorized.",
-            "schema" : {
-              "$ref" : "#/definitions/Error"
-            }
-          },
-          "503" : {
-            "description" : "Arlas Subscriptions Manager Error.",
-            "schema" : {
-              "$ref" : "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
     "/admin/subscriptions/{id}" : {
       "get" : {
         "tags" : [ "admin" ],
@@ -366,12 +203,12 @@
         }
       }
     },
-    "/subscriptions" : {
+    "/admin/subscriptions" : {
       "get" : {
-        "tags" : [ "end-user" ],
+        "tags" : [ "admin" ],
         "summary" : "List all available subscriptions",
-        "description" : "Return the list of all registered subscriptions that are available for current user from the latest created to the earliest.\nOnly current user's subscriptions that are not deleted are listed.",
-        "operationId" : "getAll_1",
+        "description" : "Return the list of all registered subscriptions from the latest created to the earliest.",
+        "operationId" : "getAll",
         "consumes" : [ "application/json;charset=utf-8" ],
         "produces" : [ "application/json;charset=utf-8" ],
         "parameters" : [ {
@@ -382,15 +219,47 @@
           "type" : "integer",
           "format" : "int64"
         }, {
+          "name" : "after",
+          "in" : "query",
+          "description" : "Retrieve subscriptions created after given timestamp.",
+          "required" : false,
+          "type" : "integer",
+          "format" : "int64"
+        }, {
           "name" : "active",
           "in" : "query",
-          "description" : "Filter subscriptions whether they are active or not (returns all if missing, 'active' if 'true', 'inactive' if 'false').",
+          "description" : "Filter subscriptions whether they are active or not (returns all if missing, 'active' if 'true', 'not active' if 'false').",
+          "required" : false,
+          "type" : "boolean"
+        }, {
+          "name" : "started",
+          "in" : "query",
+          "description" : "Filter subscriptions whether they are started or not (returns all if missing, 'started' if 'true', 'not started' if 'false').",
           "required" : false,
           "type" : "boolean"
         }, {
           "name" : "expired",
           "in" : "query",
           "description" : "Filter subscriptions whether they are expired or not (returns all if missing, 'expired' if 'true', 'not expired' if 'false').",
+          "required" : false,
+          "type" : "boolean"
+        }, {
+          "name" : "created-by",
+          "in" : "query",
+          "description" : "Filter subscriptions by creator's identifier",
+          "required" : false,
+          "type" : "string"
+        }, {
+          "name" : "deleted",
+          "in" : "query",
+          "description" : "Filter subscriptions whether they are deleted or not.",
+          "required" : false,
+          "type" : "boolean",
+          "default" : true
+        }, {
+          "name" : "created-by-admin",
+          "in" : "query",
+          "description" : "Filter subscriptions whether they have been created by admin or not (returns all if missing, 'created_by_admin' if 'true', 'not created_by_admin' if 'false').",
           "required" : false,
           "type" : "boolean"
         }, {
@@ -401,21 +270,21 @@
           "type" : "boolean",
           "default" : false
         }, {
-          "name" : "size",
-          "in" : "query",
-          "description" : "Page Size",
-          "required" : false,
-          "type" : "integer",
-          "default" : 10,
-          "minimum" : 1,
-          "format" : "int32"
-        }, {
           "name" : "page",
           "in" : "query",
           "description" : "Page ID",
           "required" : false,
           "type" : "integer",
           "default" : 1,
+          "minimum" : 1,
+          "format" : "int32"
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "Page Size",
+          "required" : false,
+          "type" : "integer",
+          "default" : 10,
           "minimum" : 1,
           "format" : "int32"
         } ],
@@ -432,12 +301,6 @@
               "$ref" : "#/definitions/Error"
             }
           },
-          "403" : {
-            "description" : "Forbidden.",
-            "schema" : {
-              "$ref" : "#/definitions/Error"
-            }
-          },
           "503" : {
             "description" : "Arlas Subscriptions Manager Error.",
             "schema" : {
@@ -447,10 +310,10 @@
         }
       },
       "post" : {
-        "tags" : [ "end-user" ],
+        "tags" : [ "admin" ],
         "summary" : "Register a new subscription",
         "description" : "Register a subscription for further notification.",
-        "operationId" : "post_1",
+        "operationId" : "post",
         "consumes" : [ "application/json;charset=utf-8" ],
         "produces" : [ "application/json;charset=utf-8" ],
         "parameters" : [ {
@@ -490,18 +353,6 @@
           },
           "401" : {
             "description" : "Unauthorized.",
-            "schema" : {
-              "$ref" : "#/definitions/Error"
-            }
-          },
-          "403" : {
-            "description" : "Forbidden.",
-            "schema" : {
-              "$ref" : "#/definitions/Error"
-            }
-          },
-          "404" : {
-            "description" : "Not Found Error.",
             "schema" : {
               "$ref" : "#/definitions/Error"
             }
@@ -704,6 +555,155 @@
           }
         }
       }
+    },
+    "/subscriptions" : {
+      "get" : {
+        "tags" : [ "end-user" ],
+        "summary" : "List all available subscriptions",
+        "description" : "Return the list of all registered subscriptions that are available for current user from the latest created to the earliest.\nOnly current user's subscriptions that are not deleted are listed.",
+        "operationId" : "getAll_1",
+        "consumes" : [ "application/json;charset=utf-8" ],
+        "produces" : [ "application/json;charset=utf-8" ],
+        "parameters" : [ {
+          "name" : "before",
+          "in" : "query",
+          "description" : "Retrieve subscriptions created before given timestamp.",
+          "required" : false,
+          "type" : "integer",
+          "format" : "int64"
+        }, {
+          "name" : "active",
+          "in" : "query",
+          "description" : "Filter subscriptions whether they are active or not (returns all if missing, 'active' if 'true', 'inactive' if 'false').",
+          "required" : false,
+          "type" : "boolean"
+        }, {
+          "name" : "expired",
+          "in" : "query",
+          "description" : "Filter subscriptions whether they are expired or not (returns all if missing, 'expired' if 'true', 'not expired' if 'false').",
+          "required" : false,
+          "type" : "boolean"
+        }, {
+          "name" : "pretty",
+          "in" : "query",
+          "description" : "Pretty print",
+          "required" : false,
+          "type" : "boolean",
+          "default" : false
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "Page Size",
+          "required" : false,
+          "type" : "integer",
+          "default" : 10,
+          "minimum" : 1,
+          "format" : "int32"
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "description" : "Page ID",
+          "required" : false,
+          "type" : "integer",
+          "default" : 1,
+          "minimum" : 1,
+          "format" : "int32"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/SubscriptionListResource"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized.",
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "403" : {
+            "description" : "Forbidden.",
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "503" : {
+            "description" : "Arlas Subscriptions Manager Error.",
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "end-user" ],
+        "summary" : "Register a new subscription",
+        "description" : "Register a subscription for further notification.",
+        "operationId" : "post_1",
+        "consumes" : [ "application/json;charset=utf-8" ],
+        "produces" : [ "application/json;charset=utf-8" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "subscription",
+          "description" : "Subscription description",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/UserSubscription"
+          }
+        }, {
+          "name" : "pretty",
+          "in" : "query",
+          "description" : "Pretty print",
+          "required" : false,
+          "type" : "boolean",
+          "default" : false
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "$ref" : "#/definitions/UserSubscriptionWithLinks"
+            }
+          },
+          "201" : {
+            "description" : "Subscription has been registered",
+            "schema" : {
+              "$ref" : "#/definitions/UserSubscriptionWithLinks"
+            }
+          },
+          "400" : {
+            "description" : "JSON parameter malformed.",
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized.",
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "403" : {
+            "description" : "Forbidden.",
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "404" : {
+            "description" : "Not Found Error.",
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          },
+          "503" : {
+            "description" : "Arlas Subscriptions Manager Error.",
+            "schema" : {
+              "$ref" : "#/definitions/Error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions" : {
@@ -752,31 +752,6 @@
         },
         "hits" : {
           "$ref" : "#/definitions/Hits"
-        }
-      }
-    },
-    "SubscriptionListResource" : {
-      "type" : "object",
-      "properties" : {
-        "count" : {
-          "type" : "integer",
-          "format" : "int32"
-        },
-        "total" : {
-          "type" : "integer",
-          "format" : "int32"
-        },
-        "_links" : {
-          "type" : "object",
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Link"
-          }
-        },
-        "subscriptions" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/UserSubscriptionWithLinks"
-          }
         }
       }
     },
@@ -905,6 +880,31 @@
           "type" : "object",
           "additionalProperties" : {
             "type" : "object"
+          }
+        }
+      }
+    },
+    "SubscriptionListResource" : {
+      "type" : "object",
+      "properties" : {
+        "count" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "total" : {
+          "type" : "integer",
+          "format" : "int32"
+        },
+        "_links" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Link"
+          }
+        },
+        "subscriptions" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/UserSubscriptionWithLinks"
           }
         }
       }

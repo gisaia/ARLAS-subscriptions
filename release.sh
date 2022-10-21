@@ -194,9 +194,10 @@ docker run \
     -e USER_ID="$(id -u)" \
     --mount dst=/mnt/.m2,src="$HOME/.m2/",type=bind \
     --mount dst=/opt/maven,src="$PWD",type=bind \
+    -w /opt/maven \
     --rm \
     maven:3.8.5-openjdk-17 \
-        clean install
+        mvn clean install
 
 ##################################################
 #### Generate swagger definiton of the API #######

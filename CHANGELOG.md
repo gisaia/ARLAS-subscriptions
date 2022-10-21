@@ -1,5 +1,9 @@
 # Change Log
 
+## [v23.0.0](https://github.com/gisaia/ARLAS-subscriptions/tree/v23.0.0) (2022-10-17)
+
+[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v19.7.8...v23.0.0)
+
 ## [v19.7.8](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.8) (2022-04-12)
 
 [Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v19.7.7...v19.7.8)
