@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   description: "Manage ARLAS subscriptions on ARLAS collections' events."
-  version: "23.0.1"
+  version: "23.0.2-SNAPSHOT"
   title: "ARLAS Subscriptions Manager API"
   contact:
     name: "ARLAS"
