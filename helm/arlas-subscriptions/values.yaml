@@ -11,7 +11,7 @@ manager:
     MONGO_HOST: mongodb:27017
   image:
     repository: gisaia/arlas-subscriptions-manager
-    tag: 23.0.0
+    tag: 23.0.1
     pullPolicy: IfNotPresent
   init:
     elasticsearchIndex:
@@ -74,7 +74,7 @@ matcher:
     KAFKA_BROKERS: kafka:9092
   image:
     repository: gisaia/arlas-subscriptions-matcher
-    tag: 23.0.0
+    tag: 23.0.1
     pullPolicy: IfNotPresent
   init:
     serverCollection:
@@ -138,7 +138,7 @@ server:
     ARLAS_PREFIX: /arlas/
   image:
     repository: gisaia/arlas-server
-    tag: 23.0.4
+    tag: 23.0.6
     pullPolicy: IfNotPresent
   nodeSelector: {}
   replicaCount: 1
