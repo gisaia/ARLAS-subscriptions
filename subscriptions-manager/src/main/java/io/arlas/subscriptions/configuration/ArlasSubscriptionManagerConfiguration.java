@@ -21,7 +21,6 @@ package io.arlas.subscriptions.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
 import io.arlas.commons.exceptions.ArlasConfigurationException;
 import io.arlas.subscriptions.app.ArlasSubscriptionsConfiguration;
 import io.arlas.subscriptions.configuration.elastic.ElasticDBConfiguration;
@@ -39,9 +38,6 @@ public class ArlasSubscriptionManagerConfiguration extends ArlasSubscriptionsCon
 
     @JsonProperty(value = "elastic", required = true)
     public ElasticDBConfiguration elasticDBConfiguration;
-
-    @JsonProperty(value = "zipkin", required = true)
-    public ZipkinFactory zipkinConfiguration;
 
     @JsonProperty(value = "swagger", required = true)
     public SwaggerBundleConfiguration swaggerBundleConfiguration;
