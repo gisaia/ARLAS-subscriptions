@@ -23,8 +23,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.smoketurner.dropwizard.zipkin.ZipkinBundle;
-import com.smoketurner.dropwizard.zipkin.ZipkinFactory;
 import io.arlas.server.admin.health.ElasticsearchHealthCheck;
 import io.arlas.subscriptions.db.elastic.ElasticDBFactoryConnection;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
@@ -74,12 +72,6 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
             @Override
             protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(ArlasSubscriptionManagerConfiguration configuration) {
                 return configuration.swaggerBundleConfiguration;
-            }
-        });
-        bootstrap.addBundle(new ZipkinBundle<>(getName()) {
-            @Override
-            public ZipkinFactory getZipkinFactory(ArlasSubscriptionManagerConfiguration configuration) {
-                return configuration.zipkinConfiguration;
             }
         });
     }
