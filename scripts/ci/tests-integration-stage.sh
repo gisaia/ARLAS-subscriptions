@@ -17,6 +17,14 @@ function clean_docker {
 
 function clean_exit {
   ARG=$?
+  # Allow errors on cleanup
+  set +e
+
+  if [[ "$ARG" != 0 ]]; then
+    # In case of error, print containers logs (if any)
+    docker logs arlas-server
+    docker logs arlas-subscriptions-matcher
+  fi
 	echo "===> Exit stage ${STAGE} = ${ARG}"
   clean_docker
   exit $ARG

@@ -20,7 +20,7 @@
 package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.arlas.server.client.model.Hit;
+import io.arlas.server.client.model.ArlasHit;
 import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
 import io.arlas.subscriptions.app.KafkaConfiguration;
 import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
@@ -78,7 +78,7 @@ public class KafkaConsumerRunner implements Runnable {
                                 logger.debug("Received subscription event:" + event.toString());
 
                                 long t0 = System.currentTimeMillis();
-                                List<Hit> hits = subscriptionsService.searchMatchingSubscriptions(event);
+                                List<ArlasHit> hits = subscriptionsService.searchMatchingSubscriptions(event);
                                 duration = System.currentTimeMillis() - t0;
                                 logger.debug("Nb subscription matching (took " + duration + "ms)=" + hits.size());
 

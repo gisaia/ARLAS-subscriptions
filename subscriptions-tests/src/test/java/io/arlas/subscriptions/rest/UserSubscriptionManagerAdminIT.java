@@ -20,7 +20,6 @@
 package io.arlas.subscriptions.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.Filters;
 import io.arlas.commons.exceptions.ArlasException;
 import io.arlas.subscriptions.AbstractTestWithData;
@@ -46,8 +45,6 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
 
     //marks subscriptions created by given tests, to be removed after each test
     public static final String TEMP_SUBS_CREATED_BY = "junit";
-
-    protected static final ObjectMapper MAPPER = new ObjectMapper();
 
     @After
     public void after() {
@@ -398,7 +395,7 @@ public class UserSubscriptionManagerAdminIT extends AbstractTestWithData {
         IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription();
         indexedUserSubscription.setId(id);
         indexedUserSubscription.created_by = TEMP_SUBS_CREATED_BY;
-        DataSetTool.client.index(DataSetTool.SUBSCRIPTIONS_INDEX_NAME, indexedUserSubscription.getId(), MAPPER.writer().writeValueAsString(indexedUserSubscription));
+        DataSetTool.client.index(DataSetTool.SUBSCRIPTIONS_INDEX_NAME, indexedUserSubscription.getId(), indexedUserSubscription);
     }
 
 }
