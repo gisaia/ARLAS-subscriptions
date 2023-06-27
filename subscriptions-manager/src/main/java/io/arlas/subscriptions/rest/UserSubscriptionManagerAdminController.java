@@ -328,6 +328,6 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
                 .orElseThrow(() -> new NotFoundException("Subscription with id " + id + " not found"));
 
         return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
-                halService.subscriptionWithLinks(subscriptionManagerService.putUserSubscription(oldUserSubscription, updUserSubscription, Optional.empty()), uriInfo));
+                halService.subscriptionWithLinks(subscriptionManagerService.putUserSubscription(oldUserSubscription, updUserSubscription), uriInfo));
     }
 }

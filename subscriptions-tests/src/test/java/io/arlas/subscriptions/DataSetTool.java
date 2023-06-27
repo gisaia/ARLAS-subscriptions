@@ -19,34 +19,27 @@
 
 package io.arlas.subscriptions;
 
+import co.elastic.clients.elasticsearch.core.GetRequest;
+import co.elastic.clients.elasticsearch.core.GetResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Response;
+import io.arlas.commons.exceptions.ArlasException;
 import io.arlas.server.client.ApiClient;
 import io.arlas.server.client.ApiException;
 import io.arlas.server.client.Pair;
 import io.arlas.server.client.model.CollectionReferenceParameters;
 import io.arlas.server.core.app.ElasticConfiguration;
-import io.arlas.commons.exceptions.ArlasException;
 import io.arlas.server.core.impl.elastic.utils.ElasticClient;
-import io.arlas.server.core.impl.elastic.utils.ElasticTool;
 import io.arlas.subscriptions.configuration.mongo.MongoDBConfiguration;
 import io.arlas.subscriptions.dao.MongoUserSubscriptionDAOImpl;
 import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.http.HttpHost;
-import org.apache.logging.log4j.core.util.IOUtils;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.sniff.Sniffer;
 import org.geojson.LngLatAlt;
 import org.geojson.Polygon;
 import org.json.simple.JSONArray;
@@ -67,7 +60,6 @@ public class DataSetTool {
     public static String COLLECTION_SUBSCRIPTIONS_NAME = "subscriptions";
 
     public final static String DATASET_INDEX_NAME = "dataset";
-    public final static String DATASET_TYPE_NAME = "mytype";
     public final static String DATASET_ID_PATH = "id";
     public final static String DATASET_GEOMETRY_PATH = "geo_params.geometry";
     public final static String DATASET_CENTROID_PATH = "geo_params.centroid";
@@ -89,7 +81,6 @@ public class DataSetTool {
     };
 
     public final static String SUBSCRIPTIONS_INDEX_NAME = "subs";
-    public final static String SUBSCRIPTIONS_TYPE_NAME = "sub_type";
     public final static String SUBSCRIPTIONS_ID_PATH = "id";
     public final static String SUBSCRIPTIONS_GEOMETRY_PATH = "geometry";
     public final static String SUBSCRIPTIONS_CENTROID_PATH = "centroid";
@@ -98,8 +89,6 @@ public class DataSetTool {
     public static ApiClient apiClient;
     public static ElasticClient client;
     public static MongoCollection<UserSubscription> mongoCollection;
-    private static final ObjectMapper mapper = new ObjectMapper();
-
 
     public static ApiClient getApiClient() {
         return apiClient;
@@ -113,11 +102,13 @@ public class DataSetTool {
         apiClient = new ApiClient().setBasePath("http://"+arlasHost+":"+arlasPort+arlasPrefix);
 
         //ES Client
-        HttpHost[] nodes = ElasticConfiguration.getElasticNodes(Optional.ofNullable(System.getenv("ARLAS_SUB_ELASTIC_NODES")).orElse("localhost:9200"), false);
-        ImmutablePair<RestHighLevelClient, Sniffer> pair = ElasticTool.getRestHighLevelClient(nodes,false, null, true, false);
-        client = new ElasticClient(pair.getLeft(), pair.getRight());
+        ElasticConfiguration conf = new ElasticConfiguration();
+        conf.elasticnodes = Optional.ofNullable(System.getenv("ARLAS_SUB_ELASTIC_NODES")).orElse("localhost:9200");
+        conf.elasticEnableSsl = false;
+        conf.elasticSocketTimeout = 30000;
+        client = new ElasticClient(conf);
 
-        LOGGER.info("Elasticsearch : " + nodes[0].getHostName() + ":" + nodes[0].getPort());
+        LOGGER.info("Elasticsearch : " + conf.elasticnodes);
         LOGGER.info("ARLAS-server : " + arlasHost + ":" + arlasPort);
     }
 
@@ -128,7 +119,7 @@ public class DataSetTool {
 
     public static void loadDataSet(boolean createArlas) throws IOException, ArlasException {
         //Create a single index with all data
-        createIndex(DATASET_INDEX_NAME, DATASET_TYPE_NAME, "dataset.mapping.json");
+        createIndex(DATASET_INDEX_NAME, "dataset.mapping.json");
         LOGGER.info("Index " + DATASET_INDEX_NAME + " created in Elasticsearch");
         fillIndex(DATASET_INDEX_NAME, -170, 170, -80, 80);
         LOGGER.info("Index " + DATASET_INDEX_NAME + " populated in Elasticsearch");
@@ -164,7 +155,7 @@ public class DataSetTool {
 
     public static void loadSubscriptions(boolean loadMongo, boolean createArlas) throws IOException, ArlasSubscriptionsException, ArlasException {
         //Create subscription index with one existing subscription
-        createIndex(SUBSCRIPTIONS_INDEX_NAME, SUBSCRIPTIONS_TYPE_NAME, "arlas.subtest.mapping.json");
+        createIndex(SUBSCRIPTIONS_INDEX_NAME, "arlas.subtest.mapping.json");
         LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " created in Elasticsearch");
 
         UserSubscription subscription = new UserSubscription();
@@ -209,7 +200,7 @@ public class DataSetTool {
 
         IndexedUserSubscription indexedUserSubscription = new IndexedUserSubscription(subscription, "geometry", "centroid");
 
-        client.index(SUBSCRIPTIONS_INDEX_NAME, indexedUserSubscription.getId(), mapper.writer().writeValueAsString(indexedUserSubscription));
+        client.index(SUBSCRIPTIONS_INDEX_NAME, indexedUserSubscription.getId(), indexedUserSubscription);
         LOGGER.info("Index " + SUBSCRIPTIONS_INDEX_NAME + " populated in Elasticsearch");
 
         if (createArlas) {
@@ -253,17 +244,16 @@ public class DataSetTool {
             MongoDatabase mongoDatabase = mongoDBFactoryConnection.getClient().getDatabase(mongoDBname);
             mongoCollection = mongoDatabase.getCollection(MongoUserSubscriptionDAOImpl.ARLAS_SUBSCRIPTION_DB_NAME, UserSubscription.class);;
             mongoCollection.insertOne(subscription);
-            client.index(DataSetTool.SUBSCRIPTIONS_INDEX_NAME, subscription.getId(), mapper.writeValueAsString(indexedUserSubscription));
+            client.index(DataSetTool.SUBSCRIPTIONS_INDEX_NAME, subscription.getId(), indexedUserSubscription);
         }
     }
 
-    private static void createIndex(String indexName, String typeName, String mappingFileName) throws IOException, ArlasException {
-        String mapping = IOUtils.toString(new InputStreamReader(DataSetTool.class.getClassLoader().getResourceAsStream(mappingFileName)));
+    private static void createIndex(String indexName, String mappingFileName) throws IOException, ArlasException {
         try {
             client.deleteIndex(indexName);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
-        client.createIndex(indexName, mapping);
+        client.getClient().indices().create(b -> b.index(indexName).withJson(new InputStreamReader(DataSetTool.class.getClassLoader().getResourceAsStream(mappingFileName))));
     }
 
     private static void fillIndex(String indexName, int lonMin, int lonMax, int latMin, int latMax) throws JsonProcessingException, ArlasException {
@@ -275,11 +265,11 @@ public class DataSetTool {
                 data.id = String.valueOf("ID_" + i + "_" + j + "DI").replace("-", "_");
                 data.fullname = "My name is " + data.id;
                 data.params.age = Math.abs(i * j);
-                data.params.startdate = 1l * (i + 1000) * (j + 1000);
+                data.params.startdate = (long) (i + 1000) * (j + 1000);
                 if (data.params.startdate >= 1013600) {
                     data.params.weight = (i + 10) * (j + 10);
                 }
-                data.params.stopdate = 1l * (i + 1000) * (j + 1000) + 100;
+                data.params.stopdate = (long) (i + 1000) * (j + 1000) + 100;
                 data.geo_params.centroid = j + "," + i;
                 data.params.job = jobs[((Math.abs(i) + Math.abs(j)) / 10) % (jobs.length - 1)];
                 data.params.country = countries[((Math.abs(i) + Math.abs(j)) / 10) % (countries.length - 1)];
@@ -292,7 +282,7 @@ public class DataSetTool {
                 coords.add(new LngLatAlt(i - 1, j + 1));
                 data.geo_params.geometry = new Polygon(coords);
 
-                client.index(indexName, "ES_ID_TEST" + data.id, mapper.writer().writeValueAsString(data));
+                client.index(indexName, "ES_ID_TEST" + data.id, data);
             }
         }
     }
@@ -302,25 +292,29 @@ public class DataSetTool {
     }
 
     public static UserSubscription getUserSubscriptionFromES(String id) throws IOException {
-        GetResponse response = client.getClient().get(new GetRequest(SUBSCRIPTIONS_INDEX_NAME, id), RequestOptions.DEFAULT);;
-        UserSubscription us = mapper.readValue(response.getSourceAsString(), UserSubscription.class);
-        Map map = response.getSourceAsMap();
-        Object deleted = map.get("deleted");
-        us.setDeleted(deleted instanceof String ? Boolean.valueOf((String)map.get("deleted")) : (Boolean)deleted);
+        GetResponse<UserSubscription> response = client.getClient()
+                .get(b -> b.index(SUBSCRIPTIONS_INDEX_NAME).id(id), UserSubscription.class);
+        GetResponse<Map> map = client.getClient()
+                .get(b -> b.index(SUBSCRIPTIONS_INDEX_NAME).id(id), Map.class);
+
+        UserSubscription us = response.source();
+        Object deleted = map.source().get("deleted");
+        us.setDeleted(deleted instanceof String ? Boolean.valueOf((String)map.source().get("deleted")) : (Boolean)deleted);
+
         return us;
     }
 
     public static void clearDataSet() {
         try {
             client.deleteIndex(DATASET_INDEX_NAME);
-        } catch (ArlasException e) {
+        } catch (ArlasException ignored) {
         }
     }
 
     public static void clearSubscriptions(boolean clearMongo) {
         try {
             client.deleteIndex(SUBSCRIPTIONS_INDEX_NAME);
-        } catch (ArlasException e) {
+        } catch (ArlasException ignored) {
         }
         if (clearMongo) {
             mongoCollection.drop();

@@ -72,13 +72,13 @@ mongo:
 # Configuration of the datasource
 elastic:
   elastic-nodes: ${ARLAS_SUB_ELASTIC_NODES:-localhost:9200}
-  elastic-sniffing: ${ARLAS_SUB_ELASTIC_SNIFFING:-false}
   elastic-enable-ssl: ${ARLAS_SUB_ELASTIC_ENABLE_SSL:-false}
   elastic-credentials: ${ARLAS_SUB_ELASTIC_CREDENTIALS}
-  elastic-skip-master: ${ARLAS_SUB_ELASTIC_SKIP_MASTER:-true}
+  elastic-socket-timeout: ${ARLAS_ELASTIC_SOCKET_TIMEOUT:-30000}
+  elastic-max-precision-threshold: ${ARLAS_ELASTIC_MAX_PRECISON_THRESHOLD:-3000}
   index:  ${ARLAS_SUB_ELASTIC_INDEX:-subscription}
   bulk:
-    concurrent-requests: ${ARLAS_SUB_ELASTIC_CONCURRENT_REQUESTS:-0}
+    concurrent-requests: ${ARLAS_SUB_ELASTIC_CONCURRENT_REQUESTS:-1}
     bulk-actions: ${ARLAS_SUB_ELASTIC_BULK_ACTIONS:-10000}
     bulk-size: ${ARLAS_SUB_ELASTIC_BULK_SIZE:-5} # in MB
     flush-interval: ${ARLAS_SUB_ELASTIC_FLUSH_INTERVAL:-5000} # in ms

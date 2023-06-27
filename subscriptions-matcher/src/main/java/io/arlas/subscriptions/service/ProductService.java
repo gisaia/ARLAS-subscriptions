@@ -23,7 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.arlas.commons.exceptions.ArlasException;
 import io.arlas.server.client.ApiClient;
 import io.arlas.server.client.ApiException;
-import io.arlas.server.client.model.Hit;
+import io.arlas.server.client.model.ArlasHit;
 import io.arlas.server.client.model.Hits;
 import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
@@ -57,12 +57,12 @@ public class ProductService extends AbstractArlasService {
         this.identityHeader = configuration.identityConfiguration.identityHeader;
     }
 
-    void processMatchingProducts(SubscriptionEvent event, List<Hit> subscriptions) throws JsonProcessingException, ParseException {
+    void processMatchingProducts(SubscriptionEvent event, List<ArlasHit> subscriptions) throws JsonProcessingException, ParseException {
 
         try {
             String searchFilter = JSONValueInjector.inject(filterRoot, event);
 
-            for (Hit hit : subscriptions) {
+            for (ArlasHit hit : subscriptions) {
                 try {
                     IndexedUserSubscription userSubscription = objectMapper.convertValue(hit.getData(), IndexedUserSubscription.class);
                     userSubscription.setId((String) ((Map<String, Object>) hit.getData()).get("id"));
@@ -96,7 +96,7 @@ public class ProductService extends AbstractArlasService {
         return headerParams;
     }
 
-    private void pushNotificationOrder(Hit hit, SubscriptionEvent event, IndexedUserSubscription userSubscription) {
+    private void pushNotificationOrder(ArlasHit hit, SubscriptionEvent event, IndexedUserSubscription userSubscription) {
         NotificationOrder notificationOrder = new NotificationOrder();
         // Event fields (copied from event message)
         for (Object key : event.keySet()) {
