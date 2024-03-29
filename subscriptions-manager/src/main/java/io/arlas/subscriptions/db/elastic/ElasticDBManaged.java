@@ -38,6 +38,5 @@ public class ElasticDBManaged implements Managed {
 
     @Override
     public void stop() throws ArlasSubscriptionsException {
-        esClient.close();
     }
 }

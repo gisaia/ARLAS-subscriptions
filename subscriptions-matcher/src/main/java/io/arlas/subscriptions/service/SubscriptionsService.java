@@ -22,7 +22,7 @@ package io.arlas.subscriptions.service;
 import io.arlas.server.client.ApiClient;
 import io.arlas.server.client.ApiException;
 import io.arlas.server.client.Pair;
-import io.arlas.server.client.model.Hit;
+import io.arlas.server.client.model.ArlasHit;
 import io.arlas.server.client.model.Hits;
 import io.arlas.server.client.model.Link;
 import io.arlas.commons.exceptions.ArlasException;
@@ -49,9 +49,9 @@ public class SubscriptionsService extends AbstractArlasService {
         this.filterRoot = configuration.subscriptionFilterRoot;
     }
 
-    List<Hit> searchMatchingSubscriptions(SubscriptionEvent event) throws ParseException {
+    List<ArlasHit> searchMatchingSubscriptions(SubscriptionEvent event) throws ParseException {
 
-        List<Hit> result = new ArrayList<>();
+        List<ArlasHit> result = new ArrayList<>();
 
         try {
             String searchFilter = JSONValueInjector.inject(filterRoot, event);

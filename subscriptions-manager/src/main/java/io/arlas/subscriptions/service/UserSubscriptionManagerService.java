@@ -41,11 +41,11 @@ import static io.arlas.subscriptions.app.ArlasSubscriptionsManager.MANAGER;
 public class UserSubscriptionManagerService {
     public final ArlasLogger logger = ArlasLoggerFactory.getLogger(UserSubscriptionManagerService.class, MANAGER);
 
-    private UserSubscriptionDAO daoDatabase;
-    private UserSubscriptionDAO daoIndexDatabase;
-    private final String ARLAS_SUB_TRIG_SCHEM_PATH = System.getenv("ARLAS_SUB_TRIG_SCHEM_PATH");
+    private final UserSubscriptionDAO daoDatabase;
+    private final UserSubscriptionDAO daoIndexDatabase;
 
     public UserSubscriptionManagerService(ArlasSubscriptionManagerConfiguration configuration, MongoDBManaged mongoDBManaged, ElasticDBManaged elasticDBManaged) throws ArlasSubscriptionsException, FileNotFoundException {
+        String ARLAS_SUB_TRIG_SCHEM_PATH = System.getenv("ARLAS_SUB_TRIG_SCHEM_PATH");
         JsonSchemaValidator jsonSchemaValidator = new JsonSchemaValidator(ARLAS_SUB_TRIG_SCHEM_PATH);
         this.daoDatabase = new MongoUserSubscriptionDAOImpl(configuration.mongoDBConfiguration,mongoDBManaged,jsonSchemaValidator);
         this.daoIndexDatabase = new ElasticUserSubscriptionDAOImpl(configuration.elasticDBConfiguration, configuration.triggerConfiguration,elasticDBManaged,jsonSchemaValidator);
@@ -83,10 +83,10 @@ public class UserSubscriptionManagerService {
         }
     }
 
-    public UserSubscription putUserSubscription(UserSubscription oldUserSubscription, UserSubscription updUserSubscription, Optional<String> user) throws ArlasSubscriptionsException {
+    public UserSubscription putUserSubscription(UserSubscription oldUserSubscription, UserSubscription updUserSubscription) throws ArlasSubscriptionsException {
         updUserSubscription.setId(oldUserSubscription.getId());
         updUserSubscription.setCreated_at(oldUserSubscription.getCreated_at());
-        updUserSubscription.setModified_at(new Date().getTime()/1000l);
+        updUserSubscription.setModified_at(new Date().getTime()/ 1000L);
         updUserSubscription.setCreated_by_admin(oldUserSubscription.getCreated_by_admin());
         updUserSubscription.setDeleted(oldUserSubscription.getDeleted());
 
@@ -105,15 +105,13 @@ public class UserSubscriptionManagerService {
         Pair<Long, MongoCursor<UserSubscription>> allSubs = ((MongoUserSubscriptionDAOImpl) this.daoDatabase).getAllUserSubscriptions();
         logger.info("Total number of documents to index: " + allSubs.getLeft());
 
-        MongoCursor<UserSubscription> cursor = allSubs.getRight();
-        try {
+        try (MongoCursor<UserSubscription> cursor = allSubs.getRight()) {
             ((ElasticUserSubscriptionDAOImpl) daoIndexDatabase).initBulkProcessor(allSubs.getLeft());
             allSubs.getRight().forEachRemaining(subscription -> ((ElasticUserSubscriptionDAOImpl) daoIndexDatabase).addToBulkProcessor(subscription));
             ((ElasticUserSubscriptionDAOImpl) daoIndexDatabase).finaliseBulkProcessor();
         } catch (ArlasSubscriptionsException e) {
             logger.error("Can't do sync: " + e.getMessage());
         } finally {
-            cursor.close();
             logger.info("SyncDBtoIndex finished");
         }
     }

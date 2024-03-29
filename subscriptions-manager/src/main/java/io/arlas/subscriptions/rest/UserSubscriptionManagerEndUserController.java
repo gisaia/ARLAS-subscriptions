@@ -310,7 +310,7 @@ public class UserSubscriptionManagerEndUserController extends UserSubscriptionMa
             throw new ForbiddenException("Existing or updated subscription does not belong to authenticated user " + user);
         }
         return ResponseFormatter.getCreatedResponse(uriInfo.getRequestUriBuilder().build(),
-                halService.subscriptionWithLinks(subscriptionManagerService.putUserSubscription(oldUserSubscription, updUserSubscription, Optional.ofNullable(user)), uriInfo));
+                halService.subscriptionWithLinks(subscriptionManagerService.putUserSubscription(oldUserSubscription, updUserSubscription), uriInfo));
     }
 
     private String getUser(HttpHeaders headers) throws UnauthorizedException, ForbiddenException {

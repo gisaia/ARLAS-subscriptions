@@ -23,6 +23,10 @@ jobs:
       run: |
         mvn --version
         mvn clean verify
+    - name: Install xmlstarlet
+      run: |
+        sudo apt-get update
+        sudo apt-get install xmlstarlet
     - name: Prepare tests
       run: |
         sudo sysctl -w vm.max_map_count=262144

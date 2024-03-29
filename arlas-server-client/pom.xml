@@ -104,7 +104,7 @@
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
-                <version>1.6.7</version>
+                <version>1.7.0</version>
                 <executions>
                     <execution>
                         <id>download-arlas-api</id>
@@ -115,6 +115,8 @@
                         <configuration>
                             <url>https://raw.githubusercontent.com/gisaia/ARLAS-server/v${arlas.version}/openapi/swagger.json</url>
                             <outputDirectory>${project.build.directory}/arlas-api</outputDirectory>
+                            <skipCache>true</skipCache>
+                            <overwrite>true</overwrite>
                         </configuration>
                     </execution>
                 </executions>
