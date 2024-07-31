@@ -59,41 +59,43 @@ The `manager` and `matcher` can then be started.
 
 
 ## Manager configuration
-Environment variable name | Description | Example
---- | --- | ---
-MONGO_HOST | Mongo list of host:port | mongo1:27017,mongo2:27017
-MONGO_USERNAME | Mongo user | mongouser
-MONGO_PASSWORD | Mongo password | secret
-MONGO_AUTH_DATABASE | Mongo database used for authentication | admin
-MONGO_DATABASE | Mongo database where the subscription manager data is stored | subscription
-ARLAS_SUB_ELASTIC_NODES | Elasticsearch server:port containing the subscriptions index | localhost:9200
-ARLAS_SUB_ELASTIC_SNIFFING | Elasticsearch client sniffing | false
-ARLAS_SUB_ELASTIC_CLUSTER | Elasticsearch cluster name containing the subscriptions index | elasticsearch
-ARLAS_SUB_ELASTIC_INDEX | Elasticsearch index name for the subscriptions | subscription
-ARLAS_SUB_ELASTIC_TYPE | Elasticsearch type for the subscriptions | sub_type
-ARLAS_SUB_GEOM_KEY | Property name of the trigger in the subscription mapping containing the geometry (mandatory) | geometry
-ARLAS_SUB_CENT_KEY | Property name of the trigger in the subscription mapping containing the centroid (optional; is calculated from the geometry if absent) | centroid
-ARLAS_SUB_IDENTITY_HEADER | HTTP header name containing the user id | (empty)
-ARLAS_SUB_IDENTITY_ADMIN | User id for admin endpoints | admin
-ARLAS_SUB_TRIG_SCHEM_PATH | Path to the trigger JSON schema (mandatory) | /opt/app/trigger.schema.json
-ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL | Local path to the trigger JSON schema which should be mounted in the docker container | ./subscriptions-tests/src/test/resources/trigger.schema.json
+| Environment variable name       | Description                                                                                                                            | Example                                                      |
+|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| MONGO_HOST                      | Mongo list of host:port                                                                                                                | mongo1:27017,mongo2:27017                                    |
+| MONGO_USERNAME                  | Mongo user                                                                                                                             | mongouser                                                    |
+| MONGO_PASSWORD                  | Mongo password                                                                                                                         | secret                                                       |
+| MONGO_AUTH_DATABASE             | Mongo database used for authentication                                                                                                 | admin                                                        |
+| MONGO_DATABASE                  | Mongo database where the subscription manager data is stored                                                                           | subscription                                                 |
+| ARLAS_SUB_ELASTIC_NODES         | Elasticsearch server:port containing the subscriptions index                                                                           | localhost:9200                                               |
+| ARLAS_SUB_ELASTIC_SNIFFING      | Elasticsearch client sniffing                                                                                                          | false                                                        |
+| ARLAS_SUB_ELASTIC_CLUSTER       | Elasticsearch cluster name containing the subscriptions index                                                                          | elasticsearch                                                |
+| ARLAS_SUB_ELASTIC_INDEX         | Elasticsearch index name for the subscriptions                                                                                         | subscription                                                 |
+| ARLAS_SUB_ELASTIC_TYPE          | Elasticsearch type for the subscriptions                                                                                               | sub_type                                                     |
+| ARLAS_SUB_GEOM_KEY              | Property name of the trigger in the subscription mapping containing the geometry (mandatory)                                           | geometry                                                     |
+| ARLAS_SUB_CENT_KEY              | Property name of the trigger in the subscription mapping containing the centroid (optional; is calculated from the geometry if absent) | centroid                                                     |
+| ARLAS_SUB_IDENTITY_HEADER       | HTTP header name containing the user id                                                                                                | (empty)                                                      |
+| ARLAS_SUB_IDENTITY_ADMIN        | User id for admin endpoints                                                                                                            | admin                                                        |
+| ARLAS_SUB_TRIG_SCHEM_PATH       | Path to the trigger JSON schema (mandatory)                                                                                            | /opt/app/trigger.schema.json                                 |
+| ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL | Local path to the trigger JSON schema which should be mounted in the docker container                                                  | ./subscriptions-tests/src/test/resources/trigger.schema.json |
 
 ## Matcher configuration
-Environment variable name | Description | Example
---- | --- | ---
-KAFKA_BROKERS | Server name:port of the kafka broker to use | kafka:9092
-KAFKA_CONSUMER_POLL_TIMEOUT | Kafka consumer poll timeout (ms) | 10
-KAFKA_COMMIT_MAX_RETRIES | Number of commit retries in case of failure before exiting | 3
-KAFKA_BATCH_SIZE | Kafka consumer batch size | 10
-KAFKA_CONSUMER_GROUP_ID | Kafka consumer group id | subscription_events_consumer_group
-KAFKA_TOPIC_SUBSCRIPTION_EVENTS | Kafka consumer topic for new events | subscription_events
-KAFKA_TOPIC_NOTIFICATION_ORDERS | Kafka producer topic for notification order | notification_orders
-ARLAS_SUBSCRIPTIONS_BASE_PATH | ARLAS server for the subscriptions collection | http://localhost:9999/arlas
-ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT | ARLAS server search endpoint for the subscriptions collection | /explore/subscriptions/_search
-ARLAS_SUBSCRIPTIONS_FILTER_ROOT | ARLAS server filter request to be applied to the subscription collection in order to find matching subscriptions | f=subscription.trigger.geometry:intersects:(object.geometry)&f=subscription.trigger.event:eq:(event)&f=subscription.trigger.job:eq:(object.job)&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id}
-ARLAS_SERVER_BASE_PATH | ARLAS server for the documents collection | http://localhost:9999/arlas
-ARLAS_SERVER_SEARCH_ENDPOINT | ARLAS server search endpoint for the documents collection | /explore/geodata/_search
-ARLAS_SERVER_FILTER_ROOT | ARLAS server filter request to be applied to the documents collection in order to find matching documents | f=id:eq:(object.id)
+| Environment variable name                                                                         | Description                                                                                                      | Example                                                                                                                                                                                                                              |
+|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| KAFKA_BROKERS                                                                                     | Server name:port of the kafka broker to use                                                                      | kafka:9092                                                                                                                                                                                                                           |
+| KAFKA_CONSUMER_POLL_TIMEOUT                                                                       | Kafka consumer poll timeout (ms)                                                                                 | 10                                                                                                                                                                                                                                   |
+| KAFKA_COMMIT_MAX_RETRIES                                                                          | Number of commit retries in case of failure before exiting                                                       | 3                                                                                                                                                                                                                                    |
+| KAFKA_BATCH_SIZE                                                                                  | Kafka consumer batch size                                                                                        | 10                                                                                                                                                                                                                                   |
+| KAFKA_CONSUMER_GROUP_ID                                                                           | Kafka consumer group id                                                                                          | subscription_events_consumer_group                                                                                                                                                                                                   |
+| KAFKA_TOPIC_SUBSCRIPTION_EVENTS                                                                   | Kafka consumer topic for new events                                                                              | subscription_events                                                                                                                                                                                                                  |
+| KAFKA_TOPIC_NOTIFICATION_ORDERS                                                                   | Kafka producer topic for notification order                                                                      | notification_orders                                                                                                                                                                                                                  |
+| ARLAS_SUBSCRIPTIONS_BASE_PATH                                                                     | ARLAS server for the subscriptions collection                                                                    | http://localhost:9999/arlas                                                                                                                                                                                                          |
+| (removed in v25+, replaced by ARLAS_SUBSCRIPTIONS_COLLECTION) ARLAS_SUBSCRIPTIONS_SEARCH_ENDPOINT | ARLAS server search endpoint for the subscriptions collection                                                    | /explore/subscriptions/_search                                                                                                                                                                                                       |
+| (new in v25+) ARLAS_SUBSCRIPTIONS_COLLECTION_NAME                                                 | ARLAS server subscriptions collection                                                                            | subscriptions                                                                                                                                                                                                                        |
+| ARLAS_SUBSCRIPTIONS_FILTER_ROOT                                                                   | ARLAS server filter request to be applied to the subscription collection in order to find matching subscriptions | f=subscription.trigger.geometry:intersects:(object.geometry)&f=subscription.trigger.event:eq:(event)&f=subscription.trigger.job:eq:(object.job)&f=active:eq:true&f=deleted:eq:false&f=expires_at:gt:now&f=starts_at:lte:now&sort=id} |
+| ARLAS_SERVER_BASE_PATH                                                                            | ARLAS server for the documents collection                                                                        | http://localhost:9999/arlas                                                                                                                                                                                                          |
+| (removed in v25+, replaced by ARLAS_SERVER_COLLECTION) ARLAS_SERVER_SEARCH_ENDPOINT               | ARLAS server search endpoint for the documents collection                                                        | /explore/geodata/_search                                                                                                                                                                                                             |
+| (new in v25+) ARLAS_SERVER_COLLECTION_NAME                                                        | ARLAS server documents collection                                                                                | geodata                                                                                                                                                                                                                              |
+| ARLAS_SERVER_FILTER_ROOT                                                                          | ARLAS server filter request to be applied to the documents collection in order to find matching documents        | f=id:eq:(object.id)                                                                                                                                                                                                                  |
 
 ## Build
 
@@ -105,7 +107,7 @@ mvn clean package
 Warning: ARLAS_SUB_TRIG_SCHEM_PATH and ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL must be set. See [Manager configuration]
 
 ```sh
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Integration tests

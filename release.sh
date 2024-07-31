@@ -17,7 +17,7 @@ BASEDIR=$PWD
 #########################################
 function clean_docker {
     echo "===> Stop arlas-subscriptions stack"
-    docker-compose --project-name arlas-subscriptions down -v
+    docker compose --project-name arlas-subscriptions down -v
 }
 
 function clean_exit {
@@ -206,7 +206,7 @@ docker run \
 echo "=> Start arlas-subscriptions-manager stack"
 export ARLAS_SUB_TRIG_SCHEM_PATH="/opt/app/trigger.schema.json"
 export ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL="./subscriptions-tests/src/test/resources/trigger.schema.json"
-docker-compose --project-name arlas-subscriptions up -d --build elasticsearch mongodb mongo2 mongo3
+docker compose --project-name arlas-subscriptions up -d --build elasticsearch mongodb mongo2 mongo3
 DOCKER_IP=$(docker-machine ip || echo "localhost")
 sleep 10
 echo "===> configure replica set on mongodb"
@@ -214,25 +214,30 @@ docker exec mongodb /scripts/rs-init.sh
 docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 curl -X PUT "${DOCKER_IP}:9200/subs" -H 'Content-Type: application/json' -d'{}'
 curl -X PUT "${DOCKER_IP}:9200/subs/_mapping/sub_type" -H 'Content-Type: application/json' -d @"./subscriptions-tests/src/test/resources/arlas.subtest.mapping.json"
-docker-compose --project-name arlas-subscriptions up -d --build arlas-subscriptions-manager arlas-subscriptions-matcher
+docker compose --project-name arlas-subscriptions up -d --build arlas-subscriptions-manager arlas-subscriptions-matcher
 echo "===> wait for arlas-subscriptions-manager up and running"
 docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 
 echo "=> Get swagger documentation"
 mkdir -p target/tmp || echo "target/tmp exists"
-i=1; until curl -XGET http://${DOCKER_IP}:9998/arlas-subscriptions-manager/swagger.json -o target/tmp/swagger.json; do if [ $i -lt 60 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
-i=1; until curl -XGET http://${DOCKER_IP}:9998/arlas-subscriptions-manager/swagger.yaml -o target/tmp/swagger.yaml; do if [ $i -lt 60 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
+i=1; until curl -XGET http://${DOCKER_IP}:9998/arlas-subscriptions-manager/openapi.json -o target/tmp/openapi.json; do if [ $i -lt 60 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
+i=1; until curl -XGET http://${DOCKER_IP}:9998/arlas-subscriptions-manager/openapi.yaml -o target/tmp/openapi.yaml; do if [ $i -lt 60 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
 
 mkdir -p openapi
-cp target/tmp/swagger.yaml openapi
-cp target/tmp/swagger.json openapi
+cp target/tmp/openapi.yaml openapi
+cp target/tmp/openapi.json openapi
 
 echo "=> Stop arlas-subscriptions-manager stack"
-docker-compose --project-name arlas-subscriptions down -v
+docker compose --project-name arlas-subscriptions down -v
 
 echo "=> Generate API documentation"
+mkdir -p docs/api
 cd subscriptions-manager/
-mvn "-Dswagger.input=../openapi/swagger.json" "-Dswagger.output=../docs/api" swagger2markup:convertSwagger2markup
+docker run --rm \
+    --mount dst=/input/api.json,src="$PWD/../openapi/openapi.json",type=bind,ro \
+    --mount dst=/input/env.json,src="$PWD/../conf/doc/widdershins.json",type=bind,ro \
+    --mount dst=/output,src="$PWD/../docs/api",type=bind \
+	gisaia/widdershins:4.0.1
 cd ..
 
 itests() {
@@ -255,20 +260,10 @@ else
   docker run --rm \
       -e GROUP_ID="$(id -g)" \
       -e USER_ID="$(id -u)" \
-      --mount dst=/input/api.json,src="$PWD/target/tmp/swagger.json",type=bind,ro \
+      --mount dst=/input/api.json,src="$PWD/target/tmp/openapi.json",type=bind,ro \
       --mount dst=/output,src="$PWD/target/tmp/typescript-fetch",type=bind \
-    gisaia/swagger-codegen-2.4.14 \
+    gisaia/swagger-codegen-3.0.42 \
           -l typescript-fetch --additional-properties modelPropertyNaming=snake_case
-
-  mkdir -p target/tmp/python-api
-  docker run --rm \
-      -e GROUP_ID="$(id -g)" \
-      -e USER_ID="$(id -u)" \
-      --mount dst=/input/api.json,src="$PWD/target/tmp/swagger.json",type=bind,ro \
-      --mount dst=/input/config.json,src="$PROJECT_ROOT_DIRECTORY/conf/swagger/python-config.json",type=bind,ro \
-      --mount dst=/output,src="$PWD/target/tmp/python-api",type=bind \
-    gisaia/swagger-codegen-2.4.14 \
-          -l python --type-mappings GeoJsonObject=object
 
   echo "=> Build Typescript API "${FULL_API_VERSION}
   cd ${BASEDIR}/target/tmp/typescript-fetch/
@@ -289,30 +284,6 @@ else
   if [ "$RELEASE" == "YES" ]; then
       npm publish || echo "Publishing on npm failed ... continue ..."
   else echo "=> Skip npm api publish"; fi
-
-
-  echo "=> Build Python API "${FULL_API_VERSION}
-  cd ${BASEDIR}/target/tmp/python-api/
-  cp ${BASEDIR}/conf/python/setup.py setup.py
-  sed -i.bak 's/\"api_subscriptions_version\"/\"'${FULL_API_VERSION}'\"/' setup.py
-
-  docker run \
-        -e GROUP_ID="$(id -g)" \
-        -e USER_ID="$(id -u)" \
-        --mount dst=/opt/python,src="$PWD",type=bind \
-        --rm \
-        gisaia/python-3-alpine \
-              setup.py sdist bdist_wheel
-
-  echo "=> Publish Python API "
-  if [ "$RELEASE" == "YES" ]; then
-      docker run --rm \
-          -w /opt/python \
-        -v $PWD:/opt/python \
-        python:3 \
-        /bin/bash -c  "pip install twine ; twine upload dist/* -u ${PIP_LOGIN} -p ${PIP_PASSWORD}"
-       ### At this stage username and password of Pypi repository should be set
-  else echo "=> Skip python api publish"; fi
 fi
 
 cd ${BASEDIR}
@@ -347,8 +318,8 @@ if [ "$RELEASE" == "YES" ]; then
     git tag -d v${ARLAS_SUBSCRIPTIONS_VERSION}
     git push origin :v${ARLAS_SUBSCRIPTIONS_VERSION}
     echo "=> Commit release version"
-    git add openapi/swagger.json
-    git add openapi/swagger.yaml
+    git add openapi/openapi.json
+    git add openapi/openapi.yaml
     git add docs/api
     git commit -a -m "release version ${ARLAS_SUBSCRIPTIONS_VERSION}"
     git tag v${ARLAS_SUBSCRIPTIONS_VERSION}
@@ -374,10 +345,10 @@ echo "=> Update REST API version in JAVA source code"
 sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"API_VERSION\"/' subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerAbstractController.java
 
 if [ "$RELEASE" == "YES" ]; then
-    sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"'${API_DEV_VERSION}-SNAPSHOT'\"/' openapi/swagger.yaml
-    sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"'${API_DEV_VERSION}-SNAPSHOT'\"/' openapi/swagger.json
-    git add openapi/swagger.json
-    git add openapi/swagger.yaml
+    sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"'${API_DEV_VERSION}-SNAPSHOT'\"/' openapi/openapi.yaml
+    sed -i.bak 's/\"'${FULL_API_VERSION}'\"/\"'${API_DEV_VERSION}-SNAPSHOT'\"/' openapi/openapi.json
+    git add openapi/openapi.json
+    git add openapi/openapi.yaml
     git commit -a -m "development version ${ARLAS_DEV_VERSION}-SNAPSHOT"
     git push origin develop
 else echo "=> Skip git push develop"; fi

@@ -16,9 +16,12 @@ identity:
 #
 swagger: # Configuration of SWAGGER for generating documentation and APIs
   resourcePackage: io.arlas.subscriptions.rest # The java package to process for extracting the APIs
-  # temporary patch for bug https://github.com/smoketurner/dropwizard-swagger/issues/206
-  # to be removed when version of dropwizard.swagger.version is upgraded
-  customJavascript: ${ARLAS_SUB_CUSTOM_JS:-/arlas/swagger-static/custom-request-interceptor.js}
+  # not supported in 3.0.0-1 but PR existing and merged
+  servers:
+    - url: ${ARLAS_SUB_MANAGER_PREFIX:-/arlas-subscriptions-manager}
+      description: "Backend server from client browser"
+    - url: http://arlas-subscriptions-manager${ARLAS_TAGGER_PREFIX:-/arlas_tagger}
+      description: "Backend server from docker network"
 
 ########################################################
 ############ HTTP SERVER                 ###############

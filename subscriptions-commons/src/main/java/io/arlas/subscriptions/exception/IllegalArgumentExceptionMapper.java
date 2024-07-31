@@ -22,8 +22,8 @@ package io.arlas.subscriptions.exception;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 
 public class IllegalArgumentExceptionMapper implements ExceptionMapper<IllegalArgumentException> {
     private ArlasLogger logger;

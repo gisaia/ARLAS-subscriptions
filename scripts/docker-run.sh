@@ -29,7 +29,7 @@ function clean_exit {
 
     if [[ "$ARG" != 0 ]]; then
         # In case of error, print containers logs (if any)
-        docker-compose logs
+        docker compose logs
     fi
 
     exit $ARG
@@ -37,25 +37,25 @@ function clean_exit {
 
 function run_manager {
     echo "===> start arlas-subscriptions-manager dependency stack (es+mongo)"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} elasticsearch mongodb mongo2 mongo3
+    docker compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} elasticsearch mongodb mongo2 mongo3
     sleep 10
     echo "===> configure replica set on mongodb"
     docker exec mongodb /scripts/rs-init.sh
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
     curl -X PUT "localhost:9200/subs" -H 'Content-Type: application/json' -d @"./subscriptions-tests/src/test/resources/arlas.subs.mapping.json"
     echo "===> start arlas-subscriptions-manager"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-manager
+    docker compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-manager
     echo "===> wait for arlas-subscriptions-manager up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 }
 
 function run_matcher {
     echo "===> start arlas-subscriptions-matcher dependency stack (es+kafka+arlas server)"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} zookeeper elasticsearch kafka
+    docker compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} zookeeper elasticsearch kafka
     sleep 10
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-server
+    docker compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-server
     echo "===> start arlas-subscriptions-matcher stack"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-matcher
+    docker compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} arlas-subscriptions-matcher
     echo "===> wait for arlas-subscriptions-matcher up and running"
     while [ `docker logs arlas-subscriptions-matcher --tail 10 | grep -c "org.eclipse.jetty.server.Server: Started"` -lt 1 ]
     do
@@ -65,14 +65,14 @@ function run_matcher {
 
 function run_dummy {
     echo "===> start dummy stack"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} mongodb arlas-server
+    docker compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} mongodb arlas-server
     echo "===> wait for arlas-server up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-server 9999; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
 }
 
 function run_all {
     echo "===> start all stack"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} elasticsearch mongodb mongo2 mongo3 zookeeper kafka
+    docker compose --project-name arlas-subscriptions up -d ${BUILD_OPTS} elasticsearch mongodb mongo2 mongo3 zookeeper kafka
     sleep 10
     echo "===> configure replica set on mongodb"
     docker exec mongodb /scripts/rs-init.sh
@@ -80,7 +80,7 @@ function run_all {
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
     echo "===> create sub mapping in ES"
     curl -X PUT "localhost:9200/subs" -H 'Content-Type: application/json' -d @"./subscriptions-tests/src/test/resources/arlas.subs.mapping.json"
-    docker-compose --project-name arlas-subscriptions up -d ${BUILD_OPTS}
+    docker compose --project-name arlas-subscriptions up -d ${BUILD_OPTS}
     echo "===> wait for arlas-server up and running"
     docker run --net arlas-subscriptions_default --rm busybox sh -c 'i=1; until nc -w 2 arlas-server 9999; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
     echo "===> wait for arlas-subscriptions-manager up and running"

@@ -2,9 +2,9 @@
 set -o errexit -o pipefail
 
 function clean_exit {
-    ARG=$?
+  ARG=$?
 	echo "===> Exit status = ${ARG}"
-    exit $ARG
+  exit $ARG
 }
 trap clean_exit EXIT
 

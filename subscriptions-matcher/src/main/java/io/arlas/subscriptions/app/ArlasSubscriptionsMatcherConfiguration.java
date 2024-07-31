@@ -31,8 +31,8 @@ public class ArlasSubscriptionsMatcherConfiguration extends ArlasSubscriptionsCo
     @JsonProperty(value = "arlas-subscriptions-basePath", required = true)
     public String subscriptionsBasePath;
 
-    @JsonProperty(value = "arlas-subscriptions-searchEndpoint", required = true)
-    public String subscriptionsSearchEndpoint;
+    @JsonProperty(value = "arlas-subscriptions-collection", required = true)
+    public String subscriptionsCollection;
 
     @JsonProperty(value = "arlas-subscriptions-subscriptionFilterRoot", required = true)
     public String subscriptionFilterRoot;
@@ -40,8 +40,8 @@ public class ArlasSubscriptionsMatcherConfiguration extends ArlasSubscriptionsCo
     @JsonProperty(value = "arlas-server-basePath", required = true)
     public String arlasServerBasePath;
 
-    @JsonProperty(value = "arlas-server-searchEndpoint", required = true)
-    public String arlasServerSearchEndpoint;
+    @JsonProperty(value = "arlas-server-collection", required = true)
+    public String arlasServerCollection;
 
     @JsonProperty(value = "arlas-server-hitFilterRoot", required = true)
     public String arlasServerFilterRoot;

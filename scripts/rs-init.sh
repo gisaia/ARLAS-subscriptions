@@ -13,17 +13,18 @@ var config = {
         {
             "_id": 2,
             "host": "mongo2:27017",
-            "priority": 0
+            "priority": 0,
+            "votes": 0
         },
         {
             "_id": 3,
             "host": "mongo3:27017",
-            "priority": 0
+            "priority": 0,
+            "votes": 0
         }
     ]
 };
 rs.initiate(config, { force: true });
-rs.status();
 EOF
 
 sleep 20
@@ -38,5 +39,4 @@ mongo <<EOF
         roles: [ { role: "root", db: "admin" } ]
      });
      db.getSiblingDB("admin").auth("mongouser", "secret");
-     rs.status();
 EOF

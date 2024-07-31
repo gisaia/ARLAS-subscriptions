@@ -9,7 +9,6 @@
     <name>ARLAS subscriptions parent</name>
 
     <modules>
-        <module>arlas-server-client</module>
         <module>subscriptions-commons</module>
         <module>subscriptions-matcher</module>
         <module>subscriptions-manager</module>
@@ -27,12 +26,17 @@
         <!-- LIBRARIES -->
         <junit.version>4.13.2</junit.version>
         <org.hamcrest.version>2.2</org.hamcrest.version>
-        <io.rest-assured.version>5.3.0</io.rest-assured.version>
-        <jug.version>4.0.1</jug.version>
+        <io.rest-assured.version>5.4.0</io.rest-assured.version>
+        <jug.version>5.0.0</jug.version>
+
+        <!-- for manager -->
+        <mongodb.version>5.1.0</mongodb.version>
+        <everit.json.schema.version>1.5.1</everit.json.schema.version>
+        <beanutils.version>1.9.4</beanutils.version>
 
         <!-- BACKENDS -->
-        <arlas.version>24.0.2</arlas.version>
-        <kafka.version>3.5.0</kafka.version>
+        <arlas.version>25.1.0</arlas.version>
+        <kafka.version>3.7.0</kafka.version>
     </properties>
 
     <dependencies>

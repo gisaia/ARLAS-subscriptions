@@ -20,13 +20,12 @@
 package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Response;
+import io.arlas.client.ApiClient;
+import io.arlas.client.ApiException;
+import io.arlas.client.Pair;
+import io.arlas.client.api.ExploreApi;
+import io.arlas.client.model.Hits;
 import io.arlas.commons.exceptions.ArlasException;
-import io.arlas.server.client.ApiClient;
-import io.arlas.server.client.ApiException;
-import io.arlas.server.client.Pair;
-import io.arlas.server.client.model.Hits;
 import io.arlas.server.core.utils.ParamsParser;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.logger.ArlasLogger;
@@ -45,19 +44,13 @@ import static io.arlas.subscriptions.app.ArlasSubscriptionsMatcher.MATCHER;
 public class AbstractArlasService {
     private final ArlasLogger logger = ArlasLoggerFactory.getLogger(AbstractArlasService.class, MATCHER);
     final ObjectMapper objectMapper = new ObjectMapper();
-    ApiClient apiClient;
-    String searchEndpoint;
+    String basePath;
+    String collection;
     String filterRoot;
-
-    // utility attributes to avoid building empty objects for each subscription matcher request
-    final List emptyListParams = new ArrayList<>();
-    final Map emptyMapParams = new HashMap<>();
-    final String[] emptyArrayParams = new String[0];
-    final static  String GET = "GET";
 
     List<Pair> getQueryParams(String encodedSearchFilter) throws UnsupportedEncodingException {
         String searchFilter = URLDecoder.decode(encodedSearchFilter, StandardCharsets.UTF_8);
-        logger.debug("Calling '" + apiClient.getBasePath() + searchEndpoint + "' with query params: '" + searchFilter + "'");
+        logger.debug("Calling '" + basePath + collection + "' with query params: '" + searchFilter + "'");
         return Arrays.stream(searchFilter.split("&"))
                 .map(s -> s.split("="))
                 .map(p -> new Pair(p[0], p.length == 1 ? "" : p[1]))
@@ -68,26 +61,47 @@ public class AbstractArlasService {
         return getItemHits(queryParams, Collections.emptyMap());
     }
 
-    Hits getItemHits(List<Pair> queryParams, Map<String, String> headerParams) throws ApiException, IOException, ArlasException, ArlasSubscriptionsException {
+    Hits getItemHits(List<Pair> queryParams, Map<String, String> headerParams)
+            throws ApiException, IOException, ArlasException, ArlasSubscriptionsException {
 
         validateArlasQueryParams(queryParams);
-
-        Call searchCall = apiClient.buildCall(searchEndpoint, GET, queryParams,
-                emptyListParams, null, headerParams, emptyMapParams, emptyArrayParams, null);
-        Response searchResponse = searchCall.execute();
-        String body = searchResponse.body().string();
-        logger.debug("body="+body);
-        if (searchResponse.isSuccessful()) {
-            return objectMapper.readValue(body, Hits.class);
-        } else {
-            if (searchResponse.code() == 404) {
-                logger.fatal("Arlas collection for subscription not found: " + searchEndpoint);
+        ApiClient apiClient = new ApiClient().setBasePath(basePath);
+        if (headerParams != null) {
+            headerParams.forEach(apiClient::addDefaultHeader);
+        }
+        try {
+            return new ExploreApi(apiClient)
+                    .search(collection,
+                            getQPList(queryParams, "f"),
+                            getQPList(queryParams, "q"),
+                            getQP(queryParams, "dateformat").orElse(null),
+                            getQP(queryParams, "righthand").map(Boolean::parseBoolean).orElse(null),
+                            getQP(queryParams, "pretty").map(Boolean::parseBoolean).orElse(null),
+                            getQP(queryParams, "flat").map(Boolean::parseBoolean).orElse(null),
+                            getQP(queryParams, "include").orElse(null),
+                            getQP(queryParams, "exclude").orElse(null),
+                            getQP(queryParams, "returned_geometries").orElse(null),
+                            getQP(queryParams, "size").map(Long::parseLong).orElse(null),
+                            getQP(queryParams, "from").map(Long::parseLong).orElse(null),
+                            getQP(queryParams, "sort").orElse(null),
+                            getQP(queryParams, "after").orElse(null),
+                            getQP(queryParams, "before").orElse(null),
+                            getQP(queryParams, "max-age-cache").map(Integer::parseInt).orElse(null));
+        } catch (ApiException e) {
+            if (e.getCode() == 404) {
+                logger.fatal("Arlas collection for subscription not found: " + collection);
                 System.exit(1);
             }
-            throw new ArlasSubscriptionsException("Error while interrogating Catalog: " + body);
+            throw new ArlasSubscriptionsException("Error while interrogating Catalog: " + e.getResponseBody());
         }
     }
 
+    Optional<String> getQP(List<Pair> queryParams, String name) {
+        return queryParams.stream().filter(p -> p.getName().equals(name)).map(Pair::getValue).findFirst();
+    }
+    List<String> getQPList(List<Pair> queryParams, String name) {
+        return queryParams.stream().filter(p -> p.getName().equals(name)).map(Pair::getValue).toList();
+    }
     private void validateArlasQueryParams(List<Pair> queryParams) throws ArlasException {
 
         Function<String, List<String>> getListOfStringFromQueryParams = (String key) -> queryParams.stream()
@@ -104,7 +118,8 @@ public class AbstractArlasService {
         ParamsParser.getFilter(null,
                 getListOfStringFromQueryParams.apply("f"),
                 getListOfStringFromQueryParams.apply("q"),
-                getStringFromQueryParams.apply("dateformat"), null);
+                getStringFromQueryParams.apply("dateformat"),
+                null);
     }
 
 }

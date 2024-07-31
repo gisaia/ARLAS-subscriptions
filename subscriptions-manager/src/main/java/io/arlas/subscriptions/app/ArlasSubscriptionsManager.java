@@ -21,9 +21,9 @@ package io.arlas.subscriptions.app;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.arlas.server.admin.health.ElasticsearchHealthCheck;
+import io.arlas.subscriptions.configuration.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.db.elastic.ElasticDBFactoryConnection;
 import io.arlas.subscriptions.db.elastic.ElasticDBManaged;
 import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
@@ -32,25 +32,25 @@ import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsExceptionMapper;
 import io.arlas.subscriptions.exception.ConstraintViolationExceptionMapper;
 import io.arlas.subscriptions.exception.IllegalArgumentExceptionMapper;
+import io.arlas.subscriptions.healthcheck.MongoHealthCheck;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
-import io.arlas.subscriptions.healthcheck.MongoHealthCheck;
-import io.arlas.subscriptions.configuration.ArlasSubscriptionManagerConfiguration;
 import io.arlas.subscriptions.rest.UserSubscriptionManagerAdminController;
 import io.arlas.subscriptions.rest.UserSubscriptionManagerEndUserController;
 import io.arlas.subscriptions.service.UserSubscriptionHALService;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.task.MongoDBToESSync;
 import io.arlas.subscriptions.utils.PrettyPrintFilter;
-import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
+import io.dropwizard.core.Application;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+
 import java.io.IOException;
 
 public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionManagerConfiguration> {
@@ -79,9 +79,9 @@ public class ArlasSubscriptionsManager extends Application<ArlasSubscriptionMana
     @Override
     public void run(ArlasSubscriptionManagerConfiguration configuration, Environment environment) throws Exception {
 
-        logger.info("Raw configuration: " + (new ObjectMapper()).writer().writeValueAsString(configuration));
+        logger.info("Raw configuration: " +  environment.getObjectMapper().writer().writeValueAsString(configuration));
         configuration.check();
-        logger.info("Checked configuration: " + (new ObjectMapper()).writer().writeValueAsString(configuration));
+        logger.info("Checked configuration: " +  environment.getObjectMapper().writer().writeValueAsString(configuration));
 
         final MongoDBFactoryConnection mongoDBFactoryConnection = new MongoDBFactoryConnection(configuration.mongoDBConfiguration);
         final ElasticDBFactoryConnection elasticDBFactoryConnection = new ElasticDBFactoryConnection(configuration.elasticDBConfiguration);

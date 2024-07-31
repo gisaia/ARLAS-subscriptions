@@ -31,23 +31,28 @@ import io.arlas.subscriptions.model.response.Error;
 import io.arlas.subscriptions.service.UserSubscriptionHALService;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
 import io.arlas.subscriptions.utils.ResponseFormatter;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Optional;
 
 import static io.arlas.subscriptions.app.ArlasSubscriptionsManager.MANAGER;
 
 @Path("/admin/subscriptions")
-@Api(value = "/admin/subscriptions", tags = {"admin"})
+@Tag(name="admin", description = "Optional endpoints to manage all subscriptions as an administrator of the service.")
 public class UserSubscriptionManagerAdminController extends UserSubscriptionManagerAbstractController {
     public final ArlasLogger logger = ArlasLoggerFactory.getLogger(UserSubscriptionManagerAbstractController.class, MANAGER);
 
@@ -64,73 +69,73 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     @GET
     @Produces(UTF8JSON)
     @Consumes(UTF8JSON)
-    @ApiOperation(
-            value = "List all available subscriptions",
-            produces = UTF8JSON,
-            notes = "Return the list of all registered subscriptions from the latest created to the earliest.",
-            consumes = UTF8JSON
+    @Operation(
+            summary = "List all available subscriptions",
+            description = "Return the list of all registered subscriptions from the latest created to the earliest."
     )
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = SubscriptionListResource.class),
-            @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
-            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = @Content(schema = @Schema(implementation = SubscriptionListResource.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "503", description = "Arlas Subscriptions Manager Error.",
+                    content = @Content(schema = @Schema(implementation = Error.class)))})
 
     public Response getAll(@Context UriInfo uriInfo,
-                           @Context HttpHeaders headers,
-            // --------------------------------------------------------
-            // ----------------------- FORM -----------------------
-            // --------------------------------------------------------
-            @ApiParam(name = "before", value = "Retrieve subscriptions created before given timestamp.",
-                    allowMultiple = false,
-                    required = false)
-            @QueryParam(value = "before") Long before,
-           @ApiParam(name = "after", value = "Retrieve subscriptions created after given timestamp.",
-                   allowMultiple = false,
-                   required = false)
-               @QueryParam(value = "after") Long after,
-           @ApiParam(name = "active", value = "Filter subscriptions whether they are active or not (returns all if missing, 'active' if 'true', 'not active' if 'false').",
-                    allowMultiple = false,
-                    required = false)
-            @QueryParam(value = "active") Boolean active,
-           @ApiParam(name = "started", value = "Filter subscriptions whether they are started or not (returns all if missing, 'started' if 'true', 'not started' if 'false').",
-                   allowMultiple = false,
-                   required = false)
-               @QueryParam(value = "started") Boolean started,
-           @ApiParam(name = "expired", value = "Filter subscriptions whether they are expired or not (returns all if missing, 'expired' if 'true', 'not expired' if 'false').",
-                    allowMultiple = false,
-                    required = false)
-            @QueryParam(value = "expired") Boolean expired,
-           @ApiParam(name = "created-by", value = "Filter subscriptions by creator's identifier",
-                   allowMultiple = false,
-                   required = false)
-               @QueryParam(value = "created-by") String createdBy,
-           @ApiParam(name = "deleted", value = "Filter subscriptions whether they are deleted or not.",
-                   allowMultiple = false,
-                   required = false,
-                    defaultValue = "true" )
-               @QueryParam(value = "deleted") Boolean deleted,
-           @ApiParam(name = "created-by-admin", value = "Filter subscriptions whether they have been created by admin or not (returns all if missing, 'created_by_admin' if 'true', 'not created_by_admin' if 'false').",
-                   allowMultiple = false,
-                   required = false)
-               @QueryParam(value = "created-by-admin") Boolean createdByAdmin,
-           @ApiParam(name = "pretty", value = "Pretty print",
-                   allowMultiple = false,
-                   defaultValue = "false",
-                   required = false)
-               @QueryParam(value = "pretty") Boolean pretty,
-           @ApiParam(name = "page", value = "Page ID",
-                   defaultValue = "1",
-                   allowableValues = "range[1, infinity]",
-                   type = "integer",
-                   required = false)
-               @DefaultValue("1")
-               @QueryParam(value = "page") Integer page,
-            @ApiParam(name = "size", value = "Page Size",
-                    defaultValue = "10",
-                    allowableValues = "range[1, infinity]",
-                    type = "integer",
-                    required = false)
-            @DefaultValue("10")
-            @QueryParam(value = "size") Integer size
+
+                           // --------------------------------------------------------
+                           // ----------------------- FORM -----------------------
+                           // --------------------------------------------------------
+                           @Parameter(name = "before",
+                                   description = "Retrieve subscriptions created before given timestamp.")
+                           @QueryParam(value = "before") Long before,
+
+                           @Parameter(name = "after",
+                                   description = "Retrieve subscriptions created after given timestamp.")
+                           @QueryParam(value = "after") Long after,
+
+                           @Parameter(name = "active",
+                                   description = "Filter subscriptions whether they are active or not (returns all if missing, 'active' if 'true', 'not active' if 'false').")
+                           @QueryParam(value = "active") Boolean active,
+
+                           @Parameter(name = "started",
+                                   description = "Filter subscriptions whether they are started or not (returns all if missing, 'started' if 'true', 'not started' if 'false').")
+                           @QueryParam(value = "started") Boolean started,
+
+                           @Parameter(name = "expired",
+                                   description = "Filter subscriptions whether they are expired or not (returns all if missing, 'expired' if 'true', 'not expired' if 'false').")
+                           @QueryParam(value = "expired") Boolean expired,
+
+                           @Parameter(name = "created-by",
+                                   description = "Filter subscriptions by creator's identifier")
+                           @QueryParam(value = "created-by") String createdBy,
+
+                           @Parameter(name = "deleted",
+                                   description = "Filter subscriptions whether they are deleted or not.",
+                                   schema = @Schema(defaultValue = "true"))
+                           @QueryParam(value = "deleted") Boolean deleted,
+
+                           @Parameter(name = "created-by-admin",
+                                   description = "Filter subscriptions whether they have been created by admin or not (returns all if missing, 'created_by_admin' if 'true', 'not created_by_admin' if 'false').")
+                           @QueryParam(value = "created-by-admin") Boolean createdByAdmin,
+
+                           @Parameter(name = "pretty",
+                                   description = "Pretty print",
+                                   schema = @Schema(defaultValue = "false"))
+                           @QueryParam(value = "pretty") Boolean pretty,
+
+                           @Parameter(name = "page",
+                                   description = "Page ID",
+                                   schema = @Schema(type="integer", minimum = "1", defaultValue = "1"))
+                           @DefaultValue("1")
+                           @QueryParam(value = "page") Integer page,
+
+                           @Parameter(name = "size",
+                                   description = "Page Size",
+                                   schema = @Schema(type="integer", minimum = "1", defaultValue = "10"))
+                           @DefaultValue("10")
+                           @QueryParam(value = "size") Integer size
+
     ) throws ArlasSubscriptionsException {
 
         logger.debug(String.format("Admin requests all subscriptions (before %d, after %d, active %s, started %b, expired %s, deleted %b, created-by-admin %b, page %d, size %d)",
@@ -155,40 +160,40 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     @GET
     @Produces(UTF8JSON)
     @Consumes(UTF8JSON)
-    @ApiOperation(
-            value = "Find subscription by ID",
-            produces = UTF8JSON,
-            notes = "Return a single subscription. " +
-                    "Only creator can access their subscriptions.",
-            consumes = UTF8JSON,
-            response = UserSubscriptionWithLinks.class
+    @Operation(
+            summary = "Find subscription by ID",
+            description = "Return a single subscription. Only creator can access their subscriptions."
     )
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Successful operation", response = UserSubscriptionWithLinks.class),
-            @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
-            @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
-            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = @Content(schema = @Schema(implementation = UserSubscriptionWithLinks.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "404", description = "Subscription not found.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "503", description = "Arlas Subscriptions Manager Error.",
+                    content = @Content(schema = @Schema(implementation = Error.class)))})
 
     public Response get(@Context UriInfo uriInfo,
-                        @Context HttpHeaders headers,
-            // --------------------------------------------------------
-            // ----------------------- FORM -----------------------
-            // --------------------------------------------------------
-            @ApiParam(
-                    name = "id",
-                    value = "ID of subscription to return",
-                    allowMultiple = false,
-                    required = true)
-            @PathParam(value = "id") String id,
-            @ApiParam(name = "deleted", value = "Filter subscriptions whether they are deleted or not.",
-                    allowMultiple = false,
-                    required = false,
-                    defaultValue = "true" )
-                @QueryParam(value = "deleted") Boolean deleted,
-            @ApiParam(name = "pretty", value = "Pretty print",
-                    allowMultiple = false,
-                    defaultValue = "false",
-                    required = false)
-            @QueryParam(value = "pretty") Boolean pretty
+
+                        // --------------------------------------------------------
+                        // ----------------------- FORM -----------------------
+                        // --------------------------------------------------------
+                        @Parameter(name = "id",
+                                description = "ID of subscription to return",
+                                required = true)
+                        @PathParam(value = "id") String id,
+
+                        @Parameter(name = "deleted",
+                                description = "Filter subscriptions whether they are deleted or not.",
+                                schema = @Schema(defaultValue = "true") )
+                        @QueryParam(value = "deleted") Boolean deleted,
+
+                        @Parameter(name = "pretty",
+                                description = "Pretty print",
+                                schema = @Schema(defaultValue = "false"))
+                        @QueryParam(value = "pretty") Boolean pretty
+
     ) throws ArlasSubscriptionsException {
 
         logger.debug(String.format("Admin requests subscription %s (deleted %b)", id, Optional.ofNullable(deleted).orElse(Boolean.TRUE)));
@@ -203,33 +208,33 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     @DELETE
     @Produces(UTF8JSON)
     @Consumes(UTF8JSON)
-    @ApiOperation(
-            value = "Delete a subscription",
-            produces = UTF8JSON,
-            notes = "Mark a subscription as deleted.",
-            consumes = UTF8JSON,
-            response = UserSubscriptionWithLinks.class
+    @Operation(
+            summary = "Delete a subscription",
+            description = "Mark a subscription as deleted."
     )
-    @ApiResponses(value = {@ApiResponse(code = 202, message = "Subscription has been deleted.", response = UserSubscriptionWithLinks.class),
-            @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
-            @ApiResponse(code = 404, message = "Subscription not found.", response = Error.class),
-            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Subscription has been deleted.",
+                    content = @Content(schema = @Schema(implementation = UserSubscriptionWithLinks.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "404", description = "Subscription not found.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "503", description = "Arlas Subscriptions Manager Error.",
+                    content = @Content(schema = @Schema(implementation = Error.class)))})
 
-    public Response delete(@Context HttpHeaders headers,
-           // --------------------------------------------------------
-           // ----------------------- FORM -----------------------
-           // --------------------------------------------------------
-            @ApiParam(
-                    name = "id",
-                    value = "Subscription ID to delete",
-                    allowMultiple = false,
+    public Response delete(
+            // --------------------------------------------------------
+            // ----------------------- FORM -----------------------
+            // --------------------------------------------------------
+            @Parameter(name = "id",
+                    description = "Subscription ID to delete",
                     required = true)
             @PathParam(value = "id") String id,
-            @ApiParam(name = "pretty", value = "Pretty print",
-                    allowMultiple = false,
-                    defaultValue = "false",
-                    required = false)
+
+            @Parameter(name = "pretty", description = "Pretty print",
+                    schema = @Schema(defaultValue = "false"))
             @QueryParam(value = "pretty") Boolean pretty
+
     ) throws ArlasSubscriptionsException {
 
         logger.debug(String.format("Admin requests deletion of subscription %s", id));
@@ -244,32 +249,33 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     @POST
     @Produces(UTF8JSON)
     @Consumes(UTF8JSON)
-    @ApiOperation(
-            value = "Register a new subscription",
-            produces = UTF8JSON,
-            notes = "Register a subscription for further notification.",
-            consumes = UTF8JSON,
-            response = UserSubscriptionWithLinks.class
+    @Operation(
+            summary = "Register a new subscription",
+            description = "Register a subscription for further notification."
     )
-    @ApiResponses(value = {@ApiResponse(code = 201, message = "Subscription has been registered", response = UserSubscriptionWithLinks.class),
-            @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
-            @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
-            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
-    public Response post(@Context UriInfo uriInfo,
-            @Context HttpHeaders headers,
-            @ApiParam(name = "subscription",
-                    value = "Subscription description",
-                    required = true)
-            @NotNull @Valid UserSubscription subscription,
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Subscription has been registered",
+                    content = @Content(schema = @Schema(implementation = UserSubscriptionWithLinks.class))),
+            @ApiResponse(responseCode = "400", description = "JSON parameter malformed.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "503", description = "Arlas Subscriptions Manager Error.",
+                    content = @Content(schema = @Schema(implementation = Error.class)))})
 
-            // --------------------------------------------------------
-            // ----------------------- FORM -----------------------
-            // --------------------------------------------------------
-            @ApiParam(name = "pretty", value = "Pretty print",
-                    allowMultiple = false,
-                    defaultValue = "false",
-                    required = false)
-            @QueryParam(value = "pretty") Boolean pretty
+    public Response post(@Context UriInfo uriInfo,
+
+                         // --------------------------------------------------------
+                         // ----------------------- FORM -----------------------
+                         // --------------------------------------------------------
+                         @Parameter(name = "subscription",
+                                 description = "Subscription description",
+                                 required = true)
+                         @NotNull @Valid UserSubscription subscription,
+
+                         @Parameter(name = "pretty", description = "Pretty print",
+                                 schema = @Schema(defaultValue = "false"))
+                         @QueryParam(value = "pretty") Boolean pretty
 
     ) throws ArlasSubscriptionsException {
 
@@ -288,37 +294,39 @@ public class UserSubscriptionManagerAdminController extends UserSubscriptionMana
     @PUT
     @Produces(UTF8JSON)
     @Consumes(UTF8JSON)
-    @ApiOperation(
-            value = "Update an existing subscription",
-            produces = UTF8JSON,
-            notes = "Update an existing subscription. ",
-            consumes = UTF8JSON,
-            response = UserSubscriptionWithLinks.class
+    @Operation(
+            summary = "Update an existing subscription",
+            description = "Update an existing subscription. "
     )
-    @ApiResponses(value = {@ApiResponse(code = 201, message = "Successful operation", response = UserSubscriptionWithLinks.class),
-            @ApiResponse(code = 400, message = "JSON parameter malformed.", response = Error.class),
-            @ApiResponse(code = 401, message = "Unauthorized.", response = Error.class),
-            @ApiResponse(code = 404, message = "Not Found Error.", response = Error.class),
-            @ApiResponse(code = 503, message = "Arlas Subscriptions Manager Error.", response = Error.class)})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Successful operation",
+                    content = @Content(schema = @Schema(implementation = UserSubscriptionWithLinks.class))),
+            @ApiResponse(responseCode = "400", description = "JSON parameter malformed.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "404", description = "Not Found Error.",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "503", description = "Arlas Subscriptions Manager Error.",
+                    content = @Content(schema = @Schema(implementation = Error.class)))})
+
     public Response put(@Context UriInfo uriInfo,
-                        @Context HttpHeaders headers,
+
                         // --------------------------------------------------------
                         // ----------------------- FORM -----------------------
                         // --------------------------------------------------------
-                        @ApiParam(
-                                name = "id",
-                                value = "ID of subscription to return",
-                                allowMultiple = false,
+                        @Parameter(name = "id",
+                                description = "ID of subscription to return",
                                 required = true)
                         @PathParam(value = "id") String id,
-                        @ApiParam(name = "subscription",
-                                value = "Subscription description",
+
+                        @Parameter(name = "subscription",
+                                description = "Subscription description",
                                 required = true)
                         @NotNull @Valid UserSubscription updUserSubscription,
-                        @ApiParam(name = "pretty", value = "Pretty print",
-                                allowMultiple = false,
-                                defaultValue = "false",
-                                required = false)
+
+                        @Parameter(name = "pretty", description = "Pretty print",
+                                schema = @Schema(defaultValue = "false"))
                         @QueryParam(value = "pretty") Boolean pretty
 
     ) throws ArlasSubscriptionsException {

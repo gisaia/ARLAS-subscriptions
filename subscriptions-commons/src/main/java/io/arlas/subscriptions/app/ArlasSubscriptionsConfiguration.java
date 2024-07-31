@@ -21,7 +21,7 @@ package io.arlas.subscriptions.app;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.dropwizard.Configuration;
+import io.dropwizard.core.Configuration;
 
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class ArlasSubscriptionsConfiguration extends Configuration {
