@@ -19,18 +19,15 @@
 
 package io.arlas.subscriptions;
 
-import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Response;
+import io.arlas.client.ApiClient;
+import io.arlas.client.ApiException;
+import io.arlas.client.api.CollectionsApi;
+import io.arlas.client.model.CollectionReferenceParameters;
 import io.arlas.commons.exceptions.ArlasException;
-import io.arlas.server.client.ApiClient;
-import io.arlas.server.client.ApiException;
-import io.arlas.server.client.Pair;
-import io.arlas.server.client.model.CollectionReferenceParameters;
 import io.arlas.server.core.app.ElasticConfiguration;
 import io.arlas.server.core.impl.elastic.utils.ElasticClient;
 import io.arlas.subscriptions.configuration.mongo.MongoDBConfiguration;
@@ -39,7 +36,6 @@ import io.arlas.subscriptions.db.mongo.MongoDBFactoryConnection;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.model.IndexedUserSubscription;
 import io.arlas.subscriptions.model.UserSubscription;
-import org.elasticsearch.client.RequestOptions;
 import org.geojson.LngLatAlt;
 import org.geojson.Polygon;
 import org.json.simple.JSONArray;
@@ -132,19 +128,11 @@ public class DataSetTool {
             collection.setGeometryPath(DataSetTool.DATASET_GEOMETRY_PATH);
             collection.setCentroidPath(DataSetTool.DATASET_CENTROID_PATH);
             collection.setTimestampPath(DataSetTool.DATASET_TIMESTAMP_PATH);
-            Call collectionPut = null;
             try {
-                collectionPut = apiClient.buildCall("/collections/" + COLLECTION_GEODATA_NAME, "PUT", new ArrayList<Pair>(),
-                        new ArrayList<>(), collection, new HashMap<>(), new HashMap<>(), new String[0], null);
-                Response collectionPutResponse = collectionPut.execute();
-                if (collectionPutResponse.code() == 200) {
-                    LOGGER.debug("Collection " + COLLECTION_GEODATA_NAME + " created in ARLAS-server : " + collectionPutResponse.message());
-                } else {
-                    LOGGER.debug("Collection " + COLLECTION_GEODATA_NAME + " NOT created to ARLAS-server [" + collectionPutResponse.code() + "] : " +
-                            collectionPutResponse.message());
-                }
+                new CollectionsApi(apiClient).put(collection, COLLECTION_GEODATA_NAME, false, false);
             } catch (ApiException e) {
-                LOGGER.error("Unable to create collection in ARLAS-server", e);
+                LOGGER.debug("Collection " + COLLECTION_GEODATA_NAME + " NOT created in ARLAS-server [" + e.getCode() + "] : " +
+                        e.getResponseBody());
             }
         }
     }
@@ -211,19 +199,11 @@ public class DataSetTool {
             collection.setGeometryPath(DataSetTool.SUBSCRIPTIONS_GEOMETRY_PATH);
             collection.setCentroidPath(DataSetTool.SUBSCRIPTIONS_CENTROID_PATH);
             collection.setTimestampPath(DataSetTool.SUBSCRIPTIONS_TIMESTAMP_PATH);
-            Call collectionPut = null;
             try {
-                collectionPut = apiClient.buildCall("/collections/" + COLLECTION_SUBSCRIPTIONS_NAME, "PUT", new ArrayList<>(),
-                        new ArrayList<>(), collection, new HashMap<>(), new HashMap<>(), new String[0], null);
-                Response collectionPutResponse = collectionPut.execute();
-                if (collectionPutResponse.code() == 200) {
-                    LOGGER.debug("Collection " + COLLECTION_SUBSCRIPTIONS_NAME + " created in ARLAS-server : " + collectionPutResponse.message());
-                } else {
-                    LOGGER.debug("Collection " + COLLECTION_SUBSCRIPTIONS_NAME + " NOT created to ARLAS-server [" + collectionPutResponse.code() + "] : " +
-                            collectionPutResponse.message());
-                }
+                new CollectionsApi(apiClient).put(collection, COLLECTION_SUBSCRIPTIONS_NAME, false, false);
             } catch (ApiException e) {
-                LOGGER.error("Unable to create collection in ARLAS-server", e);
+                LOGGER.debug("Collection " + COLLECTION_SUBSCRIPTIONS_NAME + " NOT created in ARLAS-server [" + e.getCode() + "] : " +
+                        e.getResponseBody());
             }
         }
         //Create subscription in Mongo

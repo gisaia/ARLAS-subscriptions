@@ -21,8 +21,8 @@ package io.arlas.subscriptions.utils;
 
 import io.arlas.subscriptions.model.response.Success;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.net.URI;
 
 public class ResponseFormatter {

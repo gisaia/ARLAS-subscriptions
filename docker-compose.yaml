@@ -1,5 +1,3 @@
-version: '3'
-
 services:
 
   ########################
@@ -13,7 +11,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
-    - 22181:2181
+      - 22181:2181
 
   kafka:
     # Kafka 3.0
@@ -34,7 +32,7 @@ services:
       LOG4J_LOGGER_KAFKA: INFO
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.7.0}
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.13.3}
     container_name: "elasticsearch"
     environment:
       - discovery.type=single-node
@@ -48,7 +46,7 @@ services:
       - 9200:9200
 
   mongodb:
-    image: mongo:3.4
+    image: mongo:5.0
     container_name: "mongodb"
     ports:
       - 27017:27017
@@ -63,10 +61,10 @@ services:
       - -c
       - |
         chmod 400 /data/file.key
-        mongod --auth --keyFile /data/file.key --replSet dbrs
+        mongod --bind_ip_all --auth --keyFile /data/file.key --replSet dbrs --port 27017
 
   mongo2:
-    image: mongo:3.4
+    image: mongo:5.0
     container_name: mongo2
     ports:
       - 27019:27017
@@ -77,10 +75,10 @@ services:
       - -c
       - |
         chmod 400 /data/file.key
-        mongod --auth --keyFile /data/file.key --replSet dbrs
+        mongod --bind_ip_all --auth --keyFile /data/file.key --replSet dbrs --port 27017
 
   mongo3:
-    image: mongo:3.4
+    image: mongo:5.0
     container_name: mongo3
     ports:
       - 27022:27017
@@ -91,14 +89,14 @@ services:
       - -c
       - |
         chmod 400 /data/file.key
-        mongod --auth --keyFile /data/file.key --replSet dbrs
+        mongod --bind_ip_all --auth --keyFile /data/file.key --replSet dbrs --port 27017
 
   #########
   # ARLAS #
   #########
 
   arlas-server:
-    image: gisaia/arlas-server:${ARLAS_VERSION:-24.0.1}
+    image: gisaia/arlas-server:${ARLAS_VERSION:-25.1.0}
     container_name: "arlas-server"
     ports:
       - 9999:9999
@@ -152,10 +150,10 @@ services:
       - MONGO_AUTH_DATABASE=${MONGO_AUTH_DATABASE:-admin}
       - ARLAS_SUB_ELASTIC_NODES=elasticsearch:9200
       - ARLAS_SUB_ELASTIC_INDEX=subs
-      - ARLAS_SUB_TRIG_SCHEM_PATH=${ARLAS_SUB_TRIG_SCHEM_PATH}
+      - ARLAS_SUB_TRIG_SCHEM_PATH=${ARLAS_SUB_TRIG_SCHEM_PATH:-/opt/app/trigger.schema.json}
       - ARLAS_SUB_IDENTITY_HEADER=${ARLAS_SUB_IDENTITY_HEADER:-}
     volumes:
-      - ${ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL}:${ARLAS_SUB_TRIG_SCHEM_PATH}
+      - ${ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL:-./subscriptions-tests/src/test/resources/trigger.schema.json}:${ARLAS_SUB_TRIG_SCHEM_PATH:-/opt/app/trigger.schema.json}
     ports:
       - 9998:9998
     healthcheck:

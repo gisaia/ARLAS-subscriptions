@@ -21,20 +21,25 @@ package io.arlas.subscriptions.rest;
 
 import io.arlas.subscriptions.service.UserSubscriptionHALService;
 import io.arlas.subscriptions.service.UserSubscriptionManagerService;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.annotations.servers.Server;
+import jakarta.ws.rs.core.MediaType;
 
-import javax.ws.rs.core.MediaType;
-
-@SwaggerDefinition(
-        info = @Info(contact = @Contact(email = "contact@gisaia.com", name = "ARLAS", url = "https://arlas.io/"),
+@OpenAPIDefinition(
+        info = @Info(
                 title = "ARLAS Subscriptions Manager API",
                 description = "Manage ARLAS subscriptions on ARLAS collections' events.",
                 license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html"),
+                contact = @Contact(email = "contact@gisaia.com", name = "Gisaia", url = "http://www.gisaia.com/"),
                 version = "API_VERSION"),
-        tags = {@Tag(name="end-user", description = "Standard endpoints to manage one's subscriptions as an end-user."),
-                @Tag(name="admin", description = "Optional endpoints to manage all subscriptions as an administrator of the service.")},
-        schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS }
+        servers = {
+                @Server(url = "/arlas-subscriptions-manager", description = "default server")
+        }
 )
+
 public abstract class UserSubscriptionManagerAbstractController {
 
     public static final String UTF8JSON = MediaType.APPLICATION_JSON + ";charset=utf-8";

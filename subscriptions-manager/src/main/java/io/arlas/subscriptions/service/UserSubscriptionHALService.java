@@ -24,8 +24,8 @@ import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.model.UserSubscriptionWithLinks;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

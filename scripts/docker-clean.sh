@@ -8,4 +8,4 @@ function clean_exit {
 trap clean_exit EXIT
 
 echo "===> stop arlas-subscriptions stack"
-docker-compose  --project-name arlas-subscriptions down -v
+docker compose  --project-name arlas-subscriptions down -v

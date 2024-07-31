@@ -1,0 +1,779 @@
+openapi: 3.0.1
+info:
+  title: ARLAS Subscriptions Manager API
+  description: Manage ARLAS subscriptions on ARLAS collections' events.
+  contact:
+    name: Gisaia
+    url: http://www.gisaia.com/
+    email: contact@gisaia.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: API_VERSION
+servers:
+- url: /arlas-subscriptions-manager
+  description: default server
+tags:
+- name: admin
+  description: Optional endpoints to manage all subscriptions as an administrator
+    of the service.
+- name: end-user
+  description: Standard endpoints to manage one's subscriptions as an end-user.
+paths:
+  /admin/subscriptions/{id}:
+    get:
+      tags:
+      - admin
+      summary: Find subscription by ID
+      description: Return a single subscription. Only creator can access their subscriptions.
+      operationId: get
+      parameters:
+      - name: id
+        in: path
+        description: ID of subscription to return
+        required: true
+        schema:
+          type: string
+      - name: deleted
+        in: query
+        description: Filter subscriptions whether they are deleted or not.
+        schema:
+          type: boolean
+          default: true
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Subscription not found.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+      - admin
+      summary: Update an existing subscription
+      description: 'Update an existing subscription. '
+      operationId: put
+      parameters:
+      - name: id
+        in: path
+        description: ID of subscription to return
+        required: true
+        schema:
+          type: string
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      requestBody:
+        description: Subscription description
+        content:
+          application/json;charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/UserSubscription'
+        required: true
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+        "400":
+          description: JSON parameter malformed.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Not Found Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+      - admin
+      summary: Delete a subscription
+      description: Mark a subscription as deleted.
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        description: Subscription ID to delete
+        required: true
+        schema:
+          type: string
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "202":
+          description: Subscription has been deleted.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Subscription not found.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /admin/subscriptions:
+    get:
+      tags:
+      - admin
+      summary: List all available subscriptions
+      description: Return the list of all registered subscriptions from the latest
+        created to the earliest.
+      operationId: getAll
+      parameters:
+      - name: before
+        in: query
+        description: Retrieve subscriptions created before given timestamp.
+        schema:
+          type: integer
+          format: int64
+      - name: after
+        in: query
+        description: Retrieve subscriptions created after given timestamp.
+        schema:
+          type: integer
+          format: int64
+      - name: active
+        in: query
+        description: "Filter subscriptions whether they are active or not (returns\
+          \ all if missing, 'active' if 'true', 'not active' if 'false')."
+        schema:
+          type: boolean
+      - name: started
+        in: query
+        description: "Filter subscriptions whether they are started or not (returns\
+          \ all if missing, 'started' if 'true', 'not started' if 'false')."
+        schema:
+          type: boolean
+      - name: expired
+        in: query
+        description: "Filter subscriptions whether they are expired or not (returns\
+          \ all if missing, 'expired' if 'true', 'not expired' if 'false')."
+        schema:
+          type: boolean
+      - name: created-by
+        in: query
+        description: Filter subscriptions by creator's identifier
+        schema:
+          type: string
+      - name: deleted
+        in: query
+        description: Filter subscriptions whether they are deleted or not.
+        schema:
+          type: boolean
+          default: true
+      - name: created-by-admin
+        in: query
+        description: "Filter subscriptions whether they have been created by admin\
+          \ or not (returns all if missing, 'created_by_admin' if 'true', 'not created_by_admin'\
+          \ if 'false')."
+        schema:
+          type: boolean
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      - name: page
+        in: query
+        description: Page ID
+        schema:
+          minimum: 1
+          type: integer
+          format: int64
+          default: 1
+      - name: size
+        in: query
+        description: Page Size
+        schema:
+          minimum: 1
+          type: integer
+          format: int64
+          default: 10
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SubscriptionListResource'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+      - admin
+      summary: Register a new subscription
+      description: Register a subscription for further notification.
+      operationId: post
+      parameters:
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      requestBody:
+        description: Subscription description
+        content:
+          application/json;charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/UserSubscription'
+        required: true
+      responses:
+        "201":
+          description: Subscription has been registered
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+        "400":
+          description: JSON parameter malformed.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{id}:
+    get:
+      tags:
+      - end-user
+      summary: Find subscription by ID
+      description: Return a single subscription. Only creator can access their subscriptions.
+      operationId: get_1
+      parameters:
+      - name: id
+        in: path
+        description: ID of subscription to return
+        required: true
+        schema:
+          type: string
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Forbidden.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Subscription not found.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+      - end-user
+      summary: Update an existing subscription
+      description: Update an existing subscription. Only creator can update their
+        own subscriptions.
+      operationId: put_1
+      parameters:
+      - name: id
+        in: path
+        description: ID of subscription to return
+        required: true
+        schema:
+          type: string
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      requestBody:
+        description: Subscription description
+        content:
+          application/json;charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/UserSubscription'
+        required: true
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+        "400":
+          description: JSON parameter malformed.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Forbidden.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Not Found Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+      - end-user
+      summary: Delete a subscription
+      description: Mark a subscription as deleted. Only creator can delete their own
+        subscriptions.
+      operationId: delete_1
+      parameters:
+      - name: id
+        in: path
+        description: Subscription ID to delete
+        required: true
+        schema:
+          type: string
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "202":
+          description: Subscription has been deleted.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Forbidden.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Subscription not found.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions:
+    get:
+      tags:
+      - end-user
+      summary: List all available subscriptions
+      description: |-
+        Return the list of all registered subscriptions that are available for current user from the latest created to the earliest.
+        Only current user's subscriptions that are not deleted are listed.
+      operationId: getAll_1
+      parameters:
+      - name: before
+        in: query
+        description: Retrieve subscriptions created before given timestamp.
+        schema:
+          type: integer
+          format: int64
+      - name: active
+        in: query
+        description: "Filter subscriptions whether they are active or not (returns\
+          \ all if missing, 'active' if 'true', 'inactive' if 'false')."
+        schema:
+          type: boolean
+      - name: expired
+        in: query
+        description: "Filter subscriptions whether they are expired or not (returns\
+          \ all if missing, 'expired' if 'true', 'not expired' if 'false')."
+        schema:
+          type: boolean
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      - name: size
+        in: query
+        description: Page Size
+        schema:
+          minimum: 1
+          type: integer
+          format: int64
+          default: 10
+      - name: page
+        in: query
+        description: Page ID
+        schema:
+          minimum: 1
+          type: integer
+          format: int64
+          default: 1
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SubscriptionListResource'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Forbidden.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+      - end-user
+      summary: Register a new subscription
+      description: Register a subscription for further notification.
+      operationId: post_1
+      parameters:
+      - name: pretty
+        in: query
+        description: Pretty print
+        schema:
+          type: boolean
+          default: false
+      requestBody:
+        description: Subscription description
+        content:
+          application/json;charset=utf-8:
+            schema:
+              $ref: '#/components/schemas/UserSubscription'
+        required: true
+      responses:
+        "201":
+          description: Subscription has been registered
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+        "400":
+          description: JSON parameter malformed.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Forbidden.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Not Found Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "503":
+          description: Arlas Subscriptions Manager Error.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Hits:
+      required:
+      - filter
+      - projection
+      type: object
+      properties:
+        filter:
+          type: string
+        projection:
+          type: string
+    Link:
+      required:
+      - href
+      - method
+      - relation
+      - type
+      type: object
+      properties:
+        relation:
+          type: string
+        href:
+          type: string
+        type:
+          type: string
+        method:
+          type: string
+    Subscription:
+      required:
+      - callback
+      - hits
+      - trigger
+      type: object
+      properties:
+        trigger:
+          type: object
+          additionalProperties:
+            type: object
+        callback:
+          type: string
+        hits:
+          $ref: '#/components/schemas/Hits'
+    UserSubscriptionWithLinks:
+      required:
+      - active
+      - created_by
+      - expires_at
+      - starts_at
+      - subscription
+      - title
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        created_at:
+          type: integer
+          format: int64
+          readOnly: true
+        modified_at:
+          type: integer
+          format: int64
+          readOnly: true
+        created_by_admin:
+          type: boolean
+          readOnly: true
+        deleted:
+          type: boolean
+          readOnly: true
+        created_by:
+          type: string
+        active:
+          type: boolean
+        starts_at:
+          type: integer
+          format: int64
+        expires_at:
+          type: integer
+          format: int64
+        title:
+          type: string
+        subscription:
+          $ref: '#/components/schemas/Subscription'
+        userMetadatas:
+          type: object
+          additionalProperties:
+            type: object
+        _links:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Link'
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        message:
+          type: string
+        error:
+          type: string
+    SubscriptionListResource:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+        _links:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Link'
+        subscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSubscriptionWithLinks'
+    UserSubscription:
+      required:
+      - active
+      - created_by
+      - expires_at
+      - starts_at
+      - subscription
+      - title
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        created_at:
+          type: integer
+          format: int64
+          readOnly: true
+        modified_at:
+          type: integer
+          format: int64
+          readOnly: true
+        created_by_admin:
+          type: boolean
+          readOnly: true
+        deleted:
+          type: boolean
+          readOnly: true
+        created_by:
+          type: string
+        active:
+          type: boolean
+        starts_at:
+          type: integer
+          format: int64
+        expires_at:
+          type: integer
+          format: int64
+        title:
+          type: string
+        subscription:
+          $ref: '#/components/schemas/Subscription'
+        userMetadatas:
+          type: object
+          additionalProperties:
+            type: object

@@ -27,7 +27,7 @@
         <dependency>
             <groupId>io.arlas</groupId>
             <artifactId>arlas-server-client</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${arlas.version}</version>
         </dependency>
 
         <!-- ____________________________________________________ -->

@@ -19,26 +19,19 @@
 
 package io.arlas.subscriptions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Response;
-import io.arlas.server.client.model.Hits;
+import io.arlas.client.api.ExploreApi;
+import io.arlas.client.model.Hits;
 import io.arlas.commons.exceptions.ArlasException;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
-import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class DummyIT extends AbstractTestContext {
-
-    final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeClass
     public static void beforeClass() {
@@ -60,35 +53,47 @@ public class DummyIT extends AbstractTestContext {
     public void testArlasCollection() throws Exception {
 
         //GEODATA SEARCH REQUEST
-        Call searchCall = DataSetTool.getApiClient().buildCall("/explore/"+DataSetTool.COLLECTION_GEODATA_NAME +"/_search", "GET", new ArrayList<>(),
-                new ArrayList<>(), null, new HashMap<>(), new HashMap<>(), new String[0], null);
-        Response searchResponse = searchCall.execute();
-        Hits hits = objectMapper.readValue(searchResponse.body().string(), Hits.class);
+        Hits hits = new ExploreApi(DataSetTool.getApiClient())
+                .search(DataSetTool.COLLECTION_GEODATA_NAME,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
 
-        Assert.assertThat("Search response is 200",
-                searchResponse.code(),
-                Matchers.equalTo(200));
-        Assert.assertThat("Search response returns 10 hits",
-                hits.getNbhits(),
-                Matchers.equalTo(10L));
-        Assert.assertThat("Search response has 595 hits",
-                hits.getTotalnb(),
-                Matchers.equalTo(595L));
+        Assert.assertEquals("Search response returns 10 hits", Long.valueOf(10L), hits.getNbhits());
+        Assert.assertEquals("Search response has 595 hits", Long.valueOf(595L), hits.getTotalnb());
 
         //SUBSCRIPTIONS SEARCH REQUEST
-        Call subscriptionsCall = DataSetTool.getApiClient().buildCall("/explore/"+DataSetTool.COLLECTION_SUBSCRIPTIONS_NAME +"/_search", "GET", new ArrayList<>(),
-                new ArrayList<>(), null, new HashMap<>(), new HashMap<>(), new String[0], null);
-        Response subscriptionsResponse = subscriptionsCall.execute();
-        Hits subscriptionsHits = objectMapper.readValue(subscriptionsResponse.body().string(), Hits.class);
+        Hits subscriptionsHits = new ExploreApi(DataSetTool.getApiClient())
+                .search(DataSetTool.COLLECTION_SUBSCRIPTIONS_NAME,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
 
-        Assert.assertThat("Search response is 200",
-                subscriptionsResponse.code(),
-                Matchers.equalTo(200));
-        Assert.assertThat("Subscriptions search returns 1 hits",
-                subscriptionsHits.getNbhits(),
-                Matchers.equalTo(1L));
-        Assert.assertThat("Subscriptions search has 1 hits",
-                subscriptionsHits.getTotalnb(),
-                Matchers.equalTo(1L));
+        Assert.assertEquals("Subscriptions search returns 1 hits", Long.valueOf(1L), subscriptionsHits.getNbhits());
+        Assert.assertEquals("Subscriptions search has 1 hits", Long.valueOf(1L), subscriptionsHits.getTotalnb());
     }
 }

@@ -25,11 +25,11 @@ import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
 import io.arlas.subscriptions.logger.ArlasLogger;
 import io.arlas.subscriptions.logger.ArlasLoggerFactory;
 import io.arlas.subscriptions.service.ManagedKafkaConsumers;
-import io.dropwizard.Application;
+import io.dropwizard.core.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import org.apache.kafka.common.KafkaException;
 
 import java.util.Arrays;

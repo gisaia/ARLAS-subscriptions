@@ -20,11 +20,10 @@
 package io.arlas.subscriptions.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.arlas.client.ApiException;
+import io.arlas.client.model.ArlasHit;
+import io.arlas.client.model.Hits;
 import io.arlas.commons.exceptions.ArlasException;
-import io.arlas.server.client.ApiClient;
-import io.arlas.server.client.ApiException;
-import io.arlas.server.client.model.ArlasHit;
-import io.arlas.server.client.model.Hits;
 import io.arlas.subscriptions.app.ArlasSubscriptionsMatcherConfiguration;
 import io.arlas.subscriptions.exception.ArlasSubscriptionsException;
 import io.arlas.subscriptions.kafka.NotificationOrderKafkaProducer;
@@ -37,6 +36,7 @@ import io.arlas.subscriptions.model.UserSubscription;
 import io.arlas.subscriptions.utils.JSONValueInjector;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -50,8 +50,8 @@ public class ProductService extends AbstractArlasService {
     private final String identityHeader;
 
     ProductService(ArlasSubscriptionsMatcherConfiguration configuration, NotificationOrderKafkaProducer notificationOrderKafkaProducer) {
-        this.apiClient = new ApiClient().setBasePath(configuration.arlasServerBasePath);
-        this.searchEndpoint = configuration.arlasServerSearchEndpoint;
+        this.basePath = configuration.arlasServerBasePath;
+        this.collection = configuration.arlasServerCollection;
         this.filterRoot = configuration.arlasServerFilterRoot;
         this.notificationOrderKafkaProducer = notificationOrderKafkaProducer;
         this.identityHeader = configuration.identityConfiguration.identityHeader;

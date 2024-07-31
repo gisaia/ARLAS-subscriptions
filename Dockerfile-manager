@@ -1,4 +1,4 @@
-FROM gisaia/arlas-openjdk:17-distroless
+FROM gisaia/arlas-openjdk-17-distroless:20240505183515
 
 # application placed into /opt/app
 WORKDIR /opt/app
