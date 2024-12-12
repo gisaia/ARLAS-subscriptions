@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4.1.4
 
       - name: Cache Maven # From https://github.com/actions/cache/blob/main/examples.md
-        uses: actions/cache@v2
+        uses: actions/cache@v4.0.2
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -19,7 +19,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'adopt'
@@ -34,22 +34,28 @@ jobs:
 
       - name: Run Trivy vulnerability scanner on Manager
         uses: aquasecurity/trivy-action@master
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
         with:
           image-ref: 'docker.io/gisaia/arlas-subscriptions-manager:${{ github.sha }}'
           format: 'table'
           exit-code: '1'
-          ignore-unfixed: true
+          ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
           trivyignores: .github/workflows/.trivyignore
 
       - name: Run Trivy vulnerability scanner on Matcher
         uses: aquasecurity/trivy-action@master
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
         with:
           image-ref: 'docker.io/gisaia/arlas-subscriptions-matcher:${{ github.sha }}'
           format: 'table'
           exit-code: '1'
-          ignore-unfixed: true
+          ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
           trivyignores: .github/workflows/.trivyignore

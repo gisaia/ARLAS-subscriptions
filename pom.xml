@@ -35,7 +35,7 @@
         <beanutils.version>1.9.4</beanutils.version>
 
         <!-- BACKENDS -->
-        <arlas.version>25.1.0</arlas.version>
+        <arlas.version>26.0.6</arlas.version>
         <kafka.version>3.7.0</kafka.version>
     </properties>
 
