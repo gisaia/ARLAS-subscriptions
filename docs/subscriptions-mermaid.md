@@ -14,9 +14,9 @@ The main components are:
 - Subscription manager: http microservice to add/remove/list subscriptions
 - Subscription: notified of new documents, identify matching subscriptions, send notifications.
 - [Kafka](https://kafka.apache.org/){:target="_blank"}: queue for event notifications and notification orders
-- [elasticsearch](../static_docs/concepts.md#elasticsearch): indices containing documents and subscriptions
+- [elasticsearch](../../static_docs/concepts.md#elasticsearch): indices containing documents and subscriptions
 - [mongodb](https://www.mongodb.com/){:target="_blank"}: reference database containing the subscriptions
-- ARLAS Server: Data access for documents and subscriptions
+- [ARLAS Server](../../static_docs/introduction-developers.md/#arlas-server): Data access for documents and subscriptions
 
 
 ### Sequence
