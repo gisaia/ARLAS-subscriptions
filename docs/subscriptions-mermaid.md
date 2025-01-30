@@ -38,6 +38,7 @@ The system adds a new document in Elasticsearch (3) and then pushes a message in
 Then, for each subscription, the filter part of the subscription is used combined to the configurable filter `arlas-server-hitFilterRoot`. By default it contains the essential constraint `id:eq:(object.id)`. This combined filter is used to retrieve the document from ARLAS (8). Note that the user identity is in the header of the retrieval request, so that a proxy can enrich the request with partition filters (7). 
 
 If the document is retrieved, this means that the document matches precisely the user defined filter. Note that arlas-server-hitFilterRoot can be used to defined further constraints so that only a subset of the documents can be “notifiables”. Also, if a proxy is used between ARLAS Matcher and ARLAS Server, then user role based filters can be added with the partition filter. When the document is retrieved against the subscription, a notification order is pushed on kafka (10). It contains:
+
 - the initial notification
 - the data resulting from the search with the configured "projection"
 - the id of the subscription
