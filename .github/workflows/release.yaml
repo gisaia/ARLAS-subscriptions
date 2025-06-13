@@ -161,6 +161,7 @@ jobs:
           i=1; until curl -XGET http://localhost:9998/arlas-subscriptions-manager/openapi.yaml -o target/tmp/openapi.yaml; do if [ $i -lt 60 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
           cp target/tmp/openapi.yaml openapi/
           cp target/tmp/openapi.json openapi/
+          cp target/tmp/openapi.json docs/api/openapi.json
 
       - name: Stop arlas-subscriptions stack
         if: always()
