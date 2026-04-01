@@ -47,3 +47,6 @@ CVE-2026-33636
 # Reason: ARLAS-server does not take files input.
 # Description: https://access.redhat.com/security/cve/cve-2026-4046
 CVE-2026-4046
+
+#TODO update beanutils
+CVE-2025-48734
