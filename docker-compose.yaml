@@ -34,6 +34,11 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION:-8.13.3}
     container_name: "elasticsearch"
+    healthcheck:
+      test: "curl -s -X GET http://localhost:9200/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'"
+      interval: 10s
+      timeout: 10s
+      retries: 10
     environment:
       - discovery.type=single-node
       - cluster.name=elasticsearch
@@ -96,17 +101,19 @@ services:
   #########
 
   arlas-server:
-    image: gisaia/arlas-server:${ARLAS_VERSION:-25.1.0}
+    image: gisaia/arlas-server:${ARLAS_VERSION:-27.3.0}
     container_name: "arlas-server"
     ports:
       - 9999:9999
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     environment:
       - ARLAS_ELASTIC_NODES=${ARLAS_ELASTIC_NODES:-elasticsearch:9200}
       - ARLAS_ELASTIC_ENABLE_SSL="${ARLAS_ELASTIC_ENABLE_SSL:-false}"
       - ARLAS_ELASTIC_CREDENTIALS="${ARLAS_ELASTIC_CREDENTIALS}"
       - ARLAS_ELASTIC_SKIP_MASTER="${ARLAS_ELASTIC_SKIP_MASTER:-true}"
+      - ARLAS_PREFIX=/arlas
 
   arlas-subscriptions-matcher:
     build:

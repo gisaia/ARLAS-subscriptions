@@ -32,10 +32,10 @@
         <!-- for manager -->
         <mongodb.version>5.1.0</mongodb.version>
         <everit.json.schema.version>1.5.1</everit.json.schema.version>
-        <beanutils.version>1.9.4</beanutils.version>
+        <beanutils.version>1.11.0</beanutils.version>
 
         <!-- BACKENDS -->
-        <arlas.version>26.0.6</arlas.version>
+        <arlas.version>27.3.0</arlas.version>
         <kafka.version>3.7.0</kafka.version>
     </properties>
 
