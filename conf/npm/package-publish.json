@@ -15,5 +15,10 @@
     "es6-promise": "4.2.4",
     "isomorphic-fetch": "3.0.0",
     "url": "0.11.0"
+  },
+  "overrides": {
+    "isomorphic-fetch": {
+      "node-fetch": "3.3.0"
+    }
   }
 }

@@ -1,8 +1,8 @@
-FROM gisaia/arlas-openjdk-17-distroless:20260325153316
+FROM gisaia/arlas-openjdk-17-dhi:20260423113135
 
 # application placed into /opt/app
 WORKDIR /opt/app
 ADD subscriptions-manager/target/subscriptions-manager*.jar /opt/app/subscriptions-manager.jar
 ADD conf/configuration-manager.yaml /opt/app/configuration-manager.yaml
 
-CMD ["subscriptions-manager.jar", "server", "/opt/app/configuration-manager.yaml"]
+CMD ["java", "-jar", "/opt/app/subscriptions-manager.jar", "server", "/opt/app/configuration-manager.yaml"]
