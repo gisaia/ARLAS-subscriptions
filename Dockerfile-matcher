@@ -1,8 +1,8 @@
-FROM gisaia/arlas-openjdk-17-distroless:20260325153316
+FROM gisaia/arlas-openjdk-17-dhi:20260423113135
 
 # application placed into /opt/app
 WORKDIR /opt/app
 ADD subscriptions-matcher/target/subscriptions-matcher*.jar /opt/app/subscriptions-matcher.jar
 ADD conf/configuration-matcher.yaml /opt/app/configuration-matcher.yaml
 
-CMD ["subscriptions-matcher.jar", "server", "/opt/app/configuration-matcher.yaml"]
+CMD ["java", "-jar", "/opt/app/subscriptions-matcher.jar", "server", "/opt/app/configuration-matcher.yaml"]

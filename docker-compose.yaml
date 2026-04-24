@@ -101,7 +101,7 @@ services:
   #########
 
   arlas-server:
-    image: gisaia/arlas-server:${ARLAS_VERSION:-27.3.0}
+    image: gisaia/arlas-server:${ARLAS_VERSION:-28.0.0-rc4}
     container_name: "arlas-server"
     ports:
       - 9999:9999
@@ -136,9 +136,9 @@ services:
     ports:
       - 9997:9998    
     healthcheck:
-      test: curl http://localhost:9998/admin/healthcheck | grep -v "\"healthy\":false" || exit 1
-      interval: 30s
-      timeout: 30s
+      test: ["CMD","java","HttpHealthcheck.java","http://localhost:9998/admin/healthcheck"]
+      interval: 5s
+      timeout: 10s
       retries: 3
 
   arlas-subscriptions-manager:
@@ -164,7 +164,7 @@ services:
     ports:
       - 9998:9998
     healthcheck:
-      test: curl http://localhost:9998/admin/healthcheck | grep -v "\"healthy\":false" || exit 1
-      interval: 30s
-      timeout: 30s
+      test: ["CMD","java","HttpHealthcheck.java","http://localhost:9998/admin/healthcheck"]
+      interval: 5s
+      timeout: 10s
       retries: 3
