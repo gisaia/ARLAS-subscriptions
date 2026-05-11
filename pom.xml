@@ -35,7 +35,7 @@
         <everit.json.schema.version>1.5.1</everit.json.schema.version>
         <beanutils.version>1.11.0</beanutils.version>
         <!-- BACKENDS -->
-        <arlas.version>28.0.0-rc7</arlas.version>
+        <arlas.version>28.0.0-rc10</arlas.version>
         <kafka.version>3.9.2</kafka.version>
         <!-- JACKSON CORE -->
         <jackson.core.version>2.21.1</jackson.core.version>
@@ -74,13 +74,14 @@
             <version>${org.hamcrest.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- ____________________________________________________ -->
-        <!-- Override for fix CVE -->
-        <!-- ____________________________________________________ -->
+        <!-- TO FIX CVE-2026-2332  -->
+        <!-- TO NOT MIX JETTY VERSION  -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
+            <artifactId>jetty-bom</artifactId>
             <version>${jetty-server.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
         </dependency>
     </dependencies>
     <build>
