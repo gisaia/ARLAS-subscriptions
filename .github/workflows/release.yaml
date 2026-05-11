@@ -1,0 +1,326 @@
+name: Release ARLAS-subscriptions
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_major_version:
+        description: "API Major version"
+        required: true
+      api_minor_version:
+        description: "API Minor version"
+        required: true
+      api_patch_version:
+        description: "API Patch version"
+        required: true
+      arlas_dev:
+        description: "Next dev patch version (e.g. 2 for X.Y.2-SNAPSHOT)"
+        required: true
+      run_tests:
+        description: "Run integration tests"
+        type: boolean
+        default: true
+      skip_api:
+        description: "Skip API client generation"
+        type: boolean
+        default: false
+
+env:
+  FULL_API_VERSION: "${{ inputs.api_major_version }}.${{ inputs.api_minor_version }}.${{ inputs.api_patch_version }}"
+  API_DEV_VERSION: "${{ inputs.api_major_version }}.${{ inputs.api_minor_version }}.${{ inputs.arlas_dev }}"
+  IS_DEVELOP: ${{ github.ref_name == 'develop' }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------------------------------
+      # Checkout
+      # -------------------------------------------------------
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          token: ${{ secrets.GH_RELEASE_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GH_RELEASE_TOKEN }}@github.com/${{ github.repository }}
+
+      - name: Log release context
+        run: |
+          echo "Releasing from branch         : ${{ github.ref_name }}"
+          echo "Subscriptions version         : ${{ env.FULL_API_VERSION }}"
+          echo "API version                   : ${{ env.FULL_API_VERSION }}"
+          echo "Next dev version              : ${{ env.API_DEV_VERSION }}-SNAPSHOT"
+          echo "Is develop (merge/latest/...)  : ${{ env.IS_DEVELOP }}"
+          echo "Run tests                     : ${{ inputs.run_tests }}"
+          echo "Skip API                      : ${{ inputs.skip_api }}"
+
+      # -------------------------------------------------------
+      # Tooling setup
+      # -------------------------------------------------------
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Set up Node.js
+        if: ${{ !inputs.skip_api }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      # -------------------------------------------------------
+      # Version bump
+      # -------------------------------------------------------
+      - name: Update project version
+        run: |
+          mvn clean
+          mvn versions:set -DnewVersion=${{ env.FULL_API_VERSION }}
+          sed -i 's/"API_VERSION"/"${{ env.FULL_API_VERSION }}"/' \
+            subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerAbstractController.java
+
+      - name: Update Helm chart versions
+        run: |
+          sed -i 's/^appVersion: .*$/appVersion: "${{ env.FULL_API_VERSION }}"/' helm/arlas-subscriptions/Chart.yaml
+          sed -i 's/^version: .*$/version: ${{ env.FULL_API_VERSION }}/'           helm/arlas-subscriptions/Chart.yaml
+
+      - name: Update Helm values image tags
+        run: |
+          mv helm/arlas-subscriptions/values.yaml helm/arlas-subscriptions/values.yaml.old
+          docker run --rm \
+            --entrypoint bash \
+            --env FULL_API_VERSION=${{ env.FULL_API_VERSION }} \
+            --mount dst=/mnt/input.yaml,src="$PWD/helm/arlas-subscriptions/values.yaml.old",type=bind,readonly \
+            python:3.7-slim-buster -c "
+          pip install --upgrade pip >/dev/null 2>&1
+          pip install ruamel.yaml==0.17.21 >/dev/null 2>&1
+          python -c '
+          import pathlib, sys, ruamel.yaml
+          yaml = ruamel.yaml.YAML()
+          helm_values = yaml.load(pathlib.Path(\"/mnt/input.yaml\"))
+          helm_values[\"manager\"][\"image\"][\"tag\"] = \"$FULL_API_VERSION\"
+          helm_values[\"matcher\"][\"image\"][\"tag\"] = \"$FULL_API_VERSION\"
+          yaml.dump(helm_values, sys.stdout)
+          '
+          " > helm/arlas-subscriptions/values.yaml
+          rm -f helm/arlas-subscriptions/values.yaml.old
+
+      # -------------------------------------------------------
+      # Build
+      # -------------------------------------------------------
+      - name: Build arlas-subscriptions
+        run: |
+          docker run \
+            -e GROUP_ID="$(id -g)" \
+            -e USER_ID="$(id -u)" \
+            --mount dst=/mnt/.m2,src="$HOME/.m2/",type=bind \
+            --mount dst=/opt/maven,src="$PWD",type=bind \
+            -w /opt/maven \
+            --rm \
+            maven:3.8.5-openjdk-17 \
+              mvn clean install
+
+      # -------------------------------------------------------
+      # Start stack and generate OpenAPI spec
+      # -------------------------------------------------------
+      - name: Start dependencies stack (ES, MongoDB)
+        run: |
+          export ARLAS_SUB_TRIG_SCHEM_PATH="/opt/app/trigger.schema.json"
+          export ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL="./subscriptions-tests/src/test/resources/trigger.schema.json"
+          docker compose --project-name arlas-subscriptions up -d --build elasticsearch mongodb mongo2 mongo3
+          sleep 10
+          echo "=> Configure replica set on mongodb"
+          docker exec mongodb /scripts/rs-init.sh
+          docker run --net arlas-subscriptions_default --rm busybox sh -c \
+            'i=1; until nc -w 2 elasticsearch 9200; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+          curl -X PUT "localhost:9200/subs" -H 'Content-Type: application/json' -d '{}'
+          curl -X PUT "localhost:9200/subs/_mapping/sub_type" -H 'Content-Type: application/json' \
+            -d @"./subscriptions-tests/src/test/resources/arlas.subtest.mapping.json"
+
+      - name: Start arlas-subscriptions-manager and matcher
+        run: |
+          export ARLAS_SUB_TRIG_SCHEM_PATH="/opt/app/trigger.schema.json"
+          export ARLAS_SUB_TRIG_SCHEM_PATH_LOCAL="./subscriptions-tests/src/test/resources/trigger.schema.json"
+          docker compose --project-name arlas-subscriptions up -d --build \
+            arlas-subscriptions-manager arlas-subscriptions-matcher
+          docker run --net arlas-subscriptions_default --rm busybox sh -c \
+            'i=1; until nc -w 2 arlas-subscriptions-manager 9998; do if [ $i -lt 100 ]; then sleep 1; else break; fi; i=$(($i + 1)); done'
+
+      - name: Fetch OpenAPI spec
+        run: |
+          mkdir -p target/tmp openapi
+          i=1; until curl -XGET http://localhost:9998/arlas-subscriptions-manager/openapi.json -o target/tmp/openapi.json; do if [ $i -lt 60 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
+          i=1; until curl -XGET http://localhost:9998/arlas-subscriptions-manager/openapi.yaml -o target/tmp/openapi.yaml; do if [ $i -lt 60 ]; then sleep 1; else break; fi; i=$(($i + 1)); done
+          cp target/tmp/openapi.yaml openapi/
+          cp target/tmp/openapi.json openapi/
+
+      - name: Stop arlas-subscriptions stack
+        if: always()
+        run: docker compose --project-name arlas-subscriptions down -v
+
+      # -------------------------------------------------------
+      # Generate API documentation
+      # -------------------------------------------------------
+      - name: Generate API documentation
+        run: |
+          mkdir -p docs/api
+          docker run --rm \
+            --mount dst=/input/api.json,src="$PWD/openapi/openapi.json",type=bind,ro \
+            --mount dst=/input/env.json,src="$PWD/conf/doc/widdershins.json",type=bind,ro \
+            --mount dst=/output,src="$PWD/docs/api",type=bind \
+            gisaia/widdershins:4.0.1
+
+      # -------------------------------------------------------
+      # Integration tests
+      # -------------------------------------------------------
+      - name: Run integration tests
+        if: ${{ inputs.run_tests }}
+        run: ./scripts/test-integration.sh
+
+      # -------------------------------------------------------
+      # Generate API clients
+      # -------------------------------------------------------
+      - name: Generate TypeScript API client
+        if: ${{ !inputs.skip_api }}
+        run: |
+          mkdir -p target/tmp/typescript-fetch
+          docker run --rm \
+            -e GROUP_ID="$(id -g)" \
+            -e USER_ID="$(id -u)" \
+            --mount dst=/input/api.json,src="$PWD/target/tmp/openapi.json",type=bind,ro \
+            --mount dst=/output,src="$PWD/target/tmp/typescript-fetch",type=bind \
+            gisaia/swagger-codegen-3.0.42 \
+              -l typescript-fetch --additional-properties modelPropertyNaming=snake_case
+
+      - name: Build TypeScript API client
+        if: ${{ !inputs.skip_api }}
+        working-directory: target/tmp/typescript-fetch
+        run: |
+          cp ${{ github.workspace }}/conf/npm/package-build.json package.json
+          cp ${{ github.workspace }}/conf/npm/tsconfig-build.json .
+          npm version --no-git-tag-version ${{ env.FULL_API_VERSION }}
+          npm install
+          npm run build-release
+          npm run postbuild
+
+      - name: Publish TypeScript API client to npm
+        if: ${{ !inputs.skip_api }}
+        working-directory: target/tmp/typescript-fetch/dist
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        run: |
+          cp ${{ github.workspace }}/conf/npm/package-publish.json package.json
+          npm version --no-git-tag-version ${{ env.FULL_API_VERSION }}
+          npm publish || echo "Publishing on npm failed ... continue ..."
+
+      # -------------------------------------------------------
+      # Docker push (release only)
+      # -------------------------------------------------------
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Tag and push arlas-subscriptions-manager Docker image
+        run: |
+          docker tag gisaia/arlas-subscriptions-manager:latest gisaia/arlas-subscriptions-manager:${{ env.FULL_API_VERSION }} 
+          docker push gisaia/arlas-subscriptions-manager:${{ env.FULL_API_VERSION }}
+          if [ "${{ env.IS_DEVELOP }}" == "true" ]; then
+            docker push gisaia/arlas-subscriptions-manager:latest
+          fi
+
+      - name: Tag and push arlas-subscriptions-matcher Docker image
+        run: |
+          docker tag gisaia/arlas-subscriptions-matcher:latest gisaia/arlas-subscriptions-matcher:${{ env.FULL_API_VERSION }} 
+          docker push gisaia/arlas-subscriptions-matcher:${{ env.FULL_API_VERSION }}
+          if [ "${{ env.IS_DEVELOP }}" == "true" ]; then
+            docker push gisaia/arlas-subscriptions-matcher:latest
+          fi
+
+      # -------------------------------------------------------
+      # Changelog, commit, tag & merge (develop only)
+      # -------------------------------------------------------
+      - name: Create temporary tag for changelog
+        if: ${{ env.IS_DEVELOP == 'true' }}
+        run: |
+          git tag v${{ env.FULL_API_VERSION }}
+          git push origin v${{ env.FULL_API_VERSION }}
+
+      - name: Generate CHANGELOG.md
+        if: ${{ env.IS_DEVELOP == 'true' }}
+        run: |
+          docker run --rm -v "$(pwd)":/usr/local/src/your-app \
+            gisaia/github-changelog-generator:latest github_changelog_generator \
+              -u gisaia -p ARLAS-subscriptions \
+              --token ${{ secrets.GH_CHANGELOG_TOKEN }} \
+              --no-pr-wo-labels --no-issues-wo-labels --no-unreleased \
+              --issue-line-labels API,conf,security,documentation \
+              --exclude-labels type:duplicate,type:question,type:wontfix,type:invalid \
+              --bug-labels type:bug \
+              --enhancement-labels type:enhancement \
+              --breaking-labels type:breaking \
+              --enhancement-label "**New stuff:**" \
+              --issues-label "**Miscellaneous:**" \
+              --since-tag v0.0.1
+          git add CHANGELOG.md
+          git tag -d v${{ env.FULL_API_VERSION }}
+          git push origin :v${{ env.FULL_API_VERSION }}
+
+      - name: Commit release artifacts
+        run: |
+          git add openapi/openapi.json openapi/openapi.yaml docs/api
+          git commit -a -m "release version ${{ env.FULL_API_VERSION }}"
+          git tag v${{ env.FULL_API_VERSION }}
+          git push origin v${{ env.FULL_API_VERSION }}
+          git push origin ${{ github.ref_name }}
+
+      - name: Merge develop into master
+        if: ${{ env.IS_DEVELOP == 'true' }}
+        run: |
+          git checkout master
+          git pull origin master
+          git merge origin/develop
+          git push origin master
+
+      - name: Rebase develop on master
+        if: ${{ env.IS_DEVELOP == 'true' }}
+        run: |
+          git checkout develop
+          git pull origin develop
+          git rebase origin/master
+
+      # -------------------------------------------------------
+      # Bump to next SNAPSHOT version
+      # -------------------------------------------------------
+      - name: Bump to next development version
+        run: |
+          git checkout ${{ github.ref_name }}
+          mvn versions:set -DnewVersion=${{ env.API_DEV_VERSION }}-SNAPSHOT
+          sed -i 's/"${{ env.FULL_API_VERSION }}"/"API_VERSION"/' \
+            subscriptions-manager/src/main/java/io/arlas/subscriptions/rest/UserSubscriptionManagerAbstractController.java
+          sed -i 's/"${{ env.FULL_API_VERSION }}"/"${{ env.API_DEV_VERSION }}-SNAPSHOT"/' \
+            openapi/openapi.yaml openapi/openapi.json
+          git add openapi/openapi.json openapi/openapi.yaml
+          git commit -a -m "development version ${{ env.API_DEV_VERSION }}-SNAPSHOT"
+          git push origin ${{ github.ref_name }}
+
+      # -------------------------------------------------------
+      # Notify Google Chat
+      # -------------------------------------------------------
+      - name: Notify Google Chat
+        if: ${{ env.GOOGLE_CHAT_RELEASE_CHANEL != '' }}
+        env:
+          GOOGLE_CHAT_RELEASE_CHANEL: ${{ secrets.GOOGLE_CHAT_RELEASE_CHANEL }}
+        run: |
+          curl -X POST --header "Content-Type:application/json" \
+            "$GOOGLE_CHAT_RELEASE_CHANEL" \
+            -d "{\"text\":\"Release of ARLAS-subscriptions, version ${{ env.FULL_API_VERSION }} (from branch ${{ github.ref_name }})\"}"
