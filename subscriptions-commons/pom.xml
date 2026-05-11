@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.arlas</groupId>
         <artifactId>subscriptions-parent</artifactId>
-        <version>23.0.2-SNAPSHOT</version>
+        <version>24.0.0-rc1</version>
     </parent>
     <artifactId>subscriptions-commons</artifactId>
     <packaging>jar</packaging>
