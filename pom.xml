@@ -35,7 +35,7 @@
         <everit.json.schema.version>1.5.1</everit.json.schema.version>
         <beanutils.version>1.11.0</beanutils.version>
         <!-- BACKENDS -->
-        <arlas.version>28.0.0-rc10</arlas.version>
+        <arlas.version>28.0.0</arlas.version>
         <kafka.version>3.9.2</kafka.version>
         <!-- JACKSON CORE -->
         <jackson.core.version>2.21.1</jackson.core.version>
