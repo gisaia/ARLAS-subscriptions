@@ -43,7 +43,6 @@ server:
     port: ${ARLAS_SUB_MANAGER_PORT:-9998}
   maxThreads: ${ARLAS_SUB_MANAGER_MAX_THREADS:-1024}
   minThreads: ${ARLAS_SUB_MANAGER_MIN_THREADS:-8}
-  maxQueuedRequests: ${ARLAS_SUB_MANAGER_MAX_QUEUED_REQUESTS:-1024}
 
 ########################################################
 ############ LOGGING                     ###############

@@ -9,7 +9,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: API_VERSION
+  version: 24.0.0-rc1
 servers:
 - url: /arlas-subscriptions-manager
   description: default server
@@ -52,25 +52,25 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+                $ref: "#/components/schemas/UserSubscriptionWithLinks"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "404":
           description: Subscription not found.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     put:
       tags:
       - admin
@@ -95,7 +95,7 @@ paths:
         content:
           application/json;charset=utf-8:
             schema:
-              $ref: '#/components/schemas/UserSubscription'
+              $ref: "#/components/schemas/UserSubscription"
         required: true
       responses:
         "201":
@@ -103,31 +103,31 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+                $ref: "#/components/schemas/UserSubscriptionWithLinks"
         "400":
           description: JSON parameter malformed.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "404":
           description: Not Found Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
       - admin
@@ -153,25 +153,25 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+                $ref: "#/components/schemas/UserSubscriptionWithLinks"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "404":
           description: Subscription not found.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
   /admin/subscriptions:
     get:
       tags:
@@ -257,19 +257,19 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/SubscriptionListResource'
+                $ref: "#/components/schemas/SubscriptionListResource"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     post:
       tags:
       - admin
@@ -288,7 +288,7 @@ paths:
         content:
           application/json;charset=utf-8:
             schema:
-              $ref: '#/components/schemas/UserSubscription'
+              $ref: "#/components/schemas/UserSubscription"
         required: true
       responses:
         "201":
@@ -296,25 +296,25 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+                $ref: "#/components/schemas/UserSubscriptionWithLinks"
         "400":
           description: JSON parameter malformed.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
   /subscriptions/{id}:
     get:
       tags:
@@ -341,31 +341,31 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+                $ref: "#/components/schemas/UserSubscriptionWithLinks"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "403":
           description: Forbidden.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "404":
           description: Subscription not found.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     put:
       tags:
       - end-user
@@ -391,7 +391,7 @@ paths:
         content:
           application/json;charset=utf-8:
             schema:
-              $ref: '#/components/schemas/UserSubscription'
+              $ref: "#/components/schemas/UserSubscription"
         required: true
       responses:
         "201":
@@ -399,37 +399,37 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+                $ref: "#/components/schemas/UserSubscriptionWithLinks"
         "400":
           description: JSON parameter malformed.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "403":
           description: Forbidden.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "404":
           description: Not Found Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
       - end-user
@@ -456,31 +456,31 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+                $ref: "#/components/schemas/UserSubscriptionWithLinks"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "403":
           description: Forbidden.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "404":
           description: Subscription not found.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
   /subscriptions:
     get:
       tags:
@@ -537,25 +537,25 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/SubscriptionListResource'
+                $ref: "#/components/schemas/SubscriptionListResource"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "403":
           description: Forbidden.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     post:
       tags:
       - end-user
@@ -574,7 +574,7 @@ paths:
         content:
           application/json;charset=utf-8:
             schema:
-              $ref: '#/components/schemas/UserSubscription'
+              $ref: "#/components/schemas/UserSubscription"
         required: true
       responses:
         "201":
@@ -582,37 +582,37 @@ paths:
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/UserSubscriptionWithLinks'
+                $ref: "#/components/schemas/UserSubscriptionWithLinks"
         "400":
           description: JSON parameter malformed.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "401":
           description: Unauthorized.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "403":
           description: Forbidden.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "404":
           description: Not Found Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "503":
           description: Arlas Subscriptions Manager Error.
           content:
             application/json;charset=utf-8:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 components:
   schemas:
     Hits:
@@ -655,7 +655,7 @@ components:
         callback:
           type: string
         hits:
-          $ref: '#/components/schemas/Hits'
+          $ref: "#/components/schemas/Hits"
     UserSubscriptionWithLinks:
       required:
       - active
@@ -696,7 +696,7 @@ components:
         title:
           type: string
         subscription:
-          $ref: '#/components/schemas/Subscription'
+          $ref: "#/components/schemas/Subscription"
         userMetadatas:
           type: object
           additionalProperties:
@@ -704,7 +704,7 @@ components:
         _links:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/Link'
+            $ref: "#/components/schemas/Link"
     Error:
       type: object
       properties:
@@ -727,11 +727,11 @@ components:
         _links:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/Link'
+            $ref: "#/components/schemas/Link"
         subscriptions:
           type: array
           items:
-            $ref: '#/components/schemas/UserSubscriptionWithLinks'
+            $ref: "#/components/schemas/UserSubscriptionWithLinks"
     UserSubscription:
       required:
       - active
@@ -772,7 +772,7 @@ components:
         title:
           type: string
         subscription:
-          $ref: '#/components/schemas/Subscription'
+          $ref: "#/components/schemas/Subscription"
         userMetadatas:
           type: object
           additionalProperties:
