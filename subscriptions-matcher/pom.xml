@@ -11,7 +11,7 @@
     <parent>
         <groupId>io.arlas</groupId>
         <artifactId>subscriptions-parent</artifactId>
-        <version>24.0.5</version>
+        <version>24.0.6-SNAPSHOT</version>
     </parent>
 
     <dependencies>
