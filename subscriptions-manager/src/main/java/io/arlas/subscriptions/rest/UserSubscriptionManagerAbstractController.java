@@ -34,7 +34,7 @@ import jakarta.ws.rs.core.MediaType;
                 description = "Manage ARLAS subscriptions on ARLAS collections' events.",
                 license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html"),
                 contact = @Contact(email = "contact@gisaia.com", name = "Gisaia", url = "http://www.gisaia.com/"),
-                version = "API_VERSION"),
+                version = "24.0.5"),
         servers = {
                 @Server(url = "/arlas-subscriptions-manager", description = "default server")
         }

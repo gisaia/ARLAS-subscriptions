@@ -1,20 +1,24 @@
 # Change Log
 
-## [v23.0.1](https://github.com/gisaia/ARLAS-subscriptions/tree/v23.0.1) (2022-11-21)
+## [v24.0.5](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.5) (2026-05-20)
 
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v23.0.0...v23.0.1)
+## [v24.0.3](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.3) (2026-05-20)
+
+## [v24.0.4](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.4) (2026-05-20)
+
+## [v24.0.2](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.2) (2026-05-20)
+
+## [v24.0.1](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.1) (2026-05-20)
+
+## [v24.0.0](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.0) (2026-05-20)
+
+## [v23.0.1](https://github.com/gisaia/ARLAS-subscriptions/tree/v23.0.1) (2022-11-21)
 
 ## [v23.0.0](https://github.com/gisaia/ARLAS-subscriptions/tree/v23.0.0) (2022-10-21)
 
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v19.7.8...v23.0.0)
-
 ## [v19.7.8](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.8) (2022-04-12)
 
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v19.7.7...v19.7.8)
-
 ## [v19.7.7](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.7) (2021-10-20)
-
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v19.7.6...v19.7.7)
 
 **Miscellaneous:**
 
@@ -22,23 +26,15 @@
 
 ## [v19.7.6](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.6) (2021-10-08)
 
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v19.7.5...v19.7.6)
-
 **Miscellaneous:**
 
 - Upgrade code to be compatible with latest version of ARLAS stack [\#168](https://github.com/gisaia/ARLAS-subscriptions/issues/168)
 
 ## [v19.7.5](https://github.com/gisaia/ARLAS-subscriptions/tree/v19.7.5) (2021-10-07)
 
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v12.7.0...v19.7.5)
-
 ## [v12.7.0](https://github.com/gisaia/ARLAS-subscriptions/tree/v12.7.0) (2020-03-27)
 
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.3...v12.7.0)
-
 ## [v11.6.3](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.3) (2019-11-20)
-
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.2...v11.6.3)
 
 **Miscellaneous:**
 
@@ -47,23 +43,17 @@
 
 ## [v11.6.2](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.2) (2019-10-28)
 
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.1...v11.6.2)
-
 **Miscellaneous:**
 
 - \[Manager\] Update a subscription should set the modified\_at time properly [\#155](https://github.com/gisaia/ARLAS-subscriptions/issues/155)
 
 ## [v11.6.1](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.1) (2019-10-22)
 
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.0...v11.6.1)
-
 **Miscellaneous:**
 
 - Make userMetadatas not required in subscription [\#152](https://github.com/gisaia/ARLAS-subscriptions/issues/152)
 
 ## [v11.6.0](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.0) (2019-10-16)
-
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/v11.6.0-alpha...v11.6.0)
 
 **Miscellaneous:**
 
@@ -81,8 +71,6 @@
 - \[0.4.0-1\]\[manager\] Get all subscriptions \(internal mode\) [\#16](https://github.com/gisaia/ARLAS-subscriptions/issues/16)
 
 ## [v11.6.0-alpha](https://github.com/gisaia/ARLAS-subscriptions/tree/v11.6.0-alpha) (2019-09-23)
-
-[Full Changelog](https://github.com/gisaia/ARLAS-subscriptions/compare/46315293fc9e52550883da20304c5b9cce9d4646...v11.6.0-alpha)
 
 **Miscellaneous:**
 
