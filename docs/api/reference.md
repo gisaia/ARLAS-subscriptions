@@ -1,6 +1,6 @@
 <!-- Generator: Widdershins v4.0.1 -->
 
-<h1 id="arlas-subscriptions-manager-api">ARLAS Subscriptions Manager API v24.0.5</h1>
+<h1 id="arlas-subscriptions-manager-api">ARLAS Subscriptions Manager API v28.0.6</h1>
 
 > Scroll down for example requests and responses.
 
