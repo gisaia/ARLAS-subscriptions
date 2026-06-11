@@ -1,12 +1,14 @@
 # Change Log
 
+## [v28.0.7](https://github.com/gisaia/ARLAS-subscriptions/tree/v28.0.7) (2026-06-11)
+
 ## [v28.0.6](https://github.com/gisaia/ARLAS-subscriptions/tree/v28.0.6) (2026-06-09)
 
 ## [v24.0.5](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.5) (2026-05-22)
 
-## [v24.0.4](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.4) (2026-05-20)
-
 ## [v24.0.3](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.3) (2026-05-20)
+
+## [v24.0.4](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.4) (2026-05-20)
 
 ## [v24.0.2](https://github.com/gisaia/ARLAS-subscriptions/tree/v24.0.2) (2026-05-20)
 
